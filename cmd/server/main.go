@@ -25,7 +25,7 @@ func main() {
 	gin.SetMode(cfg.GinMode)
 
 	// Подключаемся к базе данных
-	db, err := repository.NewPostgresDB(&cfg.Database)
+	db, err := repository.NewDatabase(&cfg.Database)
 	if err != nil {
 		log.Fatal("Ошибка подключения к базе данных:", err)
 	}

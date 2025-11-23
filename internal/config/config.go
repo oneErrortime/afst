@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -26,12 +27,15 @@ type Config struct {
 
 // DatabaseConfig содержит настройки подключения к БД
 type DatabaseConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
+	Engine     string
+	DSN        string
+	Host       string
+	Port       int
+	User       string
+	Password   string
+	DBName     string
+	SSLMode    string
+	SQLitePath string
 }
 
 // JWTConfig содержит настройки JWT
@@ -58,17 +62,24 @@ func Load() (*Config, error) {
 		jwtExpires = 24 * time.Hour
 	}
 
+	dbEngine := strings.ToLower(getEnvOrDefault("DB_ENGINE", "postgres"))
+	dbDSN := getEnvOrDefault("DB_DSN", "")
+	dbSQLitePath := getEnvOrDefault("DB_SQLITE_PATH", "file:library.db?_foreign_keys=on&_busy_timeout=5000")
+
 	config := &Config{
 		Port:    getEnvOrDefault("PORT", "8080"),
 		GinMode: getEnvOrDefault("GIN_MODE", "debug"),
 
 		Database: DatabaseConfig{
-			Host:     getEnvOrDefault("DB_HOST", "localhost"),
-			Port:     dbPort,
-			User:     getEnvOrDefault("DB_USER", "library_user"),
-			Password: getEnvOrDefault("DB_PASSWORD", "library_password"),
-			DBName:   getEnvOrDefault("DB_NAME", "library_db"),
-			SSLMode:  getEnvOrDefault("DB_SSLMODE", "disable"),
+			Engine:     dbEngine,
+			DSN:        dbDSN,
+			Host:       getEnvOrDefault("DB_HOST", "localhost"),
+			Port:       dbPort,
+			User:       getEnvOrDefault("DB_USER", "library_user"),
+			Password:   getEnvOrDefault("DB_PASSWORD", "library_password"),
+			DBName:     getEnvOrDefault("DB_NAME", "library_db"),
+			SSLMode:    getEnvOrDefault("DB_SSLMODE", "disable"),
+			SQLitePath: dbSQLitePath,
 		},
 
 		JWT: JWTConfig{
