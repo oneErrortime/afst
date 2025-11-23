@@ -1,0 +1,61 @@
+package gorm
+
+import (
+	"github.com/oneErrortime/afst/internal/models"
+	"github.com/oneErrortime/afst/internal/repository"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
+// bookRepository реализация BookRepository для GORM
+type bookRepository struct {
+	db *gorm.DB
+}
+
+// NewBookRepository создает новый экземпляр bookRepository
+func NewBookRepository(db *gorm.DB) repository.BookRepository {
+	return &bookRepository{db: db}
+}
+
+// Create создает новую книгу
+func (r *bookRepository) Create(book *models.Book) error {
+	return r.db.Create(book).Error
+}
+
+// GetByID находит книгу по ID
+func (r *bookRepository) GetByID(id uuid.UUID) (*models.Book, error) {
+	var book models.Book
+	err := r.db.Where("id = ?", id).First(&book).Error
+	if err != nil {
+		return nil, err
+	}
+	return &book, nil
+}
+
+// GetAll возвращает все книги с пагинацией
+func (r *bookRepository) GetAll(limit, offset int) ([]models.Book, error) {
+	var books []models.Book
+	err := r.db.Limit(limit).Offset(offset).Find(&books).Error
+	return books, err
+}
+
+// Update обновляет книгу
+func (r *bookRepository) Update(book *models.Book) error {
+	return r.db.Save(book).Error
+}
+
+// Delete удаляет книгу (soft delete)
+func (r *bookRepository) Delete(id uuid.UUID) error {
+	return r.db.Delete(&models.Book{}, id).Error
+}
+
+// GetByISBN находит книгу по ISBN
+func (r *bookRepository) GetByISBN(isbn string) (*models.Book, error) {
+	var book models.Book
+	err := r.db.Where("isbn = ?", isbn).First(&book).Error
+	if err != nil {
+		return nil, err
+	}
+	return &book, nil
+}

@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Сервис базы данных PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: library_postgres
+    environment:
+      POSTGRES_DB: library_db
+      POSTGRES_USER: library_user
+      POSTGRES_PASSWORD: library_password
+    ports:
+      - "5433:5432"  # Используем 5433, чтобы не конфликтовать с локальным PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d/
+    networks:
+      - library_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U library_user -d library_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Сервис API
+  api:
+    build: .
+    container_name: library_api
+    environment:
+      PORT: 8080
+      GIN_MODE: release
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: library_user
+      DB_PASSWORD: library_password
+      DB_NAME: library_db
+      DB_SSLMODE: disable
+      JWT_SECRET: super-secret-jwt-key-for-production-change-this
+      JWT_EXPIRES_IN: 24h
+      LOG_LEVEL: info
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - library_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  library_network:
+    driver: bridge
