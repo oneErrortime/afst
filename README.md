@@ -680,7 +680,7 @@ make docker-clean
 ### Production готовность
 
 Dockerfile использует **multi-stage build**:
-- Компиляция в `golang:1.21-alpine`
+- Компиляция в `golang:1.23-alpine`
 - Финальный образ на `alpine:latest`
 - Непривилегированный пользователь
 - Минимальный размер образа
