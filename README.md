@@ -163,12 +163,15 @@ PORT=8080
 GIN_MODE=debug
 
 # База данных
+DB_ENGINE=postgres # postgres | sqlite
+DB_DSN=
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=library_user
 DB_PASSWORD=library_password
 DB_NAME=library_db
 DB_SSLMODE=disable
+DB_SQLITE_PATH=library.db
 
 # JWT
 JWT_SECRET=your-super-secret-key
@@ -177,6 +180,8 @@ JWT_EXPIRES_IN=24h
 # Логирование
 LOG_LEVEL=debug
 ```
+
+> 💡 Для временного деплоя можно установить `DB_ENGINE=sqlite` — сервис переключится на файл `DB_SQLITE_PATH` (по умолчанию `library.db`) и создаст все таблицы через GORM автоматически. Для production рекомендуется использовать PostgreSQL или передать готовый `DB_DSN`.
 
 ## 📚 API Документация
 
