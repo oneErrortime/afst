@@ -1,38 +1,25 @@
 ```
-# Dependencies
-vendor/
-
-# Binaries
-*.exe
-*.dll
-*.so
-*.a
+# Compiled and build artifacts
+*.o
 *.obj
 *.out
 
-# Build artifacts
-build/
-dist/
-target/
+# Dependencies
+vendor/
 
-# Logs
+# Logs and temp files
 *.log
+*.tmp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
+# Database
+*.db
+test.db
 
-# Go-specific
-*.test
-*.prof
-go.mod.bak
-go.sum.bak
+# Build scripts
+*.sh
 ```

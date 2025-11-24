@@ -99,6 +99,31 @@ db-reset: ## Сбросить базу данных
 	docker-compose -f $(DOCKER_COMPOSE_FILE) down --volumes
 	docker-compose -f $(DOCKER_COMPOSE_FILE) up -d postgres
 
+.PHONY: db-init-sqlite
+db-init-sqlite: ## Инициализировать SQLite базу данных
+	@echo "Инициализация SQLite базы данных..."
+	go run init_db.go
+
+.PHONY: migrate-up
+migrate-up: ## Выполнить миграции SQLite вперед
+	@echo "Выполнение миграций SQLite вперед..."
+	go run migrate_db.go test.db up
+
+.PHONY: migrate-down
+migrate-down: ## Выполнить откат миграций SQLite
+	@echo "Откат миграций SQLite..."
+	go run migrate_db.go test.db down
+
+.PHONY: migrate-force
+migrate-force: ## Принудительно выполнить миграции SQLite
+	@echo "Принудительное выполнение миграций SQLite..."
+	go run migrate_db.go test.db force
+
+.PHONY: db-test-build
+db-test-build: ## Тестировать сборку с SQLite
+	@echo "Тестирование сборки с SQLite..."
+	./test_build.sh
+
 # Команды разработки
 .PHONY: dev
 dev: ## Запустить в режиме разработки (с hot reload)
