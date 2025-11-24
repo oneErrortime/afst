@@ -2,7 +2,7 @@
 FROM golang:1.21-alpine AS builder
 
 # Устанавливаем необходимые пакеты
-RUN apk add --no-cache git
+RUN apk add --no-cache git gcc musl-dev
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -17,7 +17,7 @@ RUN go mod download
 COPY . .
 
 # Собираем приложение
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
 
 # Финальный образ
 FROM alpine:latest

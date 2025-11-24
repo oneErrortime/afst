@@ -26,6 +26,7 @@ type Config struct {
 
 // DatabaseConfig содержит настройки подключения к БД
 type DatabaseConfig struct {
+	Type     string // "postgres" или "sqlite"
 	Host     string
 	Port     int
 	User     string
@@ -63,6 +64,7 @@ func Load() (*Config, error) {
 		GinMode: getEnvOrDefault("GIN_MODE", "debug"),
 
 		Database: DatabaseConfig{
+			Type:     getEnvOrDefault("DB_TYPE", "postgres"),
 			Host:     getEnvOrDefault("DB_HOST", "localhost"),
 			Port:     dbPort,
 			User:     getEnvOrDefault("DB_USER", "library_user"),

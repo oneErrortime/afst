@@ -1,66 +1,38 @@
-# Binaries for programs and plugins
+```
+# Dependencies
+vendor/
+
+# Binaries
 *.exe
-*.exe~
 *.dll
 *.so
-*.dylib
-bin/
-dist/
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
+*.a
+*.obj
 *.out
-coverage.html
-coverage.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Build artifacts
+build/
+dist/
+target/
 
-# Go workspace file
-go.work
+# Logs
+*.log
 
-# Environment variables
+# Environment
 .env
 .env.local
-.env.production
+*.env.*
 
-# IDE files
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
+*.tmp
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Logs
-*.log
-logs/
-
-# Temporary files
-tmp/
-temp/
-
-# Air live reload
-tmp/
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Docker volumes
-postgres_data/
-
-# Build artifacts
-main
-library-api
+# Go-specific
+*.test
+*.prof
+go.mod.bak
+go.sum.bak
+```
