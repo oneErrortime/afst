@@ -1,25 +1,45 @@
 ```
-# Compiled and build artifacts
+# Go build artifacts
 *.o
-*.obj
+*.a
+*.so
+*.exe
+*.dll
 *.out
+
+# Go build cache
+*.cache
+*.test
 
 # Dependencies
 vendor/
 
-# Logs and temp files
+# Logs
 *.log
-*.tmp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Database
-*.db
-test.db
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
 
-# Build scripts
-*.sh
+# System
+.DS_Store
+Thumbs.db
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Build artifacts
+dist/
+build/
+target/
 ```
