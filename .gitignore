@@ -1,18 +1,21 @@
 ```
-# Go build artifacts
-*.o
-*.a
-*.so
+# Dependencies
+go.mod
+go.sum
+
+# Binaries
 *.exe
 *.dll
+*.so
+*.a
+*.o
+*.obj
 *.out
 
-# Go build cache
-*.cache
-*.test
-
-# Dependencies
-vendor/
+# Build artifacts
+build/
+dist/
+target/
 
 # Logs
 *.log
@@ -22,24 +25,30 @@ vendor/
 .env.local
 *.env.*
 
-# Editor/IDE
+# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
 
 # System
 .DS_Store
 Thumbs.db
 
 # Coverage
-.coverage
 coverage/
 htmlcov/
+.coverage
 
-# Build artifacts
-dist/
-build/
-target/
+# Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Testing
+*.pytest_cache/
+.mypy_cache/
 ```

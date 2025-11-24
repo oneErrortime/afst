@@ -1,5 +1,5 @@
-# Используем официальный образ Go 1.23
-FROM golang:1.23-alpine AS builder
+# Используем официальный образ Go 1.19
+FROM golang:1.19-alpine AS builder
 
 # Устанавливаем необходимые пакеты
 RUN apk add --no-cache git gcc musl-dev
