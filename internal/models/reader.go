@@ -9,7 +9,7 @@ import (
 
 // Reader представляет читателя библиотеки
 type Reader struct {
-	ID        uuid.UUID  `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	ID        uuid.UUID  `json:"id" gorm:"type:text;primary_key"`
 	Name      string     `json:"name" gorm:"not null" validate:"required"`
 	Email     string     `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
 	CreatedAt time.Time  `json:"created_at"`

@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	gormdriver "gorm.io/driver/sqlite"
 	gormdb "gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -34,7 +34,8 @@ type APITestSuite struct {
 
 func (suite *APITestSuite) SetupSuite() {
 	// Настраиваем тестовую базу данных в памяти (SQLite)
-	db, err := gormdb.Open(gormdriver.Open(":memory:"), &gormdb.Config{
+	// Используем pure-Go драйвер glebarez/sqlite (не требует CGO)
+	db, err := gormdb.Open(sqlite.Open(":memory:"), &gormdb.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	suite.Require().NoError(err)
