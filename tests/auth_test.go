@@ -52,7 +52,7 @@ func TestAuthService_Register_Success(t *testing.T) {
 	jwtService := auth.NewJWTService("test-secret", time.Hour)
 	authService := services.NewAuthService(mockUserRepo, jwtService)
 
-	email := "test@example.com"
+	email := "test@gmail.com"
 	password := "password123"
 
 	// Mock: пользователь не существует
@@ -78,7 +78,7 @@ func TestAuthService_Register_UserAlreadyExists(t *testing.T) {
 	jwtService := auth.NewJWTService("test-secret", time.Hour)
 	authService := services.NewAuthService(mockUserRepo, jwtService)
 
-	email := "test@example.com"
+	email := "test@gmail.com"
 	password := "password123"
 
 	existingUser := &models.User{
@@ -106,7 +106,7 @@ func TestAuthService_Login_Success(t *testing.T) {
 	jwtService := auth.NewJWTService("test-secret", time.Hour)
 	authService := services.NewAuthService(mockUserRepo, jwtService)
 
-	email := "test@example.com"
+	email := "test@gmail.com"
 	password := "password123"
 
 	hashedPassword, _ := auth.HashPassword(password)
@@ -137,7 +137,7 @@ func TestAuthService_Login_WrongPassword(t *testing.T) {
 	jwtService := auth.NewJWTService("test-secret", time.Hour)
 	authService := services.NewAuthService(mockUserRepo, jwtService)
 
-	email := "test@example.com"
+	email := "test@gmail.com"
 	password := "password123"
 	wrongPassword := "wrongpassword"
 
@@ -168,7 +168,7 @@ func TestAuthService_Login_UserNotFound(t *testing.T) {
 	jwtService := auth.NewJWTService("test-secret", time.Hour)
 	authService := services.NewAuthService(mockUserRepo, jwtService)
 
-	email := "nonexistent@example.com"
+	email := "nonexistent@gmail.com"
 	password := "password123"
 
 	// Mock: пользователь не найден

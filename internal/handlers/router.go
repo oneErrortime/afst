@@ -75,9 +75,9 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		protectedBooks.POST("", handlers.Book.CreateBook)
 		protectedBooks.PUT("/:id", handlers.Book.UpdateBook)
 		protectedBooks.DELETE("/:id", handlers.Book.DeleteBook)
-		protectedBooks.POST("/:book_id/files", handlers.BookFile.Upload)
-		protectedBooks.GET("/:book_id/files", handlers.BookFile.GetByBookID)
-		protectedBooks.GET("/:book_id/stats", handlers.ReadingSession.GetBookStats)
+		protectedBooks.POST("/:id/files", handlers.BookFile.Upload)
+		protectedBooks.GET("/:id/files", handlers.BookFile.GetByBookID)
+		protectedBooks.GET("/:id/stats", handlers.ReadingSession.GetBookStats)
 	}
 
 	readers := api.Group("/readers").Use(authMiddleware)

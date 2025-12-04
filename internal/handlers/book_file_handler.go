@@ -34,7 +34,7 @@ func NewBookFileHandler(
 }
 
 func (h *BookFileHandler) Upload(c *gin.Context) {
-	bookID, err := uuid.Parse(c.Param("book_id"))
+	bookID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponseDTO{Error: "Неверный формат ID книги"})
 		return
@@ -57,7 +57,7 @@ func (h *BookFileHandler) Upload(c *gin.Context) {
 }
 
 func (h *BookFileHandler) GetByBookID(c *gin.Context) {
-	bookID, err := uuid.Parse(c.Param("book_id"))
+	bookID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponseDTO{Error: "Неверный формат ID книги"})
 		return
