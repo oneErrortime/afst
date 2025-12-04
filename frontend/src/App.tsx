@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout';
-import { Home, Login, Register, Books, Readers, Borrow } from '@/pages';
+import { Home, Login, Register, Books, Readers, Borrow, Settings } from '@/pages';
 
 export default function App() {
   return (
@@ -13,6 +13,7 @@ export default function App() {
           <Route path="/books" element={<Books />} />
           <Route path="/readers" element={<Readers />} />
           <Route path="/borrow" element={<Borrow />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>

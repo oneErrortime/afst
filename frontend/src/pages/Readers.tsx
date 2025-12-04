@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { readersApi, borrowApi } from '@/api';
 import { useAuthStore } from '@/store/authStore';
-import { Button, Input, Modal, Loading, EmptyState, toast } from '@/components/ui';
-import { Users, Plus, Edit2, Trash2, Search, User, BookOpen } from 'lucide-react';
+import { Button, Input, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
+import { Users, Plus, Edit2, Trash2, Search, User, BookOpen, Mail, Calendar } from 'lucide-react';
 import type { Reader, CreateReaderRequest, BorrowedBook } from '@/types';
 import { AxiosError } from 'axios';
 import { Navigate } from 'react-router-dom';
@@ -13,8 +13,9 @@ export function Readers() {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingReader, setEditingReader] = useState<Reader | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteReader, setDeleteReader] = useState<Reader | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [selectedReader, setSelectedReader] = useState<Reader | null>(null);
   const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
   const [loadingBooks, setLoadingBooks] = useState(false);
@@ -99,15 +100,20 @@ export function Readers() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deleteReader) return;
+    
+    setDeleting(true);
     try {
-      await readersApi.delete(id);
+      await readersApi.delete(deleteReader.id);
       toast.success('Читатель удален');
-      setDeleteConfirm(null);
+      setDeleteReader(null);
       fetchReaders();
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       toast.error(axiosError.response?.data?.message || 'Ошибка удаления');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -130,7 +136,7 @@ export function Readers() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Читатели</h1>
-          <p className="text-gray-600">Всего читателей: {readers.length}</p>
+          <p className="text-gray-500">Всего читателей: {readers.length}</p>
         </div>
         <Button onClick={openCreateModal}>
           <Plus className="h-4 w-4" />
@@ -139,12 +145,12 @@ export function Readers() {
       </div>
 
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
         <Input
           placeholder="Поиск по имени или email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
+          className="pl-12"
         />
       </div>
 
@@ -167,36 +173,42 @@ export function Readers() {
           {filteredReaders.map((reader) => (
             <div
               key={reader.id}
-              className="card p-5 hover:shadow-md transition-shadow cursor-pointer"
+              className="card p-5 hover:shadow-lg transition-all duration-300 cursor-pointer group"
               onClick={() => openReaderDetails(reader)}
             >
               <div className="flex items-start gap-4">
-                <div className="p-2 bg-green-100 rounded-lg shrink-0">
+                <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-50 rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                   <User className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 truncate">{reader.name}</h3>
-                  <p className="text-sm text-gray-600 truncate">{reader.email}</p>
+                  <p className="text-sm text-gray-500 truncate flex items-center gap-1.5">
+                    <Mail className="h-3 w-3" />
+                    {reader.email}
+                  </p>
                 </div>
               </div>
 
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-gray-500">
-                  Добавлен {new Date(reader.created_at).toLocaleDateString('ru')}
+                <span className="text-xs text-gray-400 flex items-center gap-1.5">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(reader.created_at).toLocaleDateString('ru')}
                 </span>
-                <div className="flex gap-1">
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => openEditModal(reader, e)}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50"
+                    className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                    title="Редактировать"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDeleteConfirm(reader.id);
+                      setDeleteReader(reader);
                     }}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Удалить"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -237,17 +249,17 @@ export function Readers() {
         </form>
       </Modal>
 
-      <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} title="Удалить читателя?" size="sm">
-        <p className="text-gray-600 mb-6">Это действие нельзя отменить.</p>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => setDeleteConfirm(null)} className="flex-1">
-            Отмена
-          </Button>
-          <Button variant="danger" onClick={() => deleteConfirm && handleDelete(deleteConfirm)} className="flex-1">
-            Удалить
-          </Button>
-        </div>
-      </Modal>
+      <ConfirmDialog
+        isOpen={!!deleteReader}
+        onClose={() => setDeleteReader(null)}
+        onConfirm={handleDelete}
+        title="Удалить читателя?"
+        message={`Вы уверены, что хотите удалить читателя "${deleteReader?.name}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        type="danger"
+        loading={deleting}
+      />
 
       <Modal
         isOpen={!!selectedReader}
@@ -257,27 +269,38 @@ export function Readers() {
       >
         {selectedReader && (
           <div className="space-y-4">
-            <div className="text-sm text-gray-600">{selectedReader.email}</div>
+            <div className="flex items-center gap-2 text-gray-500">
+              <Mail className="h-4 w-4" />
+              {selectedReader.email}
+            </div>
 
             <div className="border-t pt-4">
-              <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary-600" />
                 Книги на руках ({activeBooks.length})
               </h4>
 
               {loadingBooks ? (
                 <Loading size="sm" />
               ) : activeBooks.length === 0 ? (
-                <p className="text-sm text-gray-500">Нет книг на руках</p>
+                <div className="text-center py-8 text-gray-400">
+                  <BookOpen className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Нет книг на руках</p>
+                </div>
               ) : (
                 <div className="space-y-2">
                   {activeBooks.map((borrow) => (
-                    <div key={borrow.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{borrow.book?.title || 'Книга'}</p>
-                        <p className="text-xs text-gray-500">
-                          Взята: {new Date(borrow.borrow_date).toLocaleDateString('ru')}
-                        </p>
+                    <div key={borrow.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary-100 rounded-lg">
+                          <BookOpen className="h-4 w-4 text-primary-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-gray-900">{borrow.book?.title || 'Книга'}</p>
+                          <p className="text-xs text-gray-500">
+                            Взята: {new Date(borrow.borrow_date).toLocaleDateString('ru')}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}
