@@ -88,10 +88,13 @@ export function Navbar() {
 
             <div className="hidden md:flex items-center gap-1">
               <NavLink to="/books">Книги</NavLink>
+              <NavLink to="/categories">Категории</NavLink>
               {isAuthenticated && (
                 <>
+                  <NavLink to="/library">Моя библиотека</NavLink>
+                  <NavLink to="/groups">Группы</NavLink>
                   <NavLink to="/readers">Читатели</NavLink>
-                  <NavLink to="/borrow">Выдача книг</NavLink>
+                  <NavLink to="/borrow">Выдача</NavLink>
                 </>
               )}
             </div>
@@ -156,8 +159,35 @@ export function Navbar() {
             >
               Книги
             </Link>
+            <Link
+              to="/categories"
+              className={`block px-3 py-2.5 rounded-lg font-medium ${
+                isActive('/categories') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Категории
+            </Link>
             {isAuthenticated && (
               <>
+                <Link
+                  to="/library"
+                  className={`block px-3 py-2.5 rounded-lg font-medium ${
+                    isActive('/library') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Моя библиотека
+                </Link>
+                <Link
+                  to="/groups"
+                  className={`block px-3 py-2.5 rounded-lg font-medium ${
+                    isActive('/groups') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Группы
+                </Link>
                 <Link
                   to="/readers"
                   className={`block px-3 py-2.5 rounded-lg font-medium ${
@@ -174,7 +204,7 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Выдача книг
+                  Выдача
                 </Link>
               </>
             )}

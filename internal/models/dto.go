@@ -167,3 +167,47 @@ type ListResponseDTO struct {
 	Data       interface{}    `json:"data"`
 	Pagination *PaginationDTO `json:"pagination,omitempty"`
 }
+
+type UserResponseDTO struct {
+	ID            uuid.UUID     `json:"id"`
+	Email         string        `json:"email"`
+	Name          string        `json:"name"`
+	Role          UserRole      `json:"role"`
+	GroupID       *uuid.UUID    `json:"group_id,omitempty"`
+	Group         *UserGroup    `json:"group,omitempty"`
+	AvatarURL     *string       `json:"avatar_url,omitempty"`
+	EmailVerified bool          `json:"email_verified"`
+	IsActive      bool          `json:"is_active"`
+	Subscription  *Subscription `json:"subscription,omitempty"`
+	CreatedAt     time.Time     `json:"created_at"`
+}
+
+type BookAccessWithBook struct {
+	BookAccess
+	Book Book `json:"book"`
+}
+
+type BookReadingStats struct {
+	BookID        uuid.UUID `json:"book_id"`
+	TotalReaders  int64     `json:"total_readers"`
+	TotalSessions int64     `json:"total_sessions"`
+	TotalReadTime int64     `json:"total_read_time_seconds"`
+	AvgReadTime   int64     `json:"avg_read_time_seconds"`
+	AvgProgress   float64   `json:"avg_progress_percent"`
+}
+
+type UserLibraryDTO struct {
+	ActiveBooks  []BookAccessWithBook `json:"active_books"`
+	ExpiredBooks []BookAccessWithBook `json:"expired_books"`
+	TotalBooks   int                  `json:"total_books"`
+}
+
+type DashboardStatsDTO struct {
+	TotalUsers           int64 `json:"total_users"`
+	TotalBooks           int64 `json:"total_books"`
+	TotalCategories      int64 `json:"total_categories"`
+	TotalGroups          int64 `json:"total_groups"`
+	ActiveLoans          int64 `json:"active_loans"`
+	ActiveSubscriptions  int64 `json:"active_subscriptions"`
+	TotalReadingSessions int64 `json:"total_reading_sessions"`
+}
