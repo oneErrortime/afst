@@ -2,61 +2,67 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/oneErrortime/afst/internal/auth"
 	"github.com/oneErrortime/afst/internal/config"
 	"github.com/oneErrortime/afst/internal/handlers"
 	"github.com/oneErrortime/afst/internal/repository"
 	"github.com/oneErrortime/afst/internal/repository/gorm"
 	"github.com/oneErrortime/afst/internal/services"
-	"log"
-
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
+	"github.com/oneErrortime/afst/internal/storage"
 )
 
 func main() {
-	// Загружаем конфигурацию
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal("Ошибка загрузки конфигурации:", err)
 	}
 
-	// Настраиваем режим Gin
 	gin.SetMode(cfg.GinMode)
 
-	// Подключаемся к базе данных
 	db, err := repository.NewDatabase(&cfg.Database)
 	if err != nil {
 		log.Fatal("Ошибка подключения к базе данных:", err)
 	}
 
-	// Выполняем миграции
 	if err := repository.Migrate(db); err != nil {
 		log.Fatal("Ошибка выполнения миграций:", err)
 	}
 
-	// Создаем репозитории
-	repos := gorm.NewRepository(db)
+	if err := repository.SeedDefaultData(db); err != nil {
+		log.Println("Предупреждение: не удалось создать начальные данные:", err)
+	}
 
-	// Создаем JWT сервис
+	repos := gorm.NewExtendedRepository(db)
+
 	jwtService := auth.NewJWTService(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
 
-	// Создаем сервисы
-	services := services.NewServices(repos, jwtService)
+	storagePath := os.Getenv("FILE_STORAGE_PATH")
+	if storagePath == "" {
+		storagePath = "./uploads"
+	}
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		baseURL = fmt.Sprintf("http://localhost:%s", cfg.Port)
+	}
+	fileStorage := storage.NewLocalStorage(storagePath, baseURL)
 
-	// Создаем валидатор
-	validator := validator.New()
+	svc := services.NewExtendedServices(repos, jwtService, fileStorage)
 
-	// Создаем обработчики
-	handlersInstance := handlers.NewHandlers(services, validator)
+	v := validator.New()
 
-	// Настраиваем роутер
+	handlersInstance := handlers.NewExtendedHandlers(svc, fileStorage, v)
+
 	router := handlers.SetupRoutes(handlersInstance, jwtService)
 
-	// Запускаем сервер
 	addr := fmt.Sprintf(":%s", cfg.Port)
-	log.Printf("Сервер запущен на порту %s", cfg.Port)
-	log.Printf("Swagger UI: http://localhost:%s/health", cfg.Port)
+	log.Printf("Сервер Library API v2.0 запущен на порту %s", cfg.Port)
+	log.Printf("Health check: http://localhost:%s/health", cfg.Port)
+	log.Printf("Хранилище файлов: %s", storagePath)
 
 	if err := router.Run(addr); err != nil {
 		log.Fatal("Ошибка запуска сервера:", err)

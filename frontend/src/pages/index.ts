@@ -4,3 +4,8 @@ export { Register } from './Register';
 export { Books } from './Books';
 export { Readers } from './Readers';
 export { Borrow } from './Borrow';
+export { Settings } from './Settings';
+export { default as Groups } from './Groups';
+export { default as Categories } from './Categories';
+export { default as Library } from './Library';
+export { default as Reader } from './Reader';
