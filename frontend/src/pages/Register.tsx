@@ -26,6 +26,7 @@ export function Register() {
     const newErrors: { email?: string; password?: string; confirmPassword?: string } = {};
     if (!email) newErrors.email = 'Email обязателен';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Некорректный email';
+    else if (!email.toLowerCase().endsWith('@gmail.com')) newErrors.email = 'Только Gmail адреса (@gmail.com)';
     if (!password) newErrors.password = 'Пароль обязателен';
     else if (password.length < 6) newErrors.password = 'Минимум 6 символов';
     if (password !== confirmPassword) newErrors.confirmPassword = 'Пароли не совпадают';
@@ -145,12 +146,16 @@ export function Register() {
               <Input
                 label="Email"
                 type="email"
-                placeholder="admin@example.com"
+                placeholder="yourname@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
                 className="pl-12"
               />
+              <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Только Gmail адреса (@gmail.com)
+              </p>
             </div>
 
             <div className="space-y-2">
