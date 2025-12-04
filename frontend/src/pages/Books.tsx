@@ -30,7 +30,7 @@ export function Books() {
   const fetchBooks = async () => {
     try {
       const response = await booksApi.getAll({ limit: 100 });
-      setBooks(response.data || []);
+      setBooks(response || []);
     } catch (error) {
       toast.error('Ошибка загрузки книг');
     } finally {

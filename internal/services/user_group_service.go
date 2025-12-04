@@ -31,10 +31,10 @@ func (s *userGroupService) Create(dto *models.CreateUserGroupDTO) (*models.UserG
 	}
 
 	if dto.Description != nil {
-		group.Description = *dto.Description
+		group.Description = dto.Description
 	}
 	if dto.Color != nil {
-		group.Color = *dto.Color
+		group.Color = dto.Color
 	}
 
 	if err := s.groupRepo.Create(group); err != nil {
@@ -65,10 +65,10 @@ func (s *userGroupService) Update(id uuid.UUID, dto *models.UpdateUserGroupDTO) 
 		group.Type = *dto.Type
 	}
 	if dto.Description != nil {
-		group.Description = *dto.Description
+		group.Description = dto.Description
 	}
 	if dto.Color != nil {
-		group.Color = *dto.Color
+		group.Color = dto.Color
 	}
 	if dto.MaxBooks != nil {
 		group.MaxBooks = *dto.MaxBooks

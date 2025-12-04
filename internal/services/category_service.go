@@ -33,13 +33,13 @@ func (s *categoryService) Create(dto *models.CreateCategoryDTO) (*models.Categor
 	}
 
 	if dto.Description != nil {
-		category.Description = *dto.Description
+		category.Description = dto.Description
 	}
 	if dto.Color != nil {
-		category.Color = *dto.Color
+		category.Color = dto.Color
 	}
 	if dto.Icon != nil {
-		category.Icon = *dto.Icon
+		category.Icon = dto.Icon
 	}
 
 	if err := s.categoryRepo.Create(category); err != nil {
@@ -78,13 +78,13 @@ func (s *categoryService) Update(id uuid.UUID, dto *models.UpdateCategoryDTO) (*
 		category.Slug = *dto.Slug
 	}
 	if dto.Description != nil {
-		category.Description = *dto.Description
+		category.Description = dto.Description
 	}
 	if dto.Color != nil {
-		category.Color = *dto.Color
+		category.Color = dto.Color
 	}
 	if dto.Icon != nil {
-		category.Icon = *dto.Icon
+		category.Icon = dto.Icon
 	}
 	if dto.ParentID != nil {
 		category.ParentID = dto.ParentID

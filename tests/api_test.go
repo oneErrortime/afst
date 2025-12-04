@@ -91,7 +91,7 @@ func (suite *APITestSuite) createTestUser() {
 
 	// Создаем пользователя
 	user := &models.User{
-		Email:    "test@example.com",
+		Email:    "test@gmail.com",
 		Password: hashedPassword,
 	}
 
@@ -131,7 +131,7 @@ func (suite *APITestSuite) makeRequest(method, url string, body interface{}, wit
 func (suite *APITestSuite) TestAuth_Register_Success() {
 	// Arrange
 	registerData := models.AuthRequestDTO{
-		Email:    "newuser@example.com",
+		Email:    "newuser@gmail.com",
 		Password: "password123",
 	}
 

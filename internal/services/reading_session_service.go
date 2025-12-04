@@ -38,7 +38,7 @@ func (s *readingSessionService) StartSession(userID, bookID, accessID uuid.UUID,
 	if existing != nil {
 		now := time.Now()
 		existing.EndedAt = &now
-		existing.Duration = int64(now.Sub(existing.StartedAt).Seconds())
+		existing.Duration = int(now.Sub(existing.StartedAt).Seconds())
 		s.sessionRepo.Update(existing)
 	}
 
@@ -48,7 +48,7 @@ func (s *readingSessionService) StartSession(userID, bookID, accessID uuid.UUID,
 		AccessID:   accessID,
 		StartedAt:  time.Now(),
 		StartPage:  access.CurrentPage,
-		DeviceType: deviceInfo,
+		DeviceType: &deviceInfo,
 	}
 
 	if err := s.sessionRepo.Create(session); err != nil {
@@ -67,7 +67,7 @@ func (s *readingSessionService) EndSession(sessionID uuid.UUID, endPage int) err
 	now := time.Now()
 	session.EndedAt = &now
 	session.EndPage = endPage
-	session.Duration = int64(now.Sub(session.StartedAt).Seconds())
+	session.Duration = int(now.Sub(session.StartedAt).Seconds())
 
 	return s.sessionRepo.Update(session)
 }

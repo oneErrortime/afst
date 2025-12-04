@@ -156,7 +156,7 @@ func TestBorrowService_BorrowBook_Success(t *testing.T) {
 	reader := &models.Reader{
 		ID:    readerID,
 		Name:  "Тестовый читатель",
-		Email: "reader@example.com",
+		Email: "reader@gmail.com",
 	}
 
 	dto := &models.BorrowBookDTO{
@@ -212,7 +212,7 @@ func TestBorrowService_BorrowBook_NoAvailableCopies(t *testing.T) {
 	reader := &models.Reader{
 		ID:    readerID,
 		Name:  "Тестовый читатель",
-		Email: "reader@example.com",
+		Email: "reader@gmail.com",
 	}
 
 	dto := &models.BorrowBookDTO{
@@ -257,7 +257,7 @@ func TestBorrowService_BorrowBook_TooManyBooks(t *testing.T) {
 	reader := &models.Reader{
 		ID:    readerID,
 		Name:  "Тестовый читатель",
-		Email: "reader@example.com",
+		Email: "reader@gmail.com",
 	}
 
 	dto := &models.BorrowBookDTO{
