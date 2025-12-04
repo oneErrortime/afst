@@ -6,13 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserRepository определяет интерфейс для работы с пользователями
 type UserRepository interface {
 	Create(user *models.User) error
 	GetByEmail(email string) (*models.User, error)
 	GetByID(id uuid.UUID) (*models.User, error)
 	Update(user *models.User) error
 	Delete(id uuid.UUID) error
+	List(limit, offset int) ([]models.User, error)
+	Count() (int64, error)
+	GetByGroupID(groupID uuid.UUID) ([]models.User, error)
 }
 
 // BookRepository определяет интерфейс для работы с книгами

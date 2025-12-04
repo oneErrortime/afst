@@ -8,7 +8,7 @@ import (
 
 func NewServices(repos *repository.Repository, jwtService *auth.JWTService) *Services {
 	return &Services{
-		Auth:   NewAuthService(repos.User, jwtService),
+		Auth:   NewAuthService(repos.User, nil, jwtService),
 		Book:   NewBookService(repos.Book),
 		Reader: NewReaderService(repos.Reader),
 		Borrow: NewBorrowService(repos.Book, repos.Reader, repos.BorrowedBook),
@@ -17,10 +17,10 @@ func NewServices(repos *repository.Repository, jwtService *auth.JWTService) *Ser
 
 func NewExtendedServices(repos *repository.ExtendedRepository, jwtService *auth.JWTService, fileStorage storage.FileStorage) *Services {
 	return &Services{
-		Auth:           NewAuthService(repos.User, jwtService),
+		Auth:           NewAuthService(repos.User, repos.UserGroup, jwtService),
 		Book:           NewBookService(repos.Book),
 		Reader:         NewReaderService(repos.Reader),
-		Borrow:         NewBorrowService(repos.Book, repos.Reader, repos.BorrowedBook),
+		Borrow:         NewBorrowServiceWithTransaction(repos),
 		UserGroup:      NewUserGroupService(repos.UserGroup, repos.User),
 		Category:       NewCategoryService(repos.Category),
 		Subscription:   NewSubscriptionService(repos.Subscription, repos.User),

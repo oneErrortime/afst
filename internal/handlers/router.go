@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/oneErrortime/afst/internal/auth"
 	"github.com/oneErrortime/afst/internal/middleware"
+	"github.com/oneErrortime/afst/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,13 +65,22 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	}
 
 	authMiddleware := middleware.AuthMiddleware(jwtService)
+	requireAdmin := middleware.RequireAdmin()
+	requireLibrarian := middleware.RequireLibrarianOrAdmin()
 
 	authProtected := api.Group("/auth").Use(authMiddleware)
 	{
 		authProtected.GET("/me", handlers.Auth.GetMe)
 	}
 
-	protectedBooks := api.Group("/books").Use(authMiddleware)
+	adminUsers := api.Group("/users").Use(authMiddleware, requireAdmin)
+	{
+		adminUsers.GET("", handlers.Auth.ListUsers)
+		adminUsers.PUT("/:id", handlers.Auth.UpdateUserByAdmin)
+		adminUsers.POST("/admin", handlers.Auth.CreateAdmin)
+	}
+
+	protectedBooks := api.Group("/books").Use(authMiddleware, requireLibrarian)
 	{
 		protectedBooks.POST("", handlers.Book.CreateBook)
 		protectedBooks.PUT("/:id", handlers.Book.UpdateBook)
@@ -80,7 +90,7 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		protectedBooks.GET("/:id/stats", handlers.ReadingSession.GetBookStats)
 	}
 
-	readers := api.Group("/readers").Use(authMiddleware)
+	readers := api.Group("/readers").Use(authMiddleware, requireLibrarian)
 	{
 		readers.POST("", handlers.Reader.CreateReader)
 		readers.GET("", handlers.Reader.GetAllReaders)
@@ -89,21 +99,21 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		readers.DELETE("/:id", handlers.Reader.DeleteReader)
 	}
 
-	borrow := api.Group("/borrow").Use(authMiddleware)
+	borrow := api.Group("/borrow").Use(authMiddleware, requireLibrarian)
 	{
 		borrow.POST("", handlers.Borrow.BorrowBook)
 		borrow.POST("/return", handlers.Borrow.ReturnBook)
 		borrow.GET("/reader/:reader_id", handlers.Borrow.GetBorrowedBooks)
 	}
 
-	protectedCategories := api.Group("/categories").Use(authMiddleware)
+	protectedCategories := api.Group("/categories").Use(authMiddleware, requireLibrarian)
 	{
 		protectedCategories.POST("", handlers.Category.Create)
 		protectedCategories.PUT("/:id", handlers.Category.Update)
 		protectedCategories.DELETE("/:id", handlers.Category.Delete)
 	}
 
-	protectedGroups := api.Group("/groups").Use(authMiddleware)
+	protectedGroups := api.Group("/groups").Use(authMiddleware, requireAdmin)
 	{
 		protectedGroups.POST("", handlers.UserGroup.Create)
 		protectedGroups.PUT("/:id", handlers.UserGroup.Update)
@@ -116,27 +126,39 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	{
 		subscriptions.GET("/my", handlers.Subscription.GetMySubscription)
 		subscriptions.POST("/subscribe", handlers.Subscription.Subscribe)
-		subscriptions.POST("", handlers.Subscription.Create)
-		subscriptions.GET("/:id", handlers.Subscription.GetByID)
 		subscriptions.POST("/:id/cancel", handlers.Subscription.Cancel)
 		subscriptions.POST("/:id/renew", handlers.Subscription.Renew)
 	}
 
+	adminSubscriptions := api.Group("/subscriptions").Use(authMiddleware, requireAdmin)
+	{
+		adminSubscriptions.POST("", handlers.Subscription.Create)
+		adminSubscriptions.GET("/:id", handlers.Subscription.GetByID)
+	}
+
 	access := api.Group("/access").Use(authMiddleware)
 	{
-		access.POST("", handlers.BookAccess.GrantAccess)
 		access.GET("/library", handlers.BookAccess.GetMyLibrary)
-		access.GET("/:id", handlers.BookAccess.GetByID)
 		access.GET("/check/:book_id", handlers.BookAccess.CheckAccess)
 		access.POST("/borrow/:book_id", handlers.BookAccess.BorrowBook)
-		access.POST("/:id/revoke", handlers.BookAccess.RevokeAccess)
 		access.PUT("/:id/progress", handlers.BookAccess.UpdateProgress)
+	}
+
+	adminAccess := api.Group("/access").Use(authMiddleware, requireLibrarian)
+	{
+		adminAccess.POST("", handlers.BookAccess.GrantAccess)
+		adminAccess.GET("/:id", handlers.BookAccess.GetByID)
+		adminAccess.POST("/:id/revoke", handlers.BookAccess.RevokeAccess)
 	}
 
 	files := api.Group("/files").Use(authMiddleware)
 	{
 		files.GET("/:id", handlers.BookFile.ServeFile)
-		files.DELETE("/:id", handlers.BookFile.Delete)
+	}
+
+	adminFiles := api.Group("/files").Use(authMiddleware, requireLibrarian)
+	{
+		adminFiles.DELETE("/:id", handlers.BookFile.Delete)
 	}
 
 	sessions := api.Group("/reading-sessions").Use(authMiddleware)
@@ -145,6 +167,8 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		sessions.POST("/:id/end", handlers.ReadingSession.EndSession)
 		sessions.GET("/my", handlers.ReadingSession.GetMySessions)
 	}
+
+	api.GET("/stats/dashboard", authMiddleware, requireLibrarian, handlers.GetDashboardStats)
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -155,4 +179,41 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	})
 
 	return router
+}
+
+func SetupExtendedRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
+	return SetupRoutes(handlers, jwtService)
+}
+
+func (h *Handlers) GetDashboardStats(c *gin.Context) {
+	stats := models.DashboardStatsDTO{}
+
+	books, _ := h.Services.Book.GetAllBooks(1000, 0)
+	stats.TotalBooks = int64(len(books))
+	var publishedBooks int64
+	for _, b := range books {
+		if b.Status == "published" {
+			publishedBooks++
+		}
+	}
+
+	readers, _ := h.Services.Reader.GetAllReaders(1000, 0)
+	stats.TotalUsers = int64(len(readers))
+
+	groups, _ := h.Services.UserGroup.GetAll()
+	stats.TotalGroups = int64(len(groups))
+
+	categories, _ := h.Services.Category.GetAll()
+	stats.TotalCategories = int64(len(categories))
+
+	c.JSON(200, gin.H{
+		"total_users":            stats.TotalUsers,
+		"total_books":            stats.TotalBooks,
+		"published_books":        publishedBooks,
+		"total_categories":       stats.TotalCategories,
+		"total_groups":           stats.TotalGroups,
+		"active_loans":           stats.ActiveLoans,
+		"active_subscriptions":   stats.ActiveSubscriptions,
+		"total_reading_sessions": stats.TotalReadingSessions,
+	})
 }

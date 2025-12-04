@@ -112,11 +112,12 @@ export interface SubscriptionPlanConfig {
   plan: SubscriptionPlan;
   name: string;
   description: string;
-  price: number;
+  price_monthly: number;
+  price_yearly: number;
   max_books: number;
   max_downloads: number;
   can_access_premium: boolean;
-  features: string[];
+  features?: string[];
 }
 
 export interface BookAccess {

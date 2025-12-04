@@ -14,7 +14,7 @@ export function Login() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { setToken } = useAuthStore();
+  const { setToken, setUser, fetchUser } = useAuthStore();
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
   const navigate = useNavigate();
 
@@ -38,6 +38,11 @@ export function Login() {
     try {
       const response = await authApi.login({ email, password });
       setToken(response.token);
+      if (response.user) {
+        setUser(response.user);
+      } else {
+        await fetchUser();
+      }
       setShowSuccess(true);
       toast.success('Вход выполнен успешно!');
       setTimeout(() => navigate('/books'), 800);

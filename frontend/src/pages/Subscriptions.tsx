@@ -243,18 +243,32 @@ export default function Subscriptions() {
                 <div className="p-6">
                   <div className="mb-6">
                     <span className="text-4xl font-bold text-gray-900">
-                      {plan.price === 0 ? 'Бесплатно' : `${plan.price}₽`}
+                      {plan.price_monthly === 0 ? 'Бесплатно' : `${plan.price_monthly}₽`}
                     </span>
-                    {plan.price > 0 && <span className="text-gray-500">/мес</span>}
+                    {plan.price_monthly > 0 && <span className="text-gray-500">/мес</span>}
                   </div>
 
                   <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm text-gray-600">До {plan.max_books} книг одновременно</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm text-gray-600">{plan.max_downloads > 0 ? `${plan.max_downloads} скачиваний/мес` : 'Только онлайн чтение'}</span>
+                    </li>
+                    {plan.can_access_premium && (
+                      <li className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                        <span className="text-sm text-gray-600">{feature}</span>
+                        <span className="text-sm text-gray-600">Premium контент</span>
                       </li>
-                    ))}
+                    )}
+                    {plan.price_yearly > 0 && (
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                        <span className="text-sm text-gray-600">Годовая подписка: {plan.price_yearly}₽</span>
+                      </li>
+                    )}
                   </ul>
 
                   <Button
@@ -264,7 +278,7 @@ export default function Subscriptions() {
                     loading={subscribing === plan.plan}
                     disabled={isCurrent || !isAuthenticated}
                   >
-                    {isCurrent ? 'Текущий план' : plan.price === 0 ? 'Выбрать' : 'Подписаться'}
+                    {isCurrent ? 'Текущий план' : plan.price_monthly === 0 ? 'Выбрать' : 'Подписаться'}
                   </Button>
 
                   {!isAuthenticated && (

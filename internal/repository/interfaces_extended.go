@@ -74,4 +74,7 @@ type ExtendedRepository struct {
 	BookAccess     BookAccessRepository
 	BookFile       BookFileRepository
 	ReadingSession ReadingSessionRepository
+	DB             interface{}
 }
+
+type TransactionFunc func(txRepo *ExtendedRepository) error
