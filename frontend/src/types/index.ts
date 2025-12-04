@@ -20,7 +20,7 @@ export interface User {
   last_login_at?: string;
   subscription?: Subscription;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface UserGroup {
@@ -181,7 +181,7 @@ export interface AuthRequest {
 export interface AuthResponse {
   token: string;
   user?: User;
-  message: string;
+  message?: string;
 }
 
 export interface CreateBookRequest {
