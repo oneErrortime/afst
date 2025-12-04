@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { BookOpen, LogOut, Menu, X, Settings, Wifi, WifiOff, Loader2 } from 'lucide-react';
+import { BookOpen, LogOut, Menu, X, Settings, Wifi, WifiOff, Loader2, Crown, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui';
 import { checkApiConnection } from '@/api/client';
@@ -95,12 +95,24 @@ export function Navbar() {
                   <NavLink to="/groups">Группы</NavLink>
                   <NavLink to="/readers">Читатели</NavLink>
                   <NavLink to="/borrow">Выдача</NavLink>
+                  <NavLink to="/admin/books">Админ</NavLink>
                 </>
               )}
             </div>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            <Link
+              to="/subscriptions"
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors ${
+                isActive('/subscriptions')
+                  ? 'text-amber-600 bg-amber-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Crown className="h-4 w-4" />
+              <span className="text-sm font-medium">Подписки</span>
+            </Link>
             <Link
               to="/settings"
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
@@ -168,6 +180,18 @@ export function Navbar() {
             >
               Категории
             </Link>
+            <Link
+              to="/subscriptions"
+              className={`block px-3 py-2.5 rounded-lg font-medium ${
+                isActive('/subscriptions') ? 'text-amber-600 bg-amber-50' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span className="flex items-center gap-2">
+                <Crown className="h-4 w-4" />
+                Подписки
+              </span>
+            </Link>
             {isAuthenticated && (
               <>
                 <Link
@@ -205,6 +229,18 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Выдача
+                </Link>
+                <Link
+                  to="/admin/books"
+                  className={`block px-3 py-2.5 rounded-lg font-medium ${
+                    isActive('/admin/books') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Админ
+                  </span>
                 </Link>
               </>
             )}

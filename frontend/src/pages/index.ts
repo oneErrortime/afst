@@ -9,3 +9,5 @@ export { default as Groups } from './Groups';
 export { default as Categories } from './Categories';
 export { default as Library } from './Library';
 export { default as Reader } from './Reader';
+export { default as Subscriptions } from './Subscriptions';
+export { default as AdminBooks } from './AdminBooks';
