@@ -50,10 +50,15 @@ export const authApi = {
   },
 };
 
+interface ApiSuccessResponse<T> {
+  message: string;
+  data: T;
+}
+
 export const booksApi = {
   getAll: async (params?: PaginationParams): Promise<Book[]> => {
-    const response = await api.get<Book[] | ListResponse<Book>>('/books', { params });
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await api.get<ApiSuccessResponse<Book[]>>('/books', { params });
+    return response.data.data || [];
   },
 
   getById: async (id: string): Promise<Book> => {
@@ -62,13 +67,13 @@ export const booksApi = {
   },
 
   create: async (data: CreateBookRequest): Promise<Book> => {
-    const response = await api.post<Book>('/books', data);
-    return response.data;
+    const response = await api.post<ApiSuccessResponse<Book>>('/books', data);
+    return response.data.data;
   },
 
   update: async (id: string, data: UpdateBookRequest): Promise<Book> => {
-    const response = await api.put<Book>(`/books/${id}`, data);
-    return response.data;
+    const response = await api.put<ApiSuccessResponse<Book>>(`/books/${id}`, data);
+    return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {
