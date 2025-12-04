@@ -28,5 +28,32 @@ func NewExtendedRepository(db *gorm.DB) *repository.ExtendedRepository {
 		BookAccess:     NewBookAccessRepository(db),
 		BookFile:       NewBookFileRepository(db),
 		ReadingSession: NewReadingSessionRepository(db),
+		DB:             db,
 	}
+}
+
+func WithTransaction(repo *repository.ExtendedRepository, fn repository.TransactionFunc) error {
+	db, ok := repo.DB.(*gorm.DB)
+	if !ok {
+		return fn(repo)
+	}
+
+	return db.Transaction(func(tx *gorm.DB) error {
+		txRepo := &repository.ExtendedRepository{
+			Repository: repository.Repository{
+				User:         NewUserRepository(tx),
+				Book:         NewBookRepository(tx),
+				Reader:       NewReaderRepository(tx),
+				BorrowedBook: NewBorrowedBookRepository(tx),
+			},
+			UserGroup:      NewUserGroupRepository(tx),
+			Category:       NewCategoryRepository(tx),
+			Subscription:   NewSubscriptionRepository(tx),
+			BookAccess:     NewBookAccessRepository(tx),
+			BookFile:       NewBookFileRepository(tx),
+			ReadingSession: NewReadingSessionRepository(tx),
+			DB:             tx,
+		}
+		return fn(txRepo)
+	})
 }

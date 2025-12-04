@@ -13,6 +13,8 @@ type AuthService interface {
 	Login(email, password string) (*models.AuthResponseDTO, error)
 	GetUserByID(id string) (*models.UserResponseDTO, error)
 	UpdateUser(id string, dto *models.UpdateUserDTO) (*models.User, error)
+	ListUsers(limit, offset int) ([]models.User, int64, error)
+	CreateAdmin(email, password, name string) (*models.User, error)
 }
 
 // BookService определяет интерфейс для управления книгами

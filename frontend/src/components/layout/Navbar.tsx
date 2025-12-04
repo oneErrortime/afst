@@ -1,13 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { BookOpen, LogOut, Menu, X, Settings, Wifi, WifiOff, Loader2, Crown, Shield } from 'lucide-react';
+import { BookOpen, LogOut, Menu, X, Settings, Wifi, WifiOff, Loader2, Crown, Shield, LayoutDashboard, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui';
 import { checkApiConnection } from '@/api/client';
 
 export function Navbar() {
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, logout, user } = useAuthStore();
+  const isAdmin = user?.role === 'admin';
+  const isLibrarian = user?.role === 'librarian' || isAdmin;
   const { connectionStatus } = useApiConfigStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,9 +95,17 @@ export function Navbar() {
                 <>
                   <NavLink to="/library">Моя библиотека</NavLink>
                   <NavLink to="/groups">Группы</NavLink>
-                  <NavLink to="/readers">Читатели</NavLink>
-                  <NavLink to="/borrow">Выдача</NavLink>
-                  <NavLink to="/admin/books">Админ</NavLink>
+                  {isLibrarian && (
+                    <>
+                      <NavLink to="/readers">Читатели</NavLink>
+                      <NavLink to="/borrow">Выдача</NavLink>
+                      <NavLink to="/admin/dashboard">Панель</NavLink>
+                      <NavLink to="/admin/books">Книги</NavLink>
+                    </>
+                  )}
+                  {isAdmin && (
+                    <NavLink to="/admin/users">Пользователи</NavLink>
+                  )}
                 </>
               )}
             </div>
@@ -126,10 +136,21 @@ export function Navbar() {
             </Link>
 
             {isAuthenticated ? (
-              <Button variant="ghost" onClick={handleLogout} size="sm">
-                <LogOut className="h-4 w-4" />
-                Выйти
-              </Button>
+              <div className="flex items-center gap-2">
+                {user && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">{user.name || user.email.split('@')[0]}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${isAdmin ? 'bg-red-100 text-red-700' : isLibrarian ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-600'}`}>
+                      {isAdmin ? 'Admin' : isLibrarian ? 'Librarian' : 'Reader'}
+                    </span>
+                  </div>
+                )}
+                <Button variant="ghost" onClick={handleLogout} size="sm">
+                  <LogOut className="h-4 w-4" />
+                  Выйти
+                </Button>
+              </div>
             ) : (
               <>
                 <Link to="/login">

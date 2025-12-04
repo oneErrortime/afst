@@ -10,23 +10,21 @@ import (
 	"gorm.io/gorm"
 )
 
-// authService реализация AuthService
 type authService struct {
 	userRepo   repository.UserRepository
+	groupRepo  repository.UserGroupRepository
 	jwtService *auth.JWTService
 }
 
-// NewAuthService создает новый экземпляр authService
-func NewAuthService(userRepo repository.UserRepository, jwtService *auth.JWTService) AuthService {
+func NewAuthService(userRepo repository.UserRepository, groupRepo repository.UserGroupRepository, jwtService *auth.JWTService) AuthService {
 	return &authService{
 		userRepo:   userRepo,
+		groupRepo:  groupRepo,
 		jwtService: jwtService,
 	}
 }
 
-// Register регистрирует нового пользователя (библиотекаря)
 func (s *authService) Register(email, password string) (*models.AuthResponseDTO, error) {
-	// Проверяем, не существует ли уже пользователь с таким email
 	existingUser, err := s.userRepo.GetByEmail(email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
@@ -35,24 +33,36 @@ func (s *authService) Register(email, password string) (*models.AuthResponseDTO,
 		return nil, errors.New("пользователь с таким email уже существует")
 	}
 
-	// Хешируем пароль
 	hashedPassword, err := auth.HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем пользователя
+	var freeGroup *models.UserGroup
+	groups, _ := s.groupRepo.List(10, 0)
+	for _, g := range groups {
+		if g.Type == models.GroupTypeFree {
+			freeGroup = &g
+			break
+		}
+	}
+
 	user := &models.User{
 		Email:    email,
 		Password: hashedPassword,
+		Role:     models.RoleReader,
+		IsActive: true,
+	}
+
+	if freeGroup != nil {
+		user.GroupID = &freeGroup.ID
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
 		return nil, err
 	}
 
-	// Генерируем JWT токен
-	token, err := s.jwtService.GenerateToken(user.ID, user.Email)
+	token, err := s.jwtService.GenerateToken(user.ID, user.Email, user.Role, user.GroupID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +70,17 @@ func (s *authService) Register(email, password string) (*models.AuthResponseDTO,
 	return &models.AuthResponseDTO{
 		Token:   token,
 		Message: "Регистрация прошла успешно",
+		User: &models.UserResponseDTO{
+			ID:       user.ID,
+			Email:    user.Email,
+			Name:     user.Name,
+			Role:     user.Role,
+			GroupID:  user.GroupID,
+			IsActive: user.IsActive,
+		},
 	}, nil
 }
 
-// Login выполняет вход пользователя
 func (s *authService) Login(email, password string) (*models.AuthResponseDTO, error) {
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
@@ -73,11 +90,15 @@ func (s *authService) Login(email, password string) (*models.AuthResponseDTO, er
 		return nil, err
 	}
 
+	if !user.IsActive {
+		return nil, errors.New("аккаунт деактивирован")
+	}
+
 	if !auth.CheckPassword(password, user.Password) {
 		return nil, errors.New("неверный email или пароль")
 	}
 
-	token, err := s.jwtService.GenerateToken(user.ID, user.Email)
+	token, err := s.jwtService.GenerateToken(user.ID, user.Email, user.Role, user.GroupID)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +106,14 @@ func (s *authService) Login(email, password string) (*models.AuthResponseDTO, er
 	return &models.AuthResponseDTO{
 		Token:   token,
 		Message: "Вход выполнен успешно",
+		User: &models.UserResponseDTO{
+			ID:       user.ID,
+			Email:    user.Email,
+			Name:     user.Name,
+			Role:     user.Role,
+			GroupID:  user.GroupID,
+			IsActive: user.IsActive,
+		},
 	}, nil
 }
 
@@ -138,6 +167,47 @@ func (s *authService) UpdateUser(id string, dto *models.UpdateUserDTO) (*models.
 	}
 
 	if err := s.userRepo.Update(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *authService) ListUsers(limit, offset int) ([]models.User, int64, error) {
+	users, err := s.userRepo.List(limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	count, err := s.userRepo.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+	return users, count, nil
+}
+
+func (s *authService) CreateAdmin(email, password, name string) (*models.User, error) {
+	existingUser, err := s.userRepo.GetByEmail(email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if existingUser != nil {
+		return nil, errors.New("пользователь с таким email уже существует")
+	}
+
+	hashedPassword, err := auth.HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &models.User{
+		Email:    email,
+		Password: hashedPassword,
+		Name:     name,
+		Role:     models.RoleAdmin,
+		IsActive: true,
+	}
+
+	if err := s.userRepo.Create(user); err != nil {
 		return nil, err
 	}
 

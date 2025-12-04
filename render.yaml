@@ -11,6 +11,13 @@ services:
         value: release
       - key: DB_SQLITE_PATH
         value: /var/data/library.db
+      - key: FILE_STORAGE_PATH
+        value: /var/data/uploads
+      - key: BASE_URL
+        fromService:
+          type: web
+          name: library-api
+          property: host
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -18,4 +25,6 @@ services:
     disk:
       name: data
       mountPath: /var/data
-      sizeGB: 1
+      sizeGB: 5
+    healthCheckPath: /health
+    autoDeploy: true

@@ -8,47 +8,64 @@ import (
 	"gorm.io/gorm"
 )
 
-// userRepository реализация UserRepository для GORM
 type userRepository struct {
 	db *gorm.DB
 }
 
-// NewUserRepository создает новый экземпляр userRepository
 func NewUserRepository(db *gorm.DB) repository.UserRepository {
 	return &userRepository{db: db}
 }
 
-// Create создает нового пользователя
 func (r *userRepository) Create(user *models.User) error {
 	return r.db.Create(user).Error
 }
 
-// GetByEmail находит пользователя по email
 func (r *userRepository) GetByEmail(email string) (*models.User, error) {
 	var user models.User
-	err := r.db.Where("email = ?", email).First(&user).Error
+	err := r.db.Preload("Group").Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
-// GetByID находит пользователя по ID
 func (r *userRepository) GetByID(id uuid.UUID) (*models.User, error) {
 	var user models.User
-	err := r.db.Where("id = ?", id).First(&user).Error
+	err := r.db.Preload("Group").Where("id = ?", id).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
-// Update обновляет пользователя
 func (r *userRepository) Update(user *models.User) error {
 	return r.db.Save(user).Error
 }
 
-// Delete удаляет пользователя (soft delete)
 func (r *userRepository) Delete(id uuid.UUID) error {
 	return r.db.Delete(&models.User{}, id).Error
+}
+
+func (r *userRepository) List(limit, offset int) ([]models.User, error) {
+	var users []models.User
+	err := r.db.Preload("Group").Limit(limit).Offset(offset).Order("created_at DESC").Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (r *userRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&models.User{}).Count(&count).Error
+	return count, err
+}
+
+func (r *userRepository) GetByGroupID(groupID uuid.UUID) ([]models.User, error) {
+	var users []models.User
+	err := r.db.Preload("Group").Where("group_id = ?", groupID).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

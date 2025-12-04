@@ -16,7 +16,7 @@ export function Register() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [step, setStep] = useState(1);
 
-  const { setToken } = useAuthStore();
+  const { setToken, setUser, fetchUser } = useAuthStore();
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
   const navigate = useNavigate();
 
@@ -65,6 +65,11 @@ export function Register() {
     try {
       const response = await authApi.register({ email, password });
       setToken(response.token);
+      if (response.user) {
+        setUser(response.user);
+      } else {
+        await fetchUser();
+      }
       setShowSuccess(true);
       toast.success('Регистрация прошла успешно!');
       setTimeout(() => navigate('/books'), 800);

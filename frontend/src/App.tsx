@@ -1,7 +1,18 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks } from '@/pages';
+import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard } from '@/pages';
+import { ToastContainer } from '@/components/ui';
+import { useAuthStore } from '@/store/authStore';
 
 export default function App() {
+  const { isAuthenticated, user, fetchUser } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      fetchUser();
+    }
+  }, [isAuthenticated, user, fetchUser]);
+
   return (
     <BrowserRouter basename="/afst">
       <Routes>
@@ -18,7 +29,10 @@ export default function App() {
         <Route path="/reader/:bookId" element={<Reader />} />
         <Route path="/subscriptions" element={<Subscriptions />} />
         <Route path="/admin/books" element={<AdminBooks />} />
+        <Route path="/admin/users" element={<Users />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
       </Routes>
+      <ToastContainer />
     </BrowserRouter>
   );
 }
