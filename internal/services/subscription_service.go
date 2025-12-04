@@ -47,7 +47,7 @@ func (s *subscriptionService) Create(userID uuid.UUID, plan models.SubscriptionP
 		MaxBooks:        planConfig.MaxBooks,
 		MaxDownloads:    planConfig.MaxDownloads,
 		CanAccessPremium: planConfig.CanAccessPremium,
-		Price:           planConfig.Price,
+		Price:           planConfig.PriceMonthly,
 		Currency:        "RUB",
 	}
 

@@ -127,7 +127,7 @@ func (s *bookAccessService) UpdateProgress(id uuid.UUID, currentPage int, readTi
 	}
 
 	access.CurrentPage = currentPage
-	access.TotalReadTime += int64(readTime.Seconds())
+	access.TotalReadTime += int(readTime.Seconds())
 	now := time.Now()
 	access.LastAccessedAt = &now
 

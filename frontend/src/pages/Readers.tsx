@@ -30,7 +30,7 @@ export function Readers() {
   const fetchReaders = async () => {
     try {
       const response = await readersApi.getAll({ limit: 100 });
-      setReaders(response.data || []);
+      setReaders(response || []);
     } catch (error) {
       toast.error('Ошибка загрузки читателей');
     } finally {
@@ -48,7 +48,7 @@ export function Readers() {
     setLoadingBooks(true);
     try {
       const response = await borrowApi.getByReader(readerId);
-      setBorrowedBooks(response.data || []);
+      setBorrowedBooks(response || []);
     } catch (error) {
       toast.error('Ошибка загрузки книг читателя');
     } finally {
