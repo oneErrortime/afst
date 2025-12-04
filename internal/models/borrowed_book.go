@@ -9,9 +9,9 @@ import (
 
 // BorrowedBook представляет запись о выдаче книги
 type BorrowedBook struct {
-	ID         uuid.UUID  `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	BookID     uuid.UUID  `json:"book_id" gorm:"type:uuid;not null;index"`
-	ReaderID   uuid.UUID  `json:"reader_id" gorm:"type:uuid;not null;index"`
+	ID         uuid.UUID  `json:"id" gorm:"type:text;primary_key"`
+	BookID     uuid.UUID  `json:"book_id" gorm:"type:text;not null;index"`
+	ReaderID   uuid.UUID  `json:"reader_id" gorm:"type:text;not null;index"`
 	BorrowDate time.Time  `json:"borrow_date" gorm:"not null"`
 	ReturnDate *time.Time `json:"return_date,omitempty"`
 	CreatedAt  time.Time  `json:"created_at"`

@@ -9,7 +9,7 @@ import (
 
 // User представляет пользователя системы (библиотекаря)
 type User struct {
-	ID        uuid.UUID  `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	ID        uuid.UUID  `json:"id" gorm:"type:text;primary_key"`
 	Email     string     `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
 	Password  string     `json:"-" gorm:"not null" validate:"required,min=6"` // не возвращается в JSON
 	CreatedAt time.Time  `json:"created_at"`

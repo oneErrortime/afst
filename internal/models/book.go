@@ -9,7 +9,7 @@ import (
 
 // Book представляет книгу в библиотеке
 type Book struct {
-	ID              uuid.UUID  `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	ID              uuid.UUID  `json:"id" gorm:"type:text;primary_key"`
 	Title           string     `json:"title" gorm:"not null" validate:"required"`
 	Author          string     `json:"author" gorm:"not null" validate:"required"`
 	PublicationYear *int       `json:"publication_year,omitempty" validate:"omitempty,gte=0,lte=9999"`

@@ -17,6 +17,7 @@ RUN go mod download
 COPY . .
 
 # Собираем приложение
+# CGO_ENABLED=0 работает благодаря pure-Go драйверу glebarez/sqlite (modernc.org/sqlite)
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
 
 # Финальный образ

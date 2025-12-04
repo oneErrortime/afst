@@ -46,7 +46,7 @@ func Load() (*Config, error) {
 		jwtExpires = 24 * time.Hour
 	}
 
-	dbSQLitePath := getEnvOrDefault("DB_SQLITE_PATH", "file:library.db?_foreign_keys=on&_busy_timeout=5000")
+	dbSQLitePath := getEnvOrDefault("DB_SQLITE_PATH", "library.db")
 
 	config := &Config{
 		Port:    getEnvOrDefault("PORT", "8080"),
