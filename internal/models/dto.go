@@ -13,9 +13,9 @@ type AuthRequestDTO struct {
 }
 
 type AuthResponseDTO struct {
-	Token   string `json:"token"`
-	User    *User  `json:"user,omitempty"`
-	Message string `json:"message"`
+	Token   string           `json:"token"`
+	User    *UserResponseDTO `json:"user,omitempty"`
+	Message string           `json:"message"`
 }
 
 type CreateBookDTO struct {

@@ -17,6 +17,7 @@ type Handlers struct {
 	BookAccess     *BookAccessHandler
 	BookFile       *BookFileHandler
 	ReadingSession *ReadingSessionHandler
+	Services       *services.Services
 }
 
 func NewHandlers(services *services.Services, validator *validator.Validate) *Handlers {
@@ -25,6 +26,7 @@ func NewHandlers(services *services.Services, validator *validator.Validate) *Ha
 		Book:     NewBookHandler(services.Book, validator),
 		Reader:   NewReaderHandler(services.Reader, validator),
 		Borrow:   NewBorrowHandler(services.Borrow, validator),
+		Services: services,
 	}
 }
 
@@ -40,5 +42,6 @@ func NewExtendedHandlers(services *services.Services, fileStorage storage.FileSt
 		BookAccess:     NewBookAccessHandler(services.BookAccess, validator),
 		BookFile:       NewBookFileHandler(services.BookFile, services.BookAccess, fileStorage, validator),
 		ReadingSession: NewReadingSessionHandler(services.ReadingSession, services.BookAccess, validator),
+		Services:       services,
 	}
 }

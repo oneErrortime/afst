@@ -109,4 +109,5 @@ type Services struct {
 	BookAccess     BookAccessService
 	BookFile       BookFileService
 	ReadingSession ReadingSessionService
+	FeatureFlag    FeatureFlagService
 }
