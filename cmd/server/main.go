@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -52,6 +53,8 @@ func main() {
 	fileStorage := storage.NewLocalStorage(storagePath, baseURL)
 
 	svc := services.NewExtendedServices(repos, jwtService, fileStorage)
+
+	svc.FeatureFlag.StartCacheUpdate(5 * time.Minute)
 
 	v := validator.New()
 

@@ -11,6 +11,7 @@ func NewRepository(db *gorm.DB) *repository.Repository {
 		Book:         NewBookRepository(db),
 		Reader:       NewReaderRepository(db),
 		BorrowedBook: NewBorrowedBookRepository(db),
+		FeatureFlag:  NewFeatureFlagRepository(db),
 	}
 }
 
@@ -21,6 +22,7 @@ func NewExtendedRepository(db *gorm.DB) *repository.ExtendedRepository {
 			Book:         NewBookRepository(db),
 			Reader:       NewReaderRepository(db),
 			BorrowedBook: NewBorrowedBookRepository(db),
+			FeatureFlag:  NewFeatureFlagRepository(db),
 		},
 		UserGroup:      NewUserGroupRepository(db),
 		Category:       NewCategoryRepository(db),
