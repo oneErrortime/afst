@@ -49,3 +49,14 @@ func (r *userGroupRepository) GetUsersByGroupID(groupID uuid.UUID) ([]models.Use
 	err := r.db.Where("group_id = ?", groupID).Find(&users).Error
 	return users, err
 }
+
+func (r *userGroupRepository) List(limit, offset int) ([]models.UserGroup, error) {
+	var groups []models.UserGroup
+	err := r.db.Preload("AllowedCategories").
+		Where("is_active = ?", true).
+		Order("name").
+		Limit(limit).
+		Offset(offset).
+		Find(&groups).Error
+	return groups, err
+}

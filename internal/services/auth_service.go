@@ -39,11 +39,11 @@ func (s *authService) Register(email, password string) (*models.AuthResponseDTO,
 	}
 
 	var freeGroup *models.UserGroup
-	groups, _ := s.groupRepo.List(10, 0)
-	for _, g := range groups {
-		if g.Type == models.GroupTypeFree {
-			freeGroup = &g
-			break
+	if s.groupRepo != nil {
+		// Использование GetByType более эффективно, чем List(10, 0) + цикл
+		groups, err := s.groupRepo.GetByType(models.GroupTypeFree)
+		if err == nil && len(groups) > 0 {
+			freeGroup = &groups[0]
 		}
 	}
 
@@ -70,14 +70,7 @@ func (s *authService) Register(email, password string) (*models.AuthResponseDTO,
 	return &models.AuthResponseDTO{
 		Token:   token,
 		Message: "Регистрация прошла успешно",
-		User: &models.UserResponseDTO{
-			ID:       user.ID,
-			Email:    user.Email,
-			Name:     user.Name,
-			Role:     user.Role,
-			GroupID:  user.GroupID,
-			IsActive: user.IsActive,
-		},
+		User:    user,
 	}, nil
 }
 
@@ -106,14 +99,7 @@ func (s *authService) Login(email, password string) (*models.AuthResponseDTO, er
 	return &models.AuthResponseDTO{
 		Token:   token,
 		Message: "Вход выполнен успешно",
-		User: &models.UserResponseDTO{
-			ID:       user.ID,
-			Email:    user.Email,
-			Name:     user.Name,
-			Role:     user.Role,
-			GroupID:  user.GroupID,
-			IsActive: user.IsActive,
-		},
+		User:    user,
 	}, nil
 }
 
