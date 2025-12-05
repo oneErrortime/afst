@@ -10,7 +10,8 @@ import (
 	"github.com/oneErrortime/afst/internal/auth"
 	"github.com/oneErrortime/afst/internal/config"
 	"github.com/oneErrortime/afst/internal/handlers"
-	"github.com/oneErrortime/afst/internal/repository"
+		"github.com/oneErrortime/afst/internal/repository"
+		"github.com/oneErrortime/afst/internal/models"
 	"github.com/oneErrortime/afst/internal/repository/gorm"
 	"github.com/oneErrortime/afst/internal/services"
 	"github.com/oneErrortime/afst/internal/storage"
@@ -29,7 +30,7 @@ func main() {
 		log.Fatal("Ошибка подключения к базе данных:", err)
 	}
 
-	if err := repository.Migrate(db); err != nil {
+	if err := repository.Migrate(db, &models.FeatureFlag{}); err != nil {
 		log.Fatal("Ошибка выполнения миграций:", err)
 	}
 
@@ -60,7 +61,14 @@ func main() {
 	router := handlers.SetupRoutes(handlersInstance, jwtService)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
-	log.Printf("Сервер Library API v2.0 запущен на порту %s", cfg.Port)
+		log.Printf("Сервер Library API v2.0 запущен на порту %s", cfg.Port)
+
+		// Демонстрация использования Feature Flag
+		if enabled, _ := svc.FeatureFlag.IsFeatureEnabled("enable_analytics"); enabled {
+			log.Println("Feature Flag: Сбор аналитики ВКЛЮЧЕН")
+		} else {
+			log.Println("Feature Flag: Сбор аналитики ОТКЛЮЧЕН")
+		}
 	log.Printf("Health check: http://localhost:%s/health", cfg.Port)
 	log.Printf("Хранилище файлов: %s", storagePath)
 

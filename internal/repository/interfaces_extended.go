@@ -66,6 +66,13 @@ type ReadingSessionRepository interface {
 	GetBookStats(bookID uuid.UUID) (totalReaders, totalSessions, totalReadTime int64, err error)
 }
 
+type FeatureFlagRepository interface {
+	GetByName(name string) (*models.FeatureFlag, error)
+	GetAll() ([]models.FeatureFlag, error)
+	Update(flag *models.FeatureFlag) error
+	Create(flag *models.FeatureFlag) error
+}
+
 type ExtendedRepository struct {
 	Repository
 	UserGroup      UserGroupRepository
@@ -74,6 +81,7 @@ type ExtendedRepository struct {
 	BookAccess     BookAccessRepository
 	BookFile       BookFileRepository
 	ReadingSession ReadingSessionRepository
+	FeatureFlag    FeatureFlagRepository
 	DB             interface{}
 }
 
