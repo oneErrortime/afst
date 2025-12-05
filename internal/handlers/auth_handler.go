@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/oneErrortime/afst/internal/middleware"
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/oneErrortime/afst/internal/services"
@@ -139,12 +138,19 @@ func (h *AuthHandler) ListUsers(c *gin.Context) {
 		return
 	}
 
+	page := offset/limit + 1
+	lastPage := int(total) / limit
+	if int(total)%limit != 0 {
+		lastPage++
+	}
+
 	c.JSON(http.StatusOK, models.ListResponseDTO{
-		Data:  users,
-		Total: total,
-		Pagination: models.PaginationDTO{
-			Limit:  limit,
-			Offset: offset,
+		Data: users,
+		Pagination: &models.PaginationDTO{
+			Page:     page,
+			Limit:    limit,
+			Total:    total,
+			LastPage: lastPage,
 		},
 	})
 }

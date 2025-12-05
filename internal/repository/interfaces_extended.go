@@ -13,6 +13,7 @@ type UserGroupRepository interface {
 	Update(group *models.UserGroup) error
 	Delete(id uuid.UUID) error
 	GetUsersByGroupID(groupID uuid.UUID) ([]models.User, error)
+	List(limit, offset int) ([]models.UserGroup, error)
 }
 
 type CategoryRepository interface {
