@@ -28,6 +28,9 @@ func NewExtendedRepository(db *gorm.DB) *repository.ExtendedRepository {
 		BookAccess:     NewBookAccessRepository(db),
 		BookFile:       NewBookFileRepository(db),
 		ReadingSession: NewReadingSessionRepository(db),
+		Role:           NewRoleRepository(db),
+		Permission:     NewPermissionRepository(db),
+		UserRole:       NewUserRoleRepository(db),
 		DB:             db,
 	}
 }
@@ -52,6 +55,9 @@ func WithTransaction(repo *repository.ExtendedRepository, fn repository.Transact
 			BookAccess:     NewBookAccessRepository(tx),
 			BookFile:       NewBookFileRepository(tx),
 			ReadingSession: NewReadingSessionRepository(tx),
+			Role:           NewRoleRepository(tx),
+			Permission:     NewPermissionRepository(tx),
+			UserRole:       NewUserRoleRepository(tx),
 			DB:             tx,
 		}
 		return fn(txRepo)

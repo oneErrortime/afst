@@ -108,5 +108,6 @@ type Services struct {
 	Subscription   SubscriptionService
 	BookAccess     BookAccessService
 	BookFile       BookFileService
-	ReadingSession ReadingSessionService
+	ReadingSession	ReadingSessionService
+	RBACService
 }

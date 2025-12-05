@@ -63,8 +63,32 @@ type ReadingSessionRepository interface {
 	GetByBookID(bookID uuid.UUID) ([]models.ReadingSession, error)
 	GetActiveByUserAndBook(userID, bookID uuid.UUID) (*models.ReadingSession, error)
 	Update(session *models.ReadingSession) error
-	GetBookStats(bookID uuid.UUID) (totalReaders, totalSessions, totalReadTime int64, err error)
-}
+		GetBookStats(bookID uuid.UUID) (totalReaders, totalSessions, totalReadTime int64, err error)
+	}
+
+	type RoleRepository interface {
+		Create(role *models.Role) error
+		GetByID(id uuid.UUID) (*models.Role, error)
+		GetByName(name string) (*models.Role, error)
+		GetAll() ([]models.Role, error)
+		AddPermission(roleID, permissionID uuid.UUID) error
+		RemovePermission(roleID, permissionID uuid.UUID) error
+		GetPermissionsForRole(roleID uuid.UUID) ([]models.Permission, error)
+	}
+
+	type PermissionRepository interface {
+		Create(permission *models.Permission) error
+		GetByID(id uuid.UUID) (*models.Permission, error)
+		GetByName(name string) (*models.Permission, error)
+		GetAll() ([]models.Permission, error)
+	}
+
+	type UserRoleRepository interface {
+		AssignRole(userID, roleID uuid.UUID) error
+		RevokeRole(userID, roleID uuid.UUID) error
+		GetRolesForUser(userID uuid.UUID) ([]models.Role, error)
+		GetPermissionsForUser(userID uuid.UUID) ([]models.Permission, error)
+	}
 
 type ExtendedRepository struct {
 	Repository
@@ -73,8 +97,11 @@ type ExtendedRepository struct {
 	Subscription   SubscriptionRepository
 	BookAccess     BookAccessRepository
 	BookFile       BookFileRepository
-	ReadingSession ReadingSessionRepository
-	DB             interface{}
-}
+		ReadingSession ReadingSessionRepository
+		Role           RoleRepository
+		Permission     PermissionRepository
+		UserRole       UserRoleRepository
+		DB             interface{}
+	}
 
 type TransactionFunc func(txRepo *ExtendedRepository) error
