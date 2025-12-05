@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/oneErrortime/afst/internal/auth"
 	"github.com/oneErrortime/afst/internal/models"
+	"github.com/oneErrortime/afst/internal/services"
 )
 
 func AuthMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
@@ -144,4 +145,32 @@ func GetUserGroupIDFromContext(c *gin.Context) *uuid.UUID {
 	}
 
 	return groupID
+}
+
+func FeatureFlagMiddleware(ffs services.FeatureFlagService, flagName string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !ffs.IsActive(flagName) {
+			c.JSON(http.StatusServiceUnavailable, models.ErrorResponseDTO{
+				Error:   "Сервис временно недоступен",
+				Message: "Эта функция отключена администратором.",
+			})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func MaintenanceMiddleware(ffs services.FeatureFlagService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if ffs.IsActive("maintenance_mode") {
+			c.JSON(http.StatusServiceUnavailable, models.ErrorResponseDTO{
+				Error:   "Сайт на обслуживании",
+				Message: "Мы скоро вернемся. Пожалуйста, попробуйте позже.",
+			})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
 }

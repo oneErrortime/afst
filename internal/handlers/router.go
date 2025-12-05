@@ -32,6 +32,7 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	router.Use(gin.Recovery())
 
 	api := router.Group("/api/v1")
+	api.Use(middleware.MaintenanceMiddleware(handlers.Services.FeatureFlag))
 
 	authGroup := api.Group("/auth")
 	{
@@ -170,7 +171,7 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 
 	api.GET("/stats/dashboard", authMiddleware, requireLibrarian, handlers.GetDashboardStats)
 
-	router.GET("/health", func(c *gin.Context) {
+	api.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status":  "OK",
 			"service": "library-api",

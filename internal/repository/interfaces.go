@@ -48,9 +48,15 @@ type BorrowedBookRepository interface {
 }
 
 // Repository объединяет все репозитории
+type FeatureFlagRepository interface {
+	GetByName(name string) (*models.FeatureFlag, error)
+	GetAll() ([]models.FeatureFlag, error)
+}
+
 type Repository struct {
 	User         UserRepository
 	Book         BookRepository
 	Reader       ReaderRepository
 	BorrowedBook BorrowedBookRepository
+	FeatureFlag  FeatureFlagRepository
 }
