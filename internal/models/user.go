@@ -39,6 +39,8 @@ type User struct {
 	DeletedAt     *time.Time     `json:"-" gorm:"index"`
 
 	Group         *UserGroup     `json:"group,omitempty" gorm:"foreignKey:GroupID"`
+	Roles         []Role         `gorm:"many2many:user_roles;" json:"roles"` // Связь с ролями через UserRole
+
 	Subscriptions []Subscription `json:"-" gorm:"foreignKey:UserID"`
 	BookAccesses  []BookAccess   `json:"-" gorm:"foreignKey:UserID"`
 }
