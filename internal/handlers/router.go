@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/oneErrortime/afst/internal/auth"
 	"github.com/oneErrortime/afst/internal/middleware"
 	"github.com/oneErrortime/afst/internal/models"
@@ -30,6 +32,7 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	router.Use(corsMiddleware())
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+	router.Use(middleware.APIRouteMismatchLogger())
 
 	api := router.Group("/api/v1")
 
@@ -196,25 +199,41 @@ func SetupExtendedRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.E
 func (h *Handlers) GetDashboardStats(c *gin.Context) {
 	stats := models.DashboardStatsDTO{}
 
-	books, _ := h.Services.Book.GetAllBooks(1000, 0)
-	stats.TotalBooks = int64(len(books))
-	var publishedBooks int64
-	for _, b := range books {
-		if b.Status == "published" {
-			publishedBooks++
-		}
+	totalBooks, err := h.Services.Book.Count()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count books"})
+		return
+	}
+	stats.TotalBooks = totalBooks
+
+	publishedBooks, err := h.Services.Book.CountPublished()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count published books"})
+		return
 	}
 
-	readers, _ := h.Services.Reader.GetAllReaders(1000, 0)
-	stats.TotalUsers = int64(len(readers))
+	totalUsers, err := h.Services.Reader.Count()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count users"})
+		return
+	}
+	stats.TotalUsers = totalUsers
 
-	groups, _ := h.Services.UserGroup.GetAll()
-	stats.TotalGroups = int64(len(groups))
+	totalGroups, err := h.Services.UserGroup.Count()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count groups"})
+		return
+	}
+	stats.TotalGroups = totalGroups
 
-	categories, _ := h.Services.Category.GetAll()
-	stats.TotalCategories = int64(len(categories))
+	totalCategories, err := h.Services.Category.Count()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count categories"})
+		return
+	}
+	stats.TotalCategories = totalCategories
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"total_users":            stats.TotalUsers,
 		"total_books":            stats.TotalBooks,
 		"published_books":        publishedBooks,

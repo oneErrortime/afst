@@ -117,3 +117,7 @@ func (s *categoryService) Delete(id uuid.UUID) error {
 func (s *categoryService) GetChildren(parentID uuid.UUID) ([]models.Category, error) {
 	return s.categoryRepo.GetByParentID(&parentID)
 }
+
+func (s *categoryService) Count() (int64, error) {
+	return s.categoryRepo.Count()
+}

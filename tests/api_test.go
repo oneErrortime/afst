@@ -3,15 +3,17 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/oneErrortime/afst/internal/auth"
 	"github.com/oneErrortime/afst/internal/handlers"
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/oneErrortime/afst/internal/repository/gorm"
 	"github.com/oneErrortime/afst/internal/services"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
+	"github.com/oneErrortime/afst/internal/storage"
 
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
@@ -50,14 +52,15 @@ func (suite *APITestSuite) SetupSuite() {
 	suite.jwtService = auth.NewJWTService("test-secret", time.Hour)
 
 	// Создаем репозитории
-	repos := gorm.NewRepository(db)
+	repos := gorm.NewExtendedRepository(db)
 
 	// Создаем сервисы
-	services := services.NewServices(repos, suite.jwtService)
+	fileStorage := storage.NewMemoryStorage()
+	services := services.NewExtendedServices(repos, suite.jwtService, fileStorage)
 
 	// Создаем обработчики
 	validator := validator.New()
-	handlersInstance := handlers.NewHandlers(services, validator)
+	handlersInstance := handlers.NewExtendedHandlers(services, fileStorage, validator)
 
 	// Настраиваем роутер
 	gin.SetMode(gin.TestMode)
@@ -77,10 +80,17 @@ func (suite *APITestSuite) TearDownSuite() {
 func (suite *APITestSuite) migrateSQLite(db *gormdb.DB) error {
 	// Для тестов используем AutoMigrate, что проще чем адаптировать PostgreSQL миграции
 	return db.AutoMigrate(
+		&models.UserGroup{},
 		&models.User{},
+		&models.Category{},
 		&models.Book{},
+		&models.BookFile{},
+		&models.Subscription{},
+		&models.BookAccess{},
+		&models.ReadingSession{},
 		&models.Reader{},
 		&models.BorrowedBook{},
+		&models.FeatureFlag{},
 	)
 }
 
@@ -273,7 +283,7 @@ func (suite *APITestSuite) TestBooks_GetBooks_Public() {
 
 func (suite *APITestSuite) TestHealth() {
 	// Act
-	w := suite.makeRequest("GET", "/health", nil, false)
+	w := suite.makeRequest("GET", "/api/v1/health", nil, false)
 
 	// Assert
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
