@@ -8,6 +8,8 @@ import (
 	"github.com/oneErrortime/afst/internal/models"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func corsMiddleware() gin.HandlerFunc {
@@ -33,6 +35,8 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(middleware.APIRouteMismatchLogger())
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := router.Group("/api/v1")
 

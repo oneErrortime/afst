@@ -25,7 +25,18 @@ func NewBookHandler(bookService services.BookService, validator *validator.Valid
 	}
 }
 
-// CreateBook создает новую книгу
+// CreateBook godoc
+// @Summary Create a new book
+// @Description Create a new book
+// @Tags books
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param   book_request     body    models.CreateBookDTO     true  "Book Request"
+// @Success 201 {object} models.SuccessResponseDTO
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 409 {object} models.ErrorResponseDTO
+// @Router /books [post]
 func (h *BookHandler) CreateBook(c *gin.Context) {
 	var req models.CreateBookDTO
 
@@ -63,7 +74,16 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	})
 }
 
-// GetBook возвращает книгу по ID
+// GetBook godoc
+// @Summary Get a book by ID
+// @Description Get a single book by its UUID
+// @Tags books
+// @Produce  json
+// @Param id path string true "Book ID"
+// @Success 200 {object} models.Book
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 404 {object} models.ErrorResponseDTO
+// @Router /books/{id} [get]
 func (h *BookHandler) GetBook(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -87,7 +107,16 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	c.JSON(http.StatusOK, book)
 }
 
-// GetAllBooks возвращает все книги с пагинацией
+// GetAllBooks godoc
+// @Summary Get all books
+// @Description Get a list of all books with pagination
+// @Tags books
+// @Produce  json
+// @Param limit query int false "Limit"
+// @Param offset query int false "Offset"
+// @Success 200 {object} models.SuccessResponseDTO
+// @Failure 500 {object} models.ErrorResponseDTO
+// @Router /books [get]
 func (h *BookHandler) GetAllBooks(c *gin.Context) {
 	// Парсим параметры пагинации
 	limitParam := c.DefaultQuery("limit", "20")
@@ -118,7 +147,19 @@ func (h *BookHandler) GetAllBooks(c *gin.Context) {
 	})
 }
 
-// UpdateBook обновляет книгу
+// UpdateBook godoc
+// @Summary Update a book
+// @Description Update a book's details
+// @Tags books
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param id path string true "Book ID"
+// @Param   book_update     body    models.UpdateBookDTO     true  "Book Update"
+// @Success 200 {object} models.SuccessResponseDTO
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 404 {object} models.ErrorResponseDTO
+// @Router /books/{id} [put]
 func (h *BookHandler) UpdateBook(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -166,7 +207,17 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 	})
 }
 
-// DeleteBook удаляет книгу
+// DeleteBook godoc
+// @Summary Delete a book
+// @Description Delete a book by its ID
+// @Tags books
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param id path string true "Book ID"
+// @Success 200 {object} models.SuccessResponseDTO
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 404 {object} models.ErrorResponseDTO
+// @Router /books/{id} [delete]
 func (h *BookHandler) DeleteBook(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)

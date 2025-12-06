@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/oneErrortime/afst/docs" // Swagger docs
 	"fmt"
 	"log"
 	"os"
@@ -17,6 +18,20 @@ import (
 	"github.com/oneErrortime/afst/internal/storage"
 )
 
+// @title Library API
+// @version 2.0
+// @description This is a powerful API for a library management system.
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url https://github.com/oneErrortime
+// @contact.email dev@oneerrortime.com
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8080
+// @BasePath /api/v1
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
