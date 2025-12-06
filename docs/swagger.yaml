@@ -1,0 +1,870 @@
+basePath: /api/v1
+definitions:
+  handlers.CreateAdminRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  models.AuthRequestDTO:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.AuthResponseDTO:
+    properties:
+      message:
+        example: Successfully authenticated
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponseDTO'
+    type: object
+  models.Book:
+    properties:
+      author:
+        example: Alan A. A. Donovan
+        type: string
+      categories:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      copies_count:
+        example: 10
+        minimum: 0
+        type: integer
+      cover_url:
+        example: https://images.gr-assets.com/books/1435093416l/25132924.jpg
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      description:
+        example: A masterpiece of programming language books.
+        type: string
+      download_count:
+        example: 50
+        type: integer
+      files:
+        items:
+          $ref: '#/definitions/models.BookFile'
+        type: array
+      id:
+        example: a8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b4
+        type: string
+      is_premium:
+        example: false
+        type: boolean
+      isbn:
+        example: 978-0134190440
+        type: string
+      language:
+        example: English
+        type: string
+      page_count:
+        example: 380
+        type: integer
+      publication_year:
+        example: 2015
+        maximum: 9999
+        minimum: 0
+        type: integer
+      publisher:
+        example: Addison-Wesley Professional
+        type: string
+      rating:
+        example: 4.5
+        type: number
+      rating_count:
+        example: 25
+        type: integer
+      status:
+        allOf:
+        - $ref: '#/definitions/models.BookStatus'
+        example: published
+      title:
+        example: The Go Programming Language
+        type: string
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      view_count:
+        example: 100
+        type: integer
+    required:
+    - author
+    - title
+    type: object
+  models.BookFile:
+    properties:
+      book:
+        $ref: '#/definitions/models.Book'
+      book_id:
+        type: string
+      created_at:
+        type: string
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      file_type:
+        $ref: '#/definitions/models.FileType'
+      id:
+        type: string
+      is_processed:
+        type: boolean
+      metadata:
+        type: string
+      mime_type:
+        type: string
+      original_name:
+        type: string
+      page_count:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.BookStatus:
+    enum:
+    - draft
+    - published
+    - archived
+    type: string
+    x-enum-varnames:
+    - BookStatusDraft
+    - BookStatusPublished
+    - BookStatusArchived
+  models.Category:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      color:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      parent:
+        $ref: '#/definitions/models.Category'
+      parent_id:
+        type: string
+      slug:
+        type: string
+      sort_order:
+        type: integer
+      updated_at:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateBookDTO:
+    properties:
+      author:
+        example: Alan A. A. Donovan
+        type: string
+      category_ids:
+        items:
+          type: string
+        type: array
+      copies_count:
+        example: 10
+        minimum: 0
+        type: integer
+      cover_url:
+        example: https://images.gr-assets.com/books/1435093416l/25132924.jpg
+        type: string
+      description:
+        example: A masterpiece of programming language books.
+        type: string
+      is_premium:
+        example: false
+        type: boolean
+      isbn:
+        example: 978-0134190440
+        type: string
+      language:
+        example: English
+        type: string
+      page_count:
+        example: 380
+        type: integer
+      publication_year:
+        example: 2015
+        maximum: 9999
+        minimum: 0
+        type: integer
+      publisher:
+        example: Addison-Wesley Professional
+        type: string
+      title:
+        example: The Go Programming Language
+        type: string
+    required:
+    - author
+    - title
+    type: object
+  models.ErrorResponseDTO:
+    properties:
+      error:
+        example: Resource not found
+        type: string
+      message:
+        example: The requested resource was not found on the server
+        type: string
+    type: object
+  models.FileType:
+    enum:
+    - pdf
+    - epub
+    - mobi
+    type: string
+    x-enum-varnames:
+    - FileTypePDF
+    - FileTypeEPUB
+    - FileTypeMOBI
+  models.ListResponseDTO:
+    properties:
+      data: {}
+      pagination:
+        $ref: '#/definitions/models.PaginationDTO'
+    type: object
+  models.PaginationDTO:
+    properties:
+      last_page:
+        example: 5
+        type: integer
+      limit:
+        example: 20
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  models.Subscription:
+    properties:
+      auto_renew:
+        type: boolean
+      can_access_premium:
+        type: boolean
+      created_at:
+        type: string
+      currency:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      max_books:
+        type: integer
+      max_downloads:
+        type: integer
+      notes:
+        type: string
+      payment_id:
+        type: string
+      plan:
+        $ref: '#/definitions/models.SubscriptionPlan'
+      price:
+        type: number
+      start_date:
+        type: string
+      status:
+        $ref: '#/definitions/models.SubscriptionStatus'
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: string
+    type: object
+  models.SubscriptionPlan:
+    enum:
+    - free
+    - basic
+    - premium
+    - student
+    type: string
+    x-enum-varnames:
+    - PlanFree
+    - PlanBasic
+    - PlanPremium
+    - PlanStudent
+  models.SubscriptionStatus:
+    enum:
+    - active
+    - expired
+    - cancelled
+    - pending
+    type: string
+    x-enum-varnames:
+    - SubStatusActive
+    - SubStatusExpired
+    - SubStatusCancelled
+    - SubStatusPending
+  models.SuccessResponseDTO:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  models.UpdateBookDTO:
+    properties:
+      author:
+        example: Alan A. A. Donovan
+        type: string
+      category_ids:
+        items:
+          type: string
+        type: array
+      copies_count:
+        example: 10
+        minimum: 0
+        type: integer
+      cover_url:
+        example: https://images.gr-assets.com/books/1435093416l/25132924.jpg
+        type: string
+      description:
+        example: A masterpiece of programming language books.
+        type: string
+      is_premium:
+        example: false
+        type: boolean
+      isbn:
+        example: 978-0134190440
+        type: string
+      language:
+        example: English
+        type: string
+      page_count:
+        example: 380
+        type: integer
+      publication_year:
+        example: 2015
+        maximum: 9999
+        minimum: 0
+        type: integer
+      publisher:
+        example: Addison-Wesley Professional
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.BookStatus'
+        example: published
+      title:
+        example: The Go Programming Language
+        type: string
+    type: object
+  models.UpdateUserDTO:
+    properties:
+      group_id:
+        example: b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: John Doe
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/models.UserRole'
+        example: librarian
+    type: object
+  models.User:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      group:
+        $ref: '#/definitions/models.UserGroup'
+      group_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_login_at:
+        type: string
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/models.UserRole'
+      updated_at:
+        type: string
+    required:
+    - email
+    type: object
+  models.UserGroup:
+    properties:
+      allowed_categories:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      can_download:
+        type: boolean
+      color:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      loan_days:
+        type: integer
+      max_books:
+        type: integer
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/models.UserGroupType'
+      updated_at:
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  models.UserGroupType:
+    enum:
+    - student
+    - free
+    - subscriber
+    type: string
+    x-enum-varnames:
+    - GroupTypeStudent
+    - GroupTypeFree
+    - GroupTypeSubscriber
+  models.UserResponseDTO:
+    properties:
+      avatar_url:
+        example: https://example.com/avatar.png
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      email_verified:
+        example: true
+        type: boolean
+      group:
+        $ref: '#/definitions/models.UserGroup'
+      group_id:
+        example: b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5
+        type: string
+      id:
+        example: a8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b4
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: John Doe
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/models.UserRole'
+        example: user
+      subscription:
+        $ref: '#/definitions/models.Subscription'
+    type: object
+  models.UserRole:
+    enum:
+    - admin
+    - librarian
+    - reader
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleLibrarian
+    - RoleReader
+host: localhost:8080
+info:
+  contact:
+    email: dev@oneerrortime.com
+    name: API Support
+    url: https://github.com/oneErrortime
+  description: This is a powerful API for a library management system.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Library API
+  version: "2.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Log in a user with email and password
+      parameters:
+      - description: Auth Request
+        in: body
+        name: auth_request
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AuthResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      summary: Log in a user
+      tags:
+      - auth
+  /auth/me:
+    get:
+      description: Get the current user's profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - ApiKeyAuth: []
+      summary: Get the current user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with email and password
+      parameters:
+      - description: Auth Request
+        in: body
+        name: auth_request
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.AuthResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      summary: Register a new user
+      tags:
+      - auth
+  /books:
+    get:
+      description: Get a list of all books with pagination
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      summary: Get all books
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      description: Create a new book
+      parameters:
+      - description: Book Request
+        in: body
+        name: book_request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateBookDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new book
+      tags:
+      - books
+  /books/{id}:
+    delete:
+      description: Delete a book by its ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a book
+      tags:
+      - books
+    get:
+      description: Get a single book by its UUID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      summary: Get a book by ID
+      tags:
+      - books
+    put:
+      consumes:
+      - application/json
+      description: Update a book's details
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Book Update
+        in: body
+        name: book_update
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateBookDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a book
+      tags:
+      - books
+  /users:
+    get:
+      description: Get a list of all users with pagination
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ListResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - ApiKeyAuth: []
+      summary: List all users
+      tags:
+      - users
+  /users/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a user's details by an admin
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User Update
+        in: body
+        name: user_update
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a user by admin
+      tags:
+      - users
+  /users/admin:
+    post:
+      consumes:
+      - application/json
+      description: Create a new admin user
+      parameters:
+      - description: Admin Request
+        in: body
+        name: admin_request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new admin user
+      tags:
+      - users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

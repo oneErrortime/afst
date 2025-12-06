@@ -24,6 +24,17 @@ func NewAuthHandler(authService services.AuthService, validator *validator.Valid
 	}
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Register a new user with email and password
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   auth_request     body    models.AuthRequestDTO     true  "Auth Request"
+// @Success 201 {object} models.AuthResponseDTO
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 409 {object} models.ErrorResponseDTO
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req models.AuthRequestDTO
 
@@ -63,6 +74,17 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
+// Login godoc
+// @Summary Log in a user
+// @Description Log in a user with email and password
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   auth_request     body    models.AuthRequestDTO     true  "Auth Request"
+// @Success 200 {object} models.AuthResponseDTO
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 401 {object} models.ErrorResponseDTO
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req models.AuthRequestDTO
 
@@ -99,6 +121,16 @@ func isGmailAddress(email string) bool {
 	return strings.HasSuffix(email, "@gmail.com")
 }
 
+// GetMe godoc
+// @Summary Get the current user
+// @Description Get the current user's profile
+// @Tags auth
+// @Produce  json
+// @Security ApiKeyAuth
+// @Success 200 {object} models.UserResponseDTO
+// @Failure 401 {object} models.ErrorResponseDTO
+// @Failure 404 {object} models.ErrorResponseDTO
+// @Router /auth/me [get]
 func (h *AuthHandler) GetMe(c *gin.Context) {
 	userID, err := middleware.GetUserFromContext(c)
 	if err != nil {
@@ -121,6 +153,17 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// ListUsers godoc
+// @Summary List all users
+// @Description Get a list of all users with pagination
+// @Tags users
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param limit query int false "Limit"
+// @Param offset query int false "Offset"
+// @Success 200 {object} models.ListResponseDTO
+// @Failure 500 {object} models.ErrorResponseDTO
+// @Router /users [get]
 func (h *AuthHandler) ListUsers(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
@@ -155,6 +198,19 @@ func (h *AuthHandler) ListUsers(c *gin.Context) {
 	})
 }
 
+// UpdateUserByAdmin godoc
+// @Summary Update a user by admin
+// @Description Update a user's details by an admin
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param id path string true "User ID"
+// @Param   user_update     body    models.UpdateUserDTO     true  "User Update"
+// @Success 200 {object} models.UserResponseDTO
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 500 {object} models.ErrorResponseDTO
+// @Router /users/{id} [put]
 func (h *AuthHandler) UpdateUserByAdmin(c *gin.Context) {
 	userID := c.Param("id")
 	
@@ -185,6 +241,18 @@ type CreateAdminRequest struct {
 	Name     string `json:"name" validate:"required"`
 }
 
+// CreateAdmin godoc
+// @Summary Create a new admin user
+// @Description Create a new admin user
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param   admin_request     body    CreateAdminRequest     true  "Admin Request"
+// @Success 201 {object} models.UserResponseDTO
+// @Failure 400 {object} models.ErrorResponseDTO
+// @Failure 409 {object} models.ErrorResponseDTO
+// @Router /users/admin [post]
 func (h *AuthHandler) CreateAdmin(c *gin.Context) {
 	var req CreateAdminRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
