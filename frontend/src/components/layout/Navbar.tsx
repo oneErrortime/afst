@@ -94,6 +94,7 @@ export function Navbar() {
               {isAuthenticated && (
                 <>
                   <NavLink to="/library">Моя библиотека</NavLink>
+                  <NavLink to="/collections">Коллекции</NavLink>
                   <NavLink to="/groups">Группы</NavLink>
                   {isLibrarian && (
                     <>

@@ -211,3 +211,36 @@ type DashboardStatsDTO struct {
 	ActiveSubscriptions  int64 `json:"active_subscriptions"`
 	TotalReadingSessions int64 `json:"total_reading_sessions"`
 }
+
+type CreateCollectionDTO struct {
+	Name        string `json:"name" validate:"required"`
+	Description string `json:"description"`
+}
+
+type UpdateCollectionDTO struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+}
+
+type AddBookToCollectionDTO struct {
+	BookID uuid.UUID `json:"book_id" validate:"required"`
+}
+
+type CreateReviewDTO struct {
+	BookID uuid.UUID `json:"book_id" validate:"required"`
+	Rating int       `json:"rating" validate:"required,min=1,max=5"`
+	Title  string    `json:"title"`
+	Body   string    `json:"body"`
+}
+
+type UpdateReviewDTO struct {
+	Rating *int    `json:"rating" validate:"omitempty,min=1,max=5"`
+	Title  *string `json:"title"`
+	Body   *string `json:"body"`
+}
+
+type CreateBookmarkDTO struct {
+	BookID   uuid.UUID `json:"book_id" validate:"required"`
+	Location string    `json:"location" validate:"required"`
+	Label    string    `json:"label"`
+}
