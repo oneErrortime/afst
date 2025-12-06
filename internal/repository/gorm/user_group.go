@@ -55,3 +55,9 @@ func (r *userGroupRepository) List(limit, offset int) ([]models.UserGroup, error
 	err := r.db.Preload("AllowedCategories").Where("is_active = ?", true).Order("name").Limit(limit).Offset(offset).Find(&groups).Error
 	return groups, err
 }
+
+func (r *userGroupRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&models.UserGroup{}).Where("is_active = ?", true).Count(&count).Error
+	return count, err
+}

@@ -33,6 +33,20 @@ func (r *bookRepository) GetByID(id uuid.UUID) (*models.Book, error) {
 	return &book, nil
 }
 
+// Count возвращает общее количество книг
+func (r *bookRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Book{}).Count(&count).Error
+	return count, err
+}
+
+// CountPublished возвращает количество опубликованных книг
+func (r *bookRepository) CountPublished() (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Book{}).Where("status = ?", "published").Count(&count).Error
+	return count, err
+}
+
 // GetAll возвращает все книги с пагинацией
 func (r *bookRepository) GetAll(limit, offset int) ([]models.Book, error) {
 	var books []models.Book

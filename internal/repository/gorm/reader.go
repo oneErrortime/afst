@@ -33,6 +33,13 @@ func (r *readerRepository) GetByID(id uuid.UUID) (*models.Reader, error) {
 	return &reader, nil
 }
 
+// Count возвращает общее количество читателей
+func (r *readerRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Reader{}).Count(&count).Error
+	return count, err
+}
+
 // GetAll возвращает всех читателей с пагинацией
 func (r *readerRepository) GetAll(limit, offset int) ([]models.Reader, error) {
 	var readers []models.Reader

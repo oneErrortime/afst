@@ -140,3 +140,13 @@ func (s *bookService) DeleteBook(id uuid.UUID) error {
 
 	return s.bookRepo.Delete(id)
 }
+
+// Count возвращает общее количество книг
+func (s *bookService) Count() (int64, error) {
+	return s.bookRepo.Count()
+}
+
+// CountPublished возвращает количество опубликованных книг
+func (s *bookService) CountPublished() (int64, error) {
+	return s.bookRepo.CountPublished()
+}

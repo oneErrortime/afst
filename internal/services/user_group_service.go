@@ -119,3 +119,7 @@ func (s *userGroupService) AssignUserToGroup(userID, groupID uuid.UUID) error {
 	user.GroupID = &groupID
 	return s.userRepo.Update(user)
 }
+
+func (s *userGroupService) Count() (int64, error) {
+	return s.groupRepo.Count()
+}

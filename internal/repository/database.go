@@ -22,7 +22,10 @@ func NewDatabase(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 		path = "library.db"
 	}
 
-	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{
+	// WAL mode allows for better concurrency
+	dsn := fmt.Sprintf("%s?_pragma=journal_mode=WAL", path)
+
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		Logger: logMode,
 	})
 	if err != nil {

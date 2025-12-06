@@ -14,6 +14,7 @@ type UserGroupRepository interface {
 	Delete(id uuid.UUID) error
 	GetUsersByGroupID(groupID uuid.UUID) ([]models.User, error)
 	List(limit, offset int) ([]models.UserGroup, error)
+	Count() (int64, error)
 }
 
 type CategoryRepository interface {
@@ -24,6 +25,7 @@ type CategoryRepository interface {
 	GetByParentID(parentID *uuid.UUID) ([]models.Category, error)
 	Update(category *models.Category) error
 	Delete(id uuid.UUID) error
+	Count() (int64, error)
 }
 
 type SubscriptionRepository interface {
