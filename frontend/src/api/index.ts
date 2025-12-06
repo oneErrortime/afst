@@ -35,6 +35,11 @@ import type {
   CreateCollectionRequest,
   UpdateCollectionRequest,
   AddBookToCollectionRequest,
+  Review,
+  CreateReviewRequest,
+  UpdateReviewRequest,
+  Bookmark,
+  CreateBookmarkRequest,
 } from '@/types';
 
 export const authApi = {
@@ -51,6 +56,38 @@ export const authApi = {
   getMe: async (): Promise<User> => {
     const response = await api.get<User>('/auth/me');
     return response.data;
+  },
+};
+
+export const bookmarksApi = {
+  getBookmarksByBook: async (bookId: string): Promise<Bookmark[]> => {
+    const response = await api.get<Bookmark[]>(`/bookmarks/book/${bookId}`);
+    return response.data;
+  },
+  createBookmark: async (data: CreateBookmarkRequest): Promise<Bookmark> => {
+    const response = await api.post<Bookmark>('/bookmarks', data);
+    return response.data;
+  },
+  deleteBookmark: async (id: string): Promise<void> => {
+    await api.delete(`/bookmarks/${id}`);
+  },
+};
+
+export const reviewsApi = {
+  getReviewsByBook: async (bookId: string): Promise<Review[]> => {
+    const response = await api.get<Review[]>(`/reviews/book/${bookId}`);
+    return response.data;
+  },
+  createReview: async (data: CreateReviewRequest): Promise<Review> => {
+    const response = await api.post<Review>('/reviews', data);
+    return response.data;
+  },
+  updateReview: async (id: string, data: UpdateReviewRequest): Promise<Review> => {
+    const response = await api.put<Review>(`/reviews/${id}`, data);
+    return response.data;
+  },
+  deleteReview: async (id: string): Promise<void> => {
+    await api.delete(`/reviews/${id}`);
   },
 };
 

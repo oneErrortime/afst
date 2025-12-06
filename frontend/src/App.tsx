@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections } from '@/pages';
+import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, BookDetail } from '@/pages';
 import { Layout } from '@/components/layout';
 import { ToastContainer } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -60,6 +60,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/books" element={<Books />} />
+            <Route path="/books/:id" element={<BookDetail />} />
             <Route path="/readers" element={<Readers />} />
             <Route path="/borrow" element={<Borrow />} />
             <Route path="/settings" element={<Settings />} />

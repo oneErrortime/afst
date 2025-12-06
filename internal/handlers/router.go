@@ -200,6 +200,13 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		authProtectedReviews.DELETE("/:id", handlers.Review.DeleteReview)
 	}
 
+	bookmarks := api.Group("/bookmarks").Use(authMiddleware)
+	{
+		bookmarks.POST("", handlers.Bookmark.CreateBookmark)
+		bookmarks.GET("/book/:book_id", handlers.Bookmark.GetBookmarksByBook)
+		bookmarks.DELETE("/:id", handlers.Bookmark.DeleteBookmark)
+	}
+
 	api.GET("/stats/dashboard", authMiddleware, requireLibrarian, handlers.GetDashboardStats)
 
 	api.GET("/health", func(c *gin.Context) {

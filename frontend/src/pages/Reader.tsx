@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
-import { booksApi } from '@/api';
+import { booksApi, bookmarksApi } from '@/api';
+import { Bookmark } from '@/types';
+import { Button, toast } from '@/components/ui';
+import { Bookmark as BookmarkIcon } from 'lucide-react';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
@@ -13,6 +16,7 @@ const Reader = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
 
   useEffect(() => {
     const fetchFileIdAndRenderPdf = async () => {
@@ -44,7 +48,18 @@ const Reader = () => {
       }
     };
 
+    const fetchBookmarks = async () => {
+      if (!bookId) return;
+      try {
+        const data = await bookmarksApi.getBookmarksByBook(bookId);
+        setBookmarks(data);
+      } catch (error) {
+        console.error("Failed to fetch bookmarks");
+      }
+    };
+
     fetchFileIdAndRenderPdf();
+    fetchBookmarks();
   }, [bookId]);
 
   useEffect(() => {
@@ -72,6 +87,21 @@ const Reader = () => {
     renderPage();
   }, [pdf, pageNumber, canvasRef]);
 
+  const handleAddBookmark = async () => {
+    if (!bookId) return;
+    try {
+      const newBookmark = await bookmarksApi.createBookmark({
+        book_id: bookId,
+        location: String(pageNumber),
+        label: `Page ${pageNumber}`,
+      });
+      setBookmarks([...bookmarks, newBookmark]);
+      toast.success('Bookmark added!');
+    } catch (error) {
+      toast.error('Failed to add bookmark.');
+    }
+  };
+
   const goToPreviousPage = () => {
     setPageNumber(prev => Math.max(1, prev - 1));
   };
@@ -89,19 +119,48 @@ const Reader = () => {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: '1rem' }}>
-        <button onClick={goToPreviousPage} disabled={pageNumber <= 1}>
-          Previous
-        </button>
-        <span style={{ margin: '0 1rem' }}>
-          Page {pageNumber} of {totalPages}
-        </span>
-        <button onClick={goToNextPage} disabled={pageNumber >= totalPages}>
-          Next
-        </button>
+    <div className="flex gap-8">
+      <div className="flex-grow">
+        <div className="sticky top-20 bg-white p-4 border rounded-lg shadow-sm z-10 flex items-center justify-between">
+          <div className="flex gap-2">
+            <Button onClick={goToPreviousPage} disabled={pageNumber <= 1}>
+              Previous
+            </Button>
+            <span className="self-center">
+              Page {pageNumber} of {totalPages}
+            </span>
+            <Button onClick={goToNextPage} disabled={pageNumber >= totalPages}>
+              Next
+            </Button>
+          </div>
+          <Button onClick={handleAddBookmark}>
+            <BookmarkIcon className="h-4 w-4 mr-2" />
+            Add Bookmark
+          </Button>
+        </div>
+        <div className="mt-4 flex justify-center">
+          <canvas ref={canvasRef} className="shadow-lg" />
+        </div>
       </div>
-      <canvas ref={canvasRef} />
+      <div className="w-64 flex-shrink-0">
+        <h2 className="text-lg font-semibold mb-4">Bookmarks</h2>
+        {bookmarks.length === 0 ? (
+          <p className="text-sm text-gray-500">No bookmarks yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {bookmarks.map(bookmark => (
+              <li key={bookmark.id} className="text-sm">
+                <button
+                  className="text-blue-600 hover:underline"
+                  onClick={() => setPageNumber(parseInt(bookmark.location))}
+                >
+                  {bookmark.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

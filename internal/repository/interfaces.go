@@ -75,6 +75,13 @@ type ReviewRepository interface {
 	Delete(id uuid.UUID) error
 }
 
+type BookmarkRepository interface {
+	Create(bookmark *models.Bookmark) error
+	GetByBookID(userID, bookID uuid.UUID) ([]models.Bookmark, error)
+	GetByID(id uuid.UUID) (*models.Bookmark, error)
+	Delete(id uuid.UUID) error
+}
+
 type Repository struct {
 	User         UserRepository
 	Book         BookRepository
@@ -83,4 +90,5 @@ type Repository struct {
 	FeatureFlag  FeatureFlagRepository
 	Collection   CollectionRepository
 	Review       ReviewRepository
+	Bookmark     BookmarkRepository
 }

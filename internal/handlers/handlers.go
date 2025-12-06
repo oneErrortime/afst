@@ -20,6 +20,7 @@ type Handlers struct {
 	Setup          *SetupHandler
 	Collection     *CollectionHandler
 	Review         *ReviewHandler
+	Bookmark       *BookmarkHandler
 	Services       *services.Services
 }
 
@@ -49,6 +50,7 @@ func NewExtendedHandlers(services *services.Services, fileStorage storage.FileSt
 		Setup:          NewSetupHandler(services.Auth, validator),
 		Collection:     NewCollectionHandler(services.Collection),
 		Review:         NewReviewHandler(services.Review),
+		Bookmark:       NewBookmarkHandler(services.Bookmark),
 		Services:       services,
 	}
 }

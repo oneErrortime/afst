@@ -238,3 +238,9 @@ type UpdateReviewDTO struct {
 	Title  *string `json:"title"`
 	Body   *string `json:"body"`
 }
+
+type CreateBookmarkDTO struct {
+	BookID   uuid.UUID `json:"book_id" validate:"required"`
+	Location string    `json:"location" validate:"required"`
+	Label    string    `json:"label"`
+}

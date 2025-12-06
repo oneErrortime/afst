@@ -122,6 +122,13 @@ type ReviewService interface {
 	DeleteReview(id uuid.UUID) error
 }
 
+type BookmarkService interface {
+	CreateBookmark(bookmark *models.Bookmark) error
+	GetBookmarksByBookID(userID, bookID uuid.UUID) ([]models.Bookmark, error)
+	GetBookmarkByID(id uuid.UUID) (*models.Bookmark, error)
+	DeleteBookmark(id uuid.UUID) error
+}
+
 type Services struct {
 	Auth           AuthService
 	Book           BookService
@@ -136,4 +143,5 @@ type Services struct {
 	FeatureFlag    FeatureFlagService
 	Collection     CollectionService
 	Review         ReviewService
+	Bookmark       BookmarkService
 }
