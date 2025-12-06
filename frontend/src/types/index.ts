@@ -348,3 +348,128 @@ export interface PaginationParams {
   limit?: number;
   offset?: number;
 }
+
+export interface Collection {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  is_public: boolean;
+  is_system: boolean;
+  sort_order: number;
+  cover_url?: string;
+  books_count: number;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+  books?: Book[];
+}
+
+export interface CreateCollectionRequest {
+  name: string;
+  description?: string;
+  is_public: boolean;
+  cover_url?: string;
+  book_ids?: string[];
+}
+
+export interface UpdateCollectionRequest {
+  name?: string;
+  description?: string;
+  is_public?: boolean;
+  cover_url?: string;
+  sort_order?: number;
+}
+
+export interface Bookmark {
+  id: string;
+  user_id: string;
+  book_id: string;
+  file_id?: string;
+  page_number: number;
+  title?: string;
+  notes?: string;
+  color?: string;
+  is_important: boolean;
+  created_at: string;
+  updated_at: string;
+  book?: Book;
+  file?: BookFile;
+}
+
+export interface CreateBookmarkRequest {
+  book_id: string;
+  file_id?: string;
+  page_number: number;
+  title?: string;
+  notes?: string;
+  color?: string;
+  is_important: boolean;
+}
+
+export type AnnotationType = 'highlight' | 'note' | 'underline' | 'strikeout';
+
+export interface Annotation {
+  id: string;
+  user_id: string;
+  book_id: string;
+  file_id?: string;
+  type: AnnotationType;
+  page_number: number;
+  content?: string;
+  selected_text?: string;
+  position_data?: string;
+  color?: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+  book?: Book;
+  file?: BookFile;
+  user?: User;
+}
+
+export interface CreateAnnotationRequest {
+  book_id: string;
+  file_id?: string;
+  type: AnnotationType;
+  page_number: number;
+  content?: string;
+  selected_text?: string;
+  position_data?: string;
+  color?: string;
+  is_public: boolean;
+}
+
+export interface Review {
+  id: string;
+  user_id: string;
+  book_id: string;
+  rating: number;
+  title?: string;
+  content?: string;
+  is_public: boolean;
+  likes_count: number;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+  book?: Book;
+}
+
+export interface CreateReviewRequest {
+  book_id: string;
+  rating: number;
+  title?: string;
+  content?: string;
+  is_public: boolean;
+}
+
+export interface ReviewStatistics {
+  book_id: string;
+  total_reviews: number;
+  average_rating: number;
+  rating_5_count: number;
+  rating_4_count: number;
+  rating_3_count: number;
+  rating_2_count: number;
+  rating_1_count: number;
+}

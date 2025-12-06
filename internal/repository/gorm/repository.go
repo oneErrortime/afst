@@ -30,6 +30,10 @@ func NewExtendedRepository(db *gorm.DB) *repository.ExtendedRepository {
 		BookAccess:     NewBookAccessRepository(db),
 		BookFile:       NewBookFileRepository(db),
 		ReadingSession: NewReadingSessionRepository(db),
+		Collection:     NewCollectionRepository(db),
+		Bookmark:       NewBookmarkRepository(db),
+		Annotation:     NewAnnotationRepository(db),
+		Review:         NewReviewRepository(db),
 		DB:             db,
 	}
 }
@@ -54,6 +58,10 @@ func WithTransaction(repo *repository.ExtendedRepository, fn repository.Transact
 			BookAccess:     NewBookAccessRepository(tx),
 			BookFile:       NewBookFileRepository(tx),
 			ReadingSession: NewReadingSessionRepository(tx),
+			Collection:     NewCollectionRepository(tx),
+			Bookmark:       NewBookmarkRepository(tx),
+			Annotation:     NewAnnotationRepository(tx),
+			Review:         NewReviewRepository(tx),
 			DB:             tx,
 		}
 		return fn(txRepo)

@@ -114,11 +114,12 @@ type UpdateCategoryDTO struct {
 }
 
 type GrantAccessDTO struct {
-	UserID   uuid.UUID  `json:"user_id" validate:"required"`
-	BookID   uuid.UUID  `json:"book_id" validate:"required"`
-	Type     AccessType `json:"type" validate:"required"`
-	Days     int        `json:"days" validate:"required,min=1"`
-	Notes    *string    `json:"notes,omitempty"`
+	UserID    uuid.UUID  `json:"user_id" validate:"required"`
+	BookID    uuid.UUID  `json:"book_id" validate:"required"`
+	Type      AccessType `json:"type" validate:"required"`
+	Days      int        `json:"days" validate:"required,min=1,max=365"`
+	Notes     *string    `json:"notes,omitempty"`
+	GrantedBy *uuid.UUID `json:"granted_by,omitempty"`
 }
 
 type UpdateAccessDTO struct {

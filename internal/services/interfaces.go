@@ -115,5 +115,9 @@ type Services struct {
 	BookAccess     BookAccessService
 	BookFile       BookFileService
 	ReadingSession ReadingSessionService
+	Collection     CollectionService
+	Bookmark       BookmarkService
+	Annotation     AnnotationService
+	Review         ReviewService
 	FeatureFlag    FeatureFlagService
 }
