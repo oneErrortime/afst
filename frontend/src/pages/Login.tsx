@@ -2,23 +2,40 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { authApi } from '@/api';
 import { Button, Input, toast } from '@/components/ui';
 import { BookOpen, Mail, Lock, Wifi, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
 import { AxiosError } from 'axios';
+import { usePostAuthLogin } from '@/api/generated/auth/auth';
 
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  const [showSuccess, setShowSuccess] = useState(false);
-
   const { setToken, setUser, fetchUser } = useAuthStore();
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
   const navigate = useNavigate();
 
   const activeEndpoint = getActiveEndpoint();
+
+  const loginMutation = usePostAuthLogin({
+    mutation: {
+      onSuccess: async (data) => {
+        setToken(data.token);
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          await fetchUser();
+        }
+        toast.success('Вход выполнен успешно!');
+        setTimeout(() => navigate('/books'), 800);
+      },
+      onError: (error) => {
+        const axiosError = error as AxiosError<{ message: string }>;
+        const message = axiosError.response?.data?.message || 'Ошибка входа';
+        toast.error(message);
+      },
+    },
+  });
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -30,28 +47,10 @@ export function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
-    setLoading(true);
-    try {
-      const response = await authApi.login({ email, password });
-      setToken(response.token);
-      if (response.user) {
-        setUser(response.user);
-      } else {
-        await fetchUser();
-      }
-      setShowSuccess(true);
-      toast.success('Вход выполнен успешно!');
-      setTimeout(() => navigate('/books'), 800);
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      const message = axiosError.response?.data?.message || 'Ошибка входа';
-      toast.error(message);
-      setLoading(false);
-    }
+    loginMutation.mutate({ data: { email, password } });
   };
 
   const getConnectionStatusBadge = () => {
@@ -147,11 +146,11 @@ export function Login() {
               type="submit" 
               className="w-full" 
               size="lg"
-              loading={loading}
-              success={showSuccess}
-              disabled={connectionStatus === 'error'}
+              loading={loginMutation.isPending}
+              success={loginMutation.isSuccess}
+              disabled={connectionStatus === 'error' || loginMutation.isPending}
             >
-              {showSuccess ? 'Добро пожаловать!' : 'Войти'}
+              {loginMutation.isSuccess ? 'Добро пожаловать!' : 'Войти'}
             </Button>
 
             {connectionStatus === 'error' && (

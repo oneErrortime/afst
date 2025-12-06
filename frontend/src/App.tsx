@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup } from '@/pages';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, BookDetail } from '@/pages';
 import { Layout } from '@/components/layout';
 import { ToastContainer } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -41,6 +43,8 @@ function SetupRedirect({ children }: { children: React.ReactNode }) {
 }
 
 
+const queryClient = new QueryClient();
+
 export default function App() {
   const { isAuthenticated, user, fetchUser } = useAuthStore();
 
@@ -51,22 +55,25 @@ export default function App() {
   }, [isAuthenticated, user, fetchUser]);
 
   return (
-    <BrowserRouter basename="/afst">
-      <SetupRedirect>
-        <Routes>
-          <Route path="/login" element={<Login />} />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter basename="/afst">
+        <SetupRedirect>
+          <Routes>
+            <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/setup" element={<Setup />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/books" element={<Books />} />
+            <Route path="/books/:id" element={<BookDetail />} />
             <Route path="/readers" element={<Readers />} />
             <Route path="/borrow" element={<Borrow />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/library" element={<Library />} />
-            <Route path="/reader/:bookId" element={<Reader />} />
+            <Route path="/collections" element={<Collections />} />
+            <Route path="/books/:bookId/read" element={<Reader />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/admin/books" element={<AdminBooks />} />
             <Route path="/admin/users" element={<Users />} />
@@ -76,5 +83,6 @@ export default function App() {
         <ToastContainer />
       </SetupRedirect>
     </BrowserRouter>
+  </QueryClientProvider>
   );
 }

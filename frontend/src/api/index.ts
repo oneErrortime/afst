@@ -31,6 +31,15 @@ import type {
   ReadingSession,
   StartSessionRequest,
   BookReadingStats,
+  Collection,
+  CreateCollectionRequest,
+  UpdateCollectionRequest,
+  AddBookToCollectionRequest,
+  Review,
+  CreateReviewRequest,
+  UpdateReviewRequest,
+  Bookmark,
+  CreateBookmarkRequest,
 } from '@/types';
 
 export const authApi = {
@@ -47,6 +56,66 @@ export const authApi = {
   getMe: async (): Promise<User> => {
     const response = await api.get<User>('/auth/me');
     return response.data;
+  },
+};
+
+export const bookmarksApi = {
+  getBookmarksByBook: async (bookId: string): Promise<Bookmark[]> => {
+    const response = await api.get<Bookmark[]>(`/bookmarks/book/${bookId}`);
+    return response.data;
+  },
+  createBookmark: async (data: CreateBookmarkRequest): Promise<Bookmark> => {
+    const response = await api.post<Bookmark>('/bookmarks', data);
+    return response.data;
+  },
+  deleteBookmark: async (id: string): Promise<void> => {
+    await api.delete(`/bookmarks/${id}`);
+  },
+};
+
+export const reviewsApi = {
+  getReviewsByBook: async (bookId: string): Promise<Review[]> => {
+    const response = await api.get<Review[]>(`/reviews/book/${bookId}`);
+    return response.data;
+  },
+  createReview: async (data: CreateReviewRequest): Promise<Review> => {
+    const response = await api.post<Review>('/reviews', data);
+    return response.data;
+  },
+  updateReview: async (id: string, data: UpdateReviewRequest): Promise<Review> => {
+    const response = await api.put<Review>(`/reviews/${id}`, data);
+    return response.data;
+  },
+  deleteReview: async (id: string): Promise<void> => {
+    await api.delete(`/reviews/${id}`);
+  },
+};
+
+export const collectionsApi = {
+  getMyCollections: async (): Promise<Collection[]> => {
+    const response = await api.get<Collection[]>('/collections');
+    return response.data;
+  },
+  getCollectionById: async (id: string): Promise<Collection> => {
+    const response = await api.get<Collection>(`/collections/${id}`);
+    return response.data;
+  },
+  createCollection: async (data: CreateCollectionRequest): Promise<Collection> => {
+    const response = await api.post<Collection>('/collections', data);
+    return response.data;
+  },
+  updateCollection: async (id: string, data: UpdateCollectionRequest): Promise<Collection> => {
+    const response = await api.put<Collection>(`/collections/${id}`, data);
+    return response.data;
+  },
+  deleteCollection: async (id: string): Promise<void> => {
+    await api.delete(`/collections/${id}`);
+  },
+  addBookToCollection: async (id: string, data: AddBookToCollectionRequest): Promise<void> => {
+    await api.post(`/collections/${id}/books`, data);
+  },
+  removeBookFromCollection: async (id: string, bookId: string): Promise<void> => {
+    await api.delete(`/collections/${id}/books/${bookId}`);
   },
 };
 

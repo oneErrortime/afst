@@ -114,7 +114,14 @@ func (h *BookFileHandler) ServeFile(c *gin.Context) {
 
 	c.Header("Content-Type", mimeType)
 	c.Header("Content-Disposition", "inline; filename="+filepath.Base(filePath))
-	c.File(file.Name())
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseDTO{Error: "Ошибка чтения информации о файле", Message: err.Error()})
+		return
+	}
+
+	http.ServeContent(c.Writer, c.Request, fileInfo.Name(), fileInfo.ModTime(), file)
 }
 
 func (h *BookFileHandler) Delete(c *gin.Context) {

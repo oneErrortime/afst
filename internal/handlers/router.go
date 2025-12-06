@@ -8,6 +8,8 @@ import (
 	"github.com/oneErrortime/afst/internal/models"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func corsMiddleware() gin.HandlerFunc {
@@ -33,6 +35,8 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(middleware.APIRouteMismatchLogger())
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := router.Group("/api/v1")
 
@@ -177,6 +181,34 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		sessions.POST("", handlers.ReadingSession.StartSession)
 		sessions.POST("/:id/end", handlers.ReadingSession.EndSession)
 		sessions.GET("/my", handlers.ReadingSession.GetMySessions)
+	}
+
+	collections := api.Group("/collections").Use(authMiddleware)
+	{
+		collections.POST("", handlers.Collection.CreateCollection)
+		collections.GET("", handlers.Collection.GetCollections)
+		collections.GET("/:id", handlers.Collection.GetCollectionByID)
+		collections.PUT("/:id", handlers.Collection.UpdateCollection)
+		collections.DELETE("/:id", handlers.Collection.DeleteCollection)
+		collections.POST("/:id/books", handlers.Collection.AddBookToCollection)
+		collections.DELETE("/:id/books/:book_id", handlers.Collection.RemoveBookFromCollection)
+	}
+
+	reviews := api.Group("/reviews")
+	{
+		reviews.GET("/book/:book_id", handlers.Review.GetReviewsByBook)
+
+		authProtectedReviews := reviews.Use(authMiddleware)
+		authProtectedReviews.POST("", handlers.Review.CreateReview)
+		authProtectedReviews.PUT("/:id", handlers.Review.UpdateReview)
+		authProtectedReviews.DELETE("/:id", handlers.Review.DeleteReview)
+	}
+
+	bookmarks := api.Group("/bookmarks").Use(authMiddleware)
+	{
+		bookmarks.POST("", handlers.Bookmark.CreateBookmark)
+		bookmarks.GET("/book/:book_id", handlers.Bookmark.GetBookmarksByBook)
+		bookmarks.DELETE("/:id", handlers.Bookmark.DeleteBookmark)
 	}
 
 	api.GET("/stats/dashboard", authMiddleware, requireLibrarian, handlers.GetDashboardStats)

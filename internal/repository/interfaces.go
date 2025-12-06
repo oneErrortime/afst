@@ -57,10 +57,38 @@ type FeatureFlagRepository interface {
 	GetAll() ([]models.FeatureFlag, error)
 }
 
+type CollectionRepository interface {
+	Create(collection *models.Collection) error
+	GetByUserID(userID uuid.UUID) ([]models.Collection, error)
+	GetByID(id uuid.UUID) (*models.Collection, error)
+	Update(collection *models.Collection) error
+	Delete(id uuid.UUID) error
+	AddBook(collectionID, bookID uuid.UUID) error
+	RemoveBook(collectionID, bookID uuid.UUID) error
+}
+
+type ReviewRepository interface {
+	Create(review *models.Review) error
+	GetByBookID(bookID uuid.UUID) ([]models.Review, error)
+	GetByID(id uuid.UUID) (*models.Review, error)
+	Update(review *models.Review) error
+	Delete(id uuid.UUID) error
+}
+
+type BookmarkRepository interface {
+	Create(bookmark *models.Bookmark) error
+	GetByBookID(userID, bookID uuid.UUID) ([]models.Bookmark, error)
+	GetByID(id uuid.UUID) (*models.Bookmark, error)
+	Delete(id uuid.UUID) error
+}
+
 type Repository struct {
 	User         UserRepository
 	Book         BookRepository
 	Reader       ReaderRepository
 	BorrowedBook BorrowedBookRepository
 	FeatureFlag  FeatureFlagRepository
+	Collection   CollectionRepository
+	Review       ReviewRepository
+	Bookmark     BookmarkRepository
 }

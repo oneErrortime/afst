@@ -104,6 +104,31 @@ type ReadingSessionService interface {
 	GetBookStats(bookID uuid.UUID) (*models.BookReadingStats, error)
 }
 
+type CollectionService interface {
+	CreateCollection(collection *models.Collection) error
+	GetCollectionsByUserID(userID uuid.UUID) ([]models.Collection, error)
+	GetCollectionByID(id uuid.UUID) (*models.Collection, error)
+	UpdateCollection(collection *models.Collection) error
+	DeleteCollection(id uuid.UUID) error
+	AddBookToCollection(collectionID, bookID uuid.UUID) error
+	RemoveBookFromCollection(collectionID, bookID uuid.UUID) error
+}
+
+type ReviewService interface {
+	CreateReview(review *models.Review) error
+	GetReviewsByBookID(bookID uuid.UUID) ([]models.Review, error)
+	GetReviewByID(id uuid.UUID) (*models.Review, error)
+	UpdateReview(review *models.Review) error
+	DeleteReview(id uuid.UUID) error
+}
+
+type BookmarkService interface {
+	CreateBookmark(bookmark *models.Bookmark) error
+	GetBookmarksByBookID(userID, bookID uuid.UUID) ([]models.Bookmark, error)
+	GetBookmarkByID(id uuid.UUID) (*models.Bookmark, error)
+	DeleteBookmark(id uuid.UUID) error
+}
+
 type Services struct {
 	Auth           AuthService
 	Book           BookService
@@ -116,4 +141,7 @@ type Services struct {
 	BookFile       BookFileService
 	ReadingSession ReadingSessionService
 	FeatureFlag    FeatureFlagService
+	Collection     CollectionService
+	Review         ReviewService
+	Bookmark       BookmarkService
 }

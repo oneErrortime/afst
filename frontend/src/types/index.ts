@@ -348,3 +348,67 @@ export interface PaginationParams {
   limit?: number;
   offset?: number;
 }
+
+export interface Collection {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  books?: Book[];
+}
+
+export interface CreateCollectionRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateCollectionRequest {
+  name?: string;
+  description?: string;
+}
+
+export interface AddBookToCollectionRequest {
+  book_id: string;
+}
+
+export interface Review {
+  id: string;
+  user_id: string;
+  book_id: string;
+  rating: number;
+  title: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+}
+
+export interface CreateReviewRequest {
+  book_id: string;
+  rating: number;
+  title?: string;
+  body?: string;
+}
+
+export interface Bookmark {
+  id: string;
+  user_id: string;
+  book_id: string;
+  location: string;
+  label: string;
+  created_at: string;
+}
+
+export interface CreateBookmarkRequest {
+  book_id: string;
+  location: string;
+  label?: string;
+}
+
+export interface UpdateReviewRequest {
+  rating?: number;
+  title?: string;
+  body?: string;
+}
