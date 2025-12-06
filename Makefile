@@ -128,9 +128,10 @@ api-test: ## Тестирование API эндпоинтов
 	@echo "Тестирование API..."
 	@if [ -f scripts/api-test.sh ]; then bash scripts/api-test.sh; else echo "API тесты будут добавлены позже"; fi
 
-.PHONY: api-docs
-api-docs: ## Генерация документации API
-	@echo "Документация доступна на /health эндпоинте после запуска"
+.PHONY: swagger
+swagger: ## Сгенерировать документацию API (Swagger/OpenAPI)
+	@echo "Генерация Swagger документации..."
+	./bin/swag init -g cmd/server/main.go
 
 .PHONY: help
 help: ## Показать помощь
