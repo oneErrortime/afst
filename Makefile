@@ -115,9 +115,12 @@ clean: ## Очистить сгенерированные файлы
 .PHONY: install-tools
 install-tools: ## Установить инструменты разработки
 	@echo "Установка инструментов..."
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install golang.org/x/tools/cmd/goimports@latest
-	go install github.com/cosmtrek/air@latest
+
+.PHONY: create-admin
+create-admin: ## Создать нового администратора (например, make create-admin email=admin@gmail.com password=secret)
+	@echo "Создание администратора..."
+	@go run ./cmd/cli $(email) $(password)
+
 
 # Команды API
 .PHONY: api-test

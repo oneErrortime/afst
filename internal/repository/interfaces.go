@@ -14,6 +14,7 @@ type UserRepository interface {
 	Delete(id uuid.UUID) error
 	List(limit, offset int) ([]models.User, error)
 	Count() (int64, error)
+	CountByRole(role models.UserRole) (int64, error)
 	GetByGroupID(groupID uuid.UUID) ([]models.User, error)
 }
 
@@ -48,9 +49,15 @@ type BorrowedBookRepository interface {
 }
 
 // Repository объединяет все репозитории
+type FeatureFlagRepository interface {
+	GetByName(name string) (*models.FeatureFlag, error)
+	GetAll() ([]models.FeatureFlag, error)
+}
+
 type Repository struct {
 	User         UserRepository
 	Book         BookRepository
 	Reader       ReaderRepository
 	BorrowedBook BorrowedBookRepository
+	FeatureFlag  FeatureFlagRepository
 }

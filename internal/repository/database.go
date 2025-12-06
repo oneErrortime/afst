@@ -52,6 +52,7 @@ func Migrate(db *gorm.DB) error {
 		&models.ReadingSession{},
 		&models.Reader{},
 		&models.BorrowedBook{},
+		&models.FeatureFlag{},
 	)
 }
 
@@ -88,5 +89,33 @@ func SeedDefaultData(db *gorm.DB) error {
 		}
 	}
 
+	seedFeatureFlags(db)
+
 	return nil
+}
+
+func seedFeatureFlags(db *gorm.DB) {
+	var count int64
+	db.Model(&models.FeatureFlag{}).Count(&count)
+	if count > 0 {
+		return
+	}
+
+	flags := []models.FeatureFlag{
+		{Name: "enable_reservations", IsActive: true},
+		{Name: "enable_subscriptions", IsActive: true},
+		{Name: "enable_reviews", IsActive: true},
+		{Name: "enable_analytics", IsActive: true},
+		{Name: "enable_recommendations", IsActive: true},
+		{Name: "enable_notifications", IsActive: true},
+		{Name: "enable_file_upload", IsActive: true},
+		{Name: "enable_exports", IsActive: true},
+		{Name: "enable_webhooks", IsActive: true},
+		{Name: "enable_graphql", IsActive: false},
+		{Name: "maintenance_mode", IsActive: true},
+	}
+
+	for _, flag := range flags {
+		db.Create(&flag)
+	}
 }

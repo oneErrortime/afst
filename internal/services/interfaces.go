@@ -15,6 +15,7 @@ type AuthService interface {
 	UpdateUser(id string, dto *models.UpdateUserDTO) (*models.User, error)
 	ListUsers(limit, offset int) ([]models.User, int64, error)
 	CreateAdmin(email, password, name string) (*models.User, error)
+	HasAdminAccount() (bool, error)
 }
 
 // BookService определяет интерфейс для управления книгами
@@ -109,4 +110,5 @@ type Services struct {
 	BookAccess     BookAccessService
 	BookFile       BookFileService
 	ReadingSession ReadingSessionService
+	FeatureFlag    FeatureFlagService
 }

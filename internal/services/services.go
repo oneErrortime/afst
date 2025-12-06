@@ -8,10 +8,11 @@ import (
 
 func NewServices(repos *repository.Repository, jwtService *auth.JWTService) *Services {
 	return &Services{
-		Auth:   NewAuthService(repos.User, nil, jwtService),
-		Book:   NewBookService(repos.Book),
-		Reader: NewReaderService(repos.Reader),
-		Borrow: NewBorrowService(repos.Book, repos.Reader, repos.BorrowedBook),
+		Auth:        NewAuthService(repos.User, nil, jwtService),
+		Book:        NewBookService(repos.Book),
+		Reader:      NewReaderService(repos.Reader),
+		Borrow:      NewBorrowService(repos.Book, repos.Reader, repos.BorrowedBook),
+		FeatureFlag: NewFeatureFlagService(repos.FeatureFlag),
 	}
 }
 
@@ -27,5 +28,6 @@ func NewExtendedServices(repos *repository.ExtendedRepository, jwtService *auth.
 		BookAccess:     NewBookAccessService(repos.BookAccess, repos.Book, repos.User, repos.Subscription, repos.UserGroup),
 		BookFile:       NewBookFileService(repos.BookFile, repos.Book, fileStorage),
 		ReadingSession: NewReadingSessionService(repos.ReadingSession, repos.BookAccess),
+		FeatureFlag:    NewFeatureFlagService(repos.FeatureFlag),
 	}
 }
