@@ -21,6 +21,7 @@ type Handlers struct {
 	Collection     *CollectionHandler
 	Review         *ReviewHandler
 	Bookmark       *BookmarkHandler
+	Social         *SocialHandler
 	Services       *services.Services
 }
 
@@ -51,6 +52,7 @@ func NewExtendedHandlers(services *services.Services, fileStorage storage.FileSt
 		Collection:     NewCollectionHandler(services.Collection),
 		Review:         NewReviewHandler(services.Review),
 		Bookmark:       NewBookmarkHandler(services.Bookmark),
+		Social:         NewSocialHandler(services.Social),
 		Services:       services,
 	}
 }

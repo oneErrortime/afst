@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "github.com/oneErrortime/afst/docs" // Swagger docs
 	"fmt"
 	"log"
 	"os"
@@ -16,22 +15,25 @@ import (
 	"github.com/oneErrortime/afst/internal/repository/gorm"
 	"github.com/oneErrortime/afst/internal/services"
 	"github.com/oneErrortime/afst/internal/storage"
+
+	_ "github.com/oneErrortime/afst/docs"
 )
 
-// @title Library API
-// @version 2.0
-// @description This is a powerful API for a library management system.
-// @termsOfService http://swagger.io/terms/
-// @contact.name API Support
-// @contact.url https://github.com/oneErrortime
-// @contact.email dev@oneerrortime.com
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host localhost:8080
-// @BasePath /api/v1
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
+// @title						Digital Library API
+// @version					2.0
+// @description				API for a digital library application, providing functionalities for book management, user authentication, and reading features.
+// @termsOfService				http://swagger.io/terms/
+// @contact.name				API Support
+// @contact.url				http://www.swagger.io/support
+// @contact.email				support@swagger.io
+// @license.name				MIT
+// @license.url				https://opensource.org/licenses/MIT
+// @host						localhost:8080
+// @BasePath					/api/v1
+// @securityDefinitions.apiKey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Type "Bearer" followed by a space and a JWT token.
 func main() {
 	cfg, err := config.Load()
 	if err != nil {

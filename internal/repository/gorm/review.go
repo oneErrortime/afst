@@ -20,7 +20,7 @@ func (r *reviewRepository) Create(review *models.Review) error {
 
 func (r *reviewRepository) GetByBookID(bookID uuid.UUID) ([]models.Review, error) {
 	var reviews []models.Review
-	err := r.db.Where("book_id = ?", bookID).Find(&reviews).Error
+	err := r.db.Preload("User").Where("book_id = ?", bookID).Order("created_at DESC").Find(&reviews).Error
 	return reviews, err
 }
 

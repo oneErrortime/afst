@@ -4,6 +4,7 @@ import { booksApi } from '@/api';
 import { Book } from '@/types';
 import { Loading } from '@/components/ui';
 import { Reviews } from '@/components/reviews/Reviews';
+import { RecommendedBooks } from '@/components/books/RecommendedBooks';
 
 export function BookDetail() {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,10 @@ export function BookDetail() {
 
       <div className="pt-8">
         <Reviews bookId={book.id} />
+      </div>
+
+      <div className="pt-8">
+        <RecommendedBooks bookId={book.id} />
       </div>
     </div>
   );

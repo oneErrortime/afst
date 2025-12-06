@@ -14,16 +14,20 @@ definitions:
     - name
     - password
     type: object
+  models.AddBookToCollectionDTO:
+    properties:
+      book_id:
+        type: string
+    required:
+    - book_id
+    type: object
   models.AuthRequestDTO:
     properties:
       email:
-        example: user@example.com
         type: string
       name:
-        example: John Doe
         type: string
       password:
-        example: password123
         minLength: 6
         type: string
     required:
@@ -33,10 +37,8 @@ definitions:
   models.AuthResponseDTO:
     properties:
       message:
-        example: Successfully authenticated
         type: string
       token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
       user:
         $ref: '#/definitions/models.UserResponseDTO'
@@ -44,73 +46,53 @@ definitions:
   models.Book:
     properties:
       author:
-        example: Alan A. A. Donovan
         type: string
       categories:
         items:
           $ref: '#/definitions/models.Category'
         type: array
       copies_count:
-        example: 10
         minimum: 0
         type: integer
       cover_url:
-        example: https://images.gr-assets.com/books/1435093416l/25132924.jpg
         type: string
       created_at:
-        example: "2023-01-01T12:00:00Z"
         type: string
       description:
-        example: A masterpiece of programming language books.
         type: string
       download_count:
-        example: 50
         type: integer
       files:
         items:
           $ref: '#/definitions/models.BookFile'
         type: array
       id:
-        example: a8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b4
         type: string
       is_premium:
-        example: false
         type: boolean
       isbn:
-        example: 978-0134190440
         type: string
       language:
-        example: English
         type: string
       page_count:
-        example: 380
         type: integer
       publication_year:
-        example: 2015
         maximum: 9999
         minimum: 0
         type: integer
       publisher:
-        example: Addison-Wesley Professional
         type: string
       rating:
-        example: 4.5
         type: number
       rating_count:
-        example: 25
         type: integer
       status:
-        allOf:
-        - $ref: '#/definitions/models.BookStatus'
-        example: published
+        $ref: '#/definitions/models.BookStatus'
       title:
-        example: The Go Programming Language
         type: string
       updated_at:
-        example: "2023-01-01T12:00:00Z"
         type: string
       view_count:
-        example: 100
         type: integer
     required:
     - author
@@ -155,6 +137,22 @@ definitions:
     - BookStatusDraft
     - BookStatusPublished
     - BookStatusArchived
+  models.Bookmark:
+    properties:
+      book_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      label:
+        type: string
+      location:
+        description: Может быть номером страницы, CFI для EPUB, и т.д.
+        type: string
+      user_id:
+        type: string
+    type: object
   models.Category:
     properties:
       children:
@@ -188,59 +186,102 @@ definitions:
     required:
     - name
     type: object
+  models.Collection:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/models.Book'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
   models.CreateBookDTO:
     properties:
       author:
-        example: Alan A. A. Donovan
         type: string
       category_ids:
         items:
           type: string
         type: array
       copies_count:
-        example: 10
         minimum: 0
         type: integer
       cover_url:
-        example: https://images.gr-assets.com/books/1435093416l/25132924.jpg
         type: string
       description:
-        example: A masterpiece of programming language books.
         type: string
       is_premium:
-        example: false
         type: boolean
       isbn:
-        example: 978-0134190440
         type: string
       language:
-        example: English
         type: string
       page_count:
-        example: 380
         type: integer
       publication_year:
-        example: 2015
         maximum: 9999
         minimum: 0
         type: integer
       publisher:
-        example: Addison-Wesley Professional
         type: string
       title:
-        example: The Go Programming Language
         type: string
     required:
     - author
     - title
     type: object
+  models.CreateBookmarkDTO:
+    properties:
+      book_id:
+        type: string
+      label:
+        type: string
+      location:
+        type: string
+    required:
+    - book_id
+    - location
+    type: object
+  models.CreateCollectionDTO:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateReviewDTO:
+    properties:
+      body:
+        type: string
+      book_id:
+        type: string
+      rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+      title:
+        type: string
+    required:
+    - book_id
+    - rating
+    type: object
   models.ErrorResponseDTO:
     properties:
       error:
-        example: Resource not found
         type: string
       message:
-        example: The requested resource was not found on the server
         type: string
     type: object
   models.FileType:
@@ -262,17 +303,34 @@ definitions:
   models.PaginationDTO:
     properties:
       last_page:
-        example: 5
         type: integer
       limit:
-        example: 20
         type: integer
       page:
-        example: 1
         type: integer
       total:
-        example: 100
         type: integer
+    type: object
+  models.Review:
+    properties:
+      body:
+        type: string
+      book_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      rating:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: string
     type: object
   models.Subscription:
     properties:
@@ -344,65 +402,65 @@ definitions:
   models.UpdateBookDTO:
     properties:
       author:
-        example: Alan A. A. Donovan
         type: string
       category_ids:
         items:
           type: string
         type: array
       copies_count:
-        example: 10
         minimum: 0
         type: integer
       cover_url:
-        example: https://images.gr-assets.com/books/1435093416l/25132924.jpg
         type: string
       description:
-        example: A masterpiece of programming language books.
         type: string
       is_premium:
-        example: false
         type: boolean
       isbn:
-        example: 978-0134190440
         type: string
       language:
-        example: English
         type: string
       page_count:
-        example: 380
         type: integer
       publication_year:
-        example: 2015
         maximum: 9999
         minimum: 0
         type: integer
       publisher:
-        example: Addison-Wesley Professional
         type: string
       status:
-        allOf:
-        - $ref: '#/definitions/models.BookStatus'
-        example: published
+        $ref: '#/definitions/models.BookStatus'
       title:
-        example: The Go Programming Language
+        type: string
+    type: object
+  models.UpdateCollectionDTO:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  models.UpdateReviewDTO:
+    properties:
+      body:
+        type: string
+      rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+      title:
         type: string
     type: object
   models.UpdateUserDTO:
     properties:
       group_id:
-        example: b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5
         type: string
       is_active:
-        example: true
         type: boolean
       name:
-        example: John Doe
         type: string
       role:
-        allOf:
-        - $ref: '#/definitions/models.UserRole'
-        example: librarian
+        $ref: '#/definitions/models.UserRole'
     type: object
   models.User:
     properties:
@@ -475,38 +533,47 @@ definitions:
     - GroupTypeStudent
     - GroupTypeFree
     - GroupTypeSubscriber
+  models.UserPublicProfileDTO:
+    properties:
+      collections:
+        items:
+          $ref: '#/definitions/models.Collection'
+        type: array
+      follower_count:
+        type: integer
+      following_count:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      reviews:
+        items:
+          $ref: '#/definitions/models.Review'
+        type: array
+    type: object
   models.UserResponseDTO:
     properties:
       avatar_url:
-        example: https://example.com/avatar.png
         type: string
       created_at:
-        example: "2023-01-01T12:00:00Z"
         type: string
       email:
-        example: user@example.com
         type: string
       email_verified:
-        example: true
         type: boolean
       group:
         $ref: '#/definitions/models.UserGroup'
       group_id:
-        example: b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5
         type: string
       id:
-        example: a8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b4
         type: string
       is_active:
-        example: true
         type: boolean
       name:
-        example: John Doe
         type: string
       role:
-        allOf:
-        - $ref: '#/definitions/models.UserRole'
-        example: user
+        $ref: '#/definitions/models.UserRole'
       subscription:
         $ref: '#/definitions/models.Subscription'
     type: object
@@ -523,26 +590,28 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: dev@oneerrortime.com
+    email: support@swagger.io
     name: API Support
-    url: https://github.com/oneErrortime
-  description: This is a powerful API for a library management system.
+    url: http://www.swagger.io/support
+  description: API for a digital library application, providing functionalities for
+    book management, user authentication, and reading features.
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    name: MIT
+    url: https://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
-  title: Library API
+  title: Digital Library API
   version: "2.0"
 paths:
   /auth/login:
     post:
       consumes:
       - application/json
-      description: Log in a user with email and password
+      description: Logs in a user with the provided email and password, returning
+        a JWT token.
       parameters:
-      - description: Auth Request
+      - description: User login data
         in: body
-        name: auth_request
+        name: authRequest
         required: true
         schema:
           $ref: '#/definitions/models.AuthRequestDTO'
@@ -563,10 +632,11 @@ paths:
             $ref: '#/definitions/models.ErrorResponseDTO'
       summary: Log in a user
       tags:
-      - auth
+      - Auth
   /auth/me:
     get:
-      description: Get the current user's profile
+      description: Retrieves the profile information for the currently authenticated
+        user.
       produces:
       - application/json
       responses:
@@ -583,19 +653,19 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       security:
-      - ApiKeyAuth: []
-      summary: Get the current user
+      - BearerAuth: []
+      summary: Get current user's profile
       tags:
-      - auth
+      - Auth
   /auth/register:
     post:
       consumes:
       - application/json
-      description: Register a new user with email and password
+      description: Registers a new user with the provided email and password.
       parameters:
-      - description: Auth Request
+      - description: User registration data
         in: body
-        name: auth_request
+        name: authRequest
         required: true
         schema:
           $ref: '#/definitions/models.AuthRequestDTO'
@@ -616,16 +686,131 @@ paths:
             $ref: '#/definitions/models.ErrorResponseDTO'
       summary: Register a new user
       tags:
-      - auth
+      - Auth
+  /bookmarks:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new bookmark for a book by the authenticated user.
+      parameters:
+      - description: Bookmark data
+        in: body
+        name: bookmark
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateBookmarkDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Bookmark'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Create a new bookmark
+      tags:
+      - Bookmarks
+  /bookmarks/{id}:
+    delete:
+      description: Deletes a bookmark by its ID.
+      parameters:
+      - description: Bookmark ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Delete a bookmark
+      tags:
+      - Bookmarks
+  /bookmarks/book/{book_id}:
+    get:
+      description: Retrieves all bookmarks for a specific book by the authenticated
+        user.
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Bookmark'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Get bookmarks for a book
+      tags:
+      - Bookmarks
   /books:
     get:
-      description: Get a list of all books with pagination
+      description: Retrieves a paginated list of all available books.
       parameters:
-      - description: Limit
+      - default: 20
+        description: Number of books to return
         in: query
         name: limit
         type: integer
-      - description: Offset
+      - default: 0
+        description: Offset for pagination
         in: query
         name: offset
         type: integer
@@ -635,22 +820,29 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SuccessResponseDTO'
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponseDTO'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.Book'
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       summary: Get all books
       tags:
-      - books
+      - Books
     post:
       consumes:
       - application/json
-      description: Create a new book
+      description: Adds a new book to the library. Librarian access required.
       parameters:
-      - description: Book Request
+      - description: Book creation data
         in: body
-        name: book_request
+        name: book
         required: true
         schema:
           $ref: '#/definitions/models.CreateBookDTO'
@@ -660,9 +852,18 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.SuccessResponseDTO'
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponseDTO'
+            - properties:
+                Data:
+                  $ref: '#/definitions/models.Book'
+              type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
         "409":
@@ -670,13 +871,13 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       security:
-      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Create a new book
       tags:
-      - books
+      - Books
   /books/{id}:
     delete:
-      description: Delete a book by its ID
+      description: Deletes a book from the library. Librarian access required.
       parameters:
       - description: Book ID
         in: path
@@ -694,19 +895,24 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       security:
-      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Delete a book
       tags:
-      - books
+      - Books
     get:
-      description: Get a single book by its UUID
+      description: Retrieves the details of a specific book by its UUID.
       parameters:
       - description: Book ID
+        format: uuid
         in: path
         name: id
         required: true
@@ -728,23 +934,161 @@ paths:
             $ref: '#/definitions/models.ErrorResponseDTO'
       summary: Get a book by ID
       tags:
-      - books
+      - Books
     put:
       consumes:
       - application/json
-      description: Update a book's details
+      description: Updates the details of a specific book. Librarian access required.
       parameters:
       - description: Book ID
         in: path
         name: id
         required: true
         type: string
-      - description: Book Update
+      - description: Book data to update
         in: body
-        name: book_update
+        name: book
         required: true
         schema:
           $ref: '#/definitions/models.UpdateBookDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponseDTO'
+            - properties:
+                Data:
+                  $ref: '#/definitions/models.Book'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Update a book
+      tags:
+      - Books
+  /books/{id}/recommendations:
+    get:
+      description: Retrieves a list of recommended books based on the reading history
+        of users who read the specified book.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 10
+        description: Limit for recommendations
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponseDTO'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.Book'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      summary: Get book recommendations
+      tags:
+      - Books
+  /collections:
+    get:
+      description: Retrieves all collections for the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Collection'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Get user's collections
+      tags:
+      - Collections
+    post:
+      consumes:
+      - application/json
+      description: Creates a new collection for the authenticated user.
+      parameters:
+      - description: Collection data
+        in: body
+        name: collection
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCollectionDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Collection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Create a new collection
+      tags:
+      - Collections
+  /collections/{id}:
+    delete:
+      description: Deletes a collection by its ID.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -756,25 +1100,353 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Delete a collection
+      tags:
+      - Collections
+    get:
+      description: Retrieves a single collection by its ID.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Collection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       security:
-      - ApiKeyAuth: []
-      summary: Update a book
+      - BearerAuth: []
+      summary: Get a collection by ID
       tags:
-      - books
+      - Collections
+    put:
+      consumes:
+      - application/json
+      description: Updates a collection's name and/or description.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Collection data to update
+        in: body
+        name: collection
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCollectionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Collection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Update a collection
+      tags:
+      - Collections
+  /collections/{id}/books:
+    post:
+      consumes:
+      - application/json
+      description: Adds a specific book to a specific collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Book ID to add
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddBookToCollectionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Add a book to a collection
+      tags:
+      - Collections
+  /collections/{id}/books/{book_id}:
+    delete:
+      description: Removes a specific book from a specific collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Remove a book from a collection
+      tags:
+      - Collections
+  /reviews:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new review for a book by the authenticated user.
+      parameters:
+      - description: Review data
+        in: body
+        name: review
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateReviewDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Review'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Create a new review
+      tags:
+      - Reviews
+  /reviews/{id}:
+    delete:
+      description: Deletes a review by its ID. Can be done by the author or an admin.
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Delete a review
+      tags:
+      - Reviews
+    put:
+      consumes:
+      - application/json
+      description: Updates a review written by the authenticated user.
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Review data to update
+        in: body
+        name: review
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateReviewDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Review'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Update a review
+      tags:
+      - Reviews
+  /reviews/book/{book_id}:
+    get:
+      description: Retrieves all reviews for a specific book.
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Review'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      summary: Get reviews for a book
+      tags:
+      - Reviews
   /users:
     get:
-      description: Get a list of all users with pagination
+      description: Get a paginated list of users. Admin access required.
       parameters:
-      - description: Limit
+      - description: Limit per page
         in: query
+        maximum: 100
+        minimum: 1
         name: limit
         type: integer
-      - description: Offset
+      - description: Offset for pagination
         in: query
+        minimum: 0
         name: offset
         type: integer
       produces:
@@ -783,30 +1455,37 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ListResponseDTO'
+            allOf:
+            - $ref: '#/definitions/models.ListResponseDTO'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.UserResponseDTO'
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       security:
-      - ApiKeyAuth: []
-      summary: List all users
+      - BearerAuth: []
+      summary: List users
       tags:
-      - users
+      - Users
   /users/{id}:
     put:
       consumes:
       - application/json
-      description: Update a user's details by an admin
+      description: Update user details by their ID. Admin access required.
       parameters:
       - description: User ID
         in: path
         name: id
         required: true
         type: string
-      - description: User Update
+      - description: User data to update
         in: body
-        name: user_update
+        name: user
         required: true
         schema:
           $ref: '#/definitions/models.UpdateUserDTO'
@@ -826,19 +1505,112 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       security:
-      - ApiKeyAuth: []
-      summary: Update a user by admin
+      - BearerAuth: []
+      summary: Update a user by ID
       tags:
-      - users
+      - Users
+  /users/{id}/follow:
+    delete:
+      description: Unsubscribes the authenticated user from another user.
+      parameters:
+      - description: User ID to unfollow
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Unfollow a user
+      tags:
+      - Social
+    post:
+      description: Subscribes the authenticated user to another user.
+      parameters:
+      - description: User ID to follow
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      security:
+      - BearerAuth: []
+      summary: Follow a user
+      tags:
+      - Social
+  /users/{id}/profile:
+    get:
+      description: Retrieves a user's public profile including follower counts, collections,
+        and reviews.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserPublicProfileDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponseDTO'
+      summary: Get a user's public profile
+      tags:
+      - Social
   /users/admin:
     post:
       consumes:
       - application/json
-      description: Create a new admin user
+      description: Creates a new user with the admin role. Admin access required.
       parameters:
-      - description: Admin Request
+      - description: Admin user data
         in: body
-        name: admin_request
+        name: adminRequest
         required: true
         schema:
           $ref: '#/definitions/handlers.CreateAdminRequest'
@@ -858,12 +1630,13 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorResponseDTO'
       security:
-      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Create a new admin user
       tags:
-      - users
+      - Users
 securityDefinitions:
-  ApiKeyAuth:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and a JWT token.
     in: header
     name: Authorization
     type: apiKey

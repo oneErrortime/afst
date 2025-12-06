@@ -1,27 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { collectionsApi } from '@/api';
-import { Collection, CreateCollectionRequest, UpdateCollectionRequest } from '@/types';
+import { CollectionsService, Collection, CreateCollectionDTO, UpdateCollectionDTO, OpenAPI } from '@/shared/api';
 import { Loading, EmptyState, Modal, Input, Button, toast, ConfirmDialog } from '@/components/ui';
 import { Plus } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+
+
+OpenAPI.BASE = 'http://localhost:8080/api/v1';
 
 export function Collections() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
-  const [form, setForm] = useState<CreateCollectionRequest>({ name: '', description: '' });
+  const [form, setForm] = useState<CreateCollectionDTO>({ name: '', description: '' });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { token } = useAuthStore();
+
+  useEffect(() => {
+    if (token) {
+      OpenAPI.HEADERS = {
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }, [token]);
 
   const fetchCollections = async () => {
     try {
       setLoading(true);
-      const data = await collectionsApi.getMyCollections();
-      setCollections(data);
+      const data = await CollectionsService.getCollections();
+      setCollections(data || []);
     } catch (err) {
-      setError('Failed to fetch collections.');
+      toast.error('Failed to fetch collections.');
     } finally {
       setLoading(false);
     }
@@ -48,10 +59,10 @@ export function Collections() {
     setSaving(true);
     try {
       if (editingCollection) {
-        await collectionsApi.updateCollection(editingCollection.id, form);
+        await CollectionsService.putCollections({ id: editingCollection.id, requestBody: form as UpdateCollectionDTO });
         toast.success('Collection updated');
       } else {
-        await collectionsApi.createCollection(form);
+        await CollectionsService.postCollections({ requestBody: form });
         toast.success('Collection created');
       }
       setModalOpen(false);
@@ -67,7 +78,7 @@ export function Collections() {
     if (!deletingCollection) return;
     setDeleting(true);
     try {
-      await collectionsApi.deleteCollection(deletingCollection.id);
+      await CollectionsService.deleteCollections({ id: deletingCollection.id });
       toast.success('Collection deleted');
       setDeletingCollection(null);
       fetchCollections();
@@ -82,24 +93,20 @@ export function Collections() {
     return <Loading text="Loading collections..." />;
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">My Collections</h1>
+        <h1 className="text-2xl font-bold">Мои коллекции</h1>
         <Button onClick={openCreateModal}>
           <Plus className="h-4 w-4" />
-          New Collection
+          Новая коллекция
         </Button>
       </div>
 
       {collections.length === 0 ? (
         <EmptyState
-          title="No collections yet"
-          description="Create your first collection to organize your books."
+          title="Коллекций пока нет"
+          description="Создайте свою первую коллекцию, чтобы упорядочить книги."
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -108,8 +115,8 @@ export function Collections() {
               <h2 className="font-semibold text-lg">{collection.name}</h2>
               <p className="text-gray-500 text-sm">{collection.description}</p>
               <div className="mt-4 flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => openEditModal(collection)}>Edit</Button>
-                <Button variant="danger" size="sm" onClick={() => setDeletingCollection(collection)}>Delete</Button>
+                <Button variant="outline" size="sm" onClick={() => openEditModal(collection)}>Редактировать</Button>
+                <Button variant="danger" size="sm" onClick={() => setDeletingCollection(collection)}>Удалить</Button>
               </div>
             </div>
           ))}
@@ -119,26 +126,26 @@ export function Collections() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingCollection ? 'Edit Collection' : 'New Collection'}
+        title={editingCollection ? 'Редактировать коллекцию' : 'Новая коллекция'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Name"
+            label="Название"
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
             required
           />
           <Input
-            label="Description"
+            label="Описание"
             value={form.description || ''}
             onChange={e => setForm({ ...form, description: e.target.value })}
           />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
-              Cancel
+              Отмена
             </Button>
             <Button type="submit" loading={saving}>
-              {editingCollection ? 'Save' : 'Create'}
+              {editingCollection ? 'Сохранить' : 'Создать'}
             </Button>
           </div>
         </form>
@@ -148,8 +155,8 @@ export function Collections() {
         isOpen={!!deletingCollection}
         onClose={() => setDeletingCollection(null)}
         onConfirm={handleDelete}
-        title="Delete Collection"
-        message={`Are you sure you want to delete the collection "${deletingCollection?.name}"?`}
+        title="Удалить коллекцию?"
+        message={`Вы уверены, что хотите удалить коллекцию "${deletingCollection?.name}"?`}
         loading={deleting}
       />
     </div>

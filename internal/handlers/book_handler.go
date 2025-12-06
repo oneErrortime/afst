@@ -26,17 +26,18 @@ func NewBookHandler(bookService services.BookService, validator *validator.Valid
 }
 
 // CreateBook godoc
-// @Summary Create a new book
-// @Description Create a new book
-// @Tags books
-// @Accept  json
-// @Produce  json
-// @Security ApiKeyAuth
-// @Param   book_request     body    models.CreateBookDTO     true  "Book Request"
-// @Success 201 {object} models.SuccessResponseDTO
-// @Failure 400 {object} models.ErrorResponseDTO
-// @Failure 409 {object} models.ErrorResponseDTO
-// @Router /books [post]
+// @Summary		Create a new book
+// @Description	Adds a new book to the library. Librarian access required.
+// @Tags			Books
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			book	body		models.CreateBookDTO	true	"Book creation data"
+// @Success		201		{object}	models.SuccessResponseDTO{Data=models.Book}
+// @Failure		400		{object}	models.ErrorResponseDTO
+// @Failure		401		{object}	models.ErrorResponseDTO
+// @Failure		409		{object}	models.ErrorResponseDTO
+// @Router			/books [post]
 func (h *BookHandler) CreateBook(c *gin.Context) {
 	var req models.CreateBookDTO
 
@@ -75,15 +76,15 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 }
 
 // GetBook godoc
-// @Summary Get a book by ID
-// @Description Get a single book by its UUID
-// @Tags books
-// @Produce  json
-// @Param id path string true "Book ID"
-// @Success 200 {object} models.Book
-// @Failure 400 {object} models.ErrorResponseDTO
-// @Failure 404 {object} models.ErrorResponseDTO
-// @Router /books/{id} [get]
+// @Summary		Get a book by ID
+// @Description	Retrieves the details of a specific book by its UUID.
+// @Tags			Books
+// @Produce		json
+// @Param			id	path		string	true	"Book ID"	Format(uuid)
+// @Success		200	{object}	models.Book
+// @Failure		400	{object}	models.ErrorResponseDTO
+// @Failure		404	{object}	models.ErrorResponseDTO
+// @Router			/books/{id} [get]
 func (h *BookHandler) GetBook(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -108,15 +109,15 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 }
 
 // GetAllBooks godoc
-// @Summary Get all books
-// @Description Get a list of all books with pagination
-// @Tags books
-// @Produce  json
-// @Param limit query int false "Limit"
-// @Param offset query int false "Offset"
-// @Success 200 {object} models.SuccessResponseDTO
-// @Failure 500 {object} models.ErrorResponseDTO
-// @Router /books [get]
+// @Summary		Get all books
+// @Description	Retrieves a paginated list of all available books.
+// @Tags			Books
+// @Produce		json
+// @Param			limit	query		int	false	"Number of books to return"				default(20)
+// @Param			offset	query		int	false	"Offset for pagination"					default(0)
+// @Success		200		{object}	models.SuccessResponseDTO{Data=[]models.Book}
+// @Failure		500		{object}	models.ErrorResponseDTO
+// @Router			/books [get]
 func (h *BookHandler) GetAllBooks(c *gin.Context) {
 	// Парсим параметры пагинации
 	limitParam := c.DefaultQuery("limit", "20")
@@ -148,18 +149,19 @@ func (h *BookHandler) GetAllBooks(c *gin.Context) {
 }
 
 // UpdateBook godoc
-// @Summary Update a book
-// @Description Update a book's details
-// @Tags books
-// @Accept  json
-// @Produce  json
-// @Security ApiKeyAuth
-// @Param id path string true "Book ID"
-// @Param   book_update     body    models.UpdateBookDTO     true  "Book Update"
-// @Success 200 {object} models.SuccessResponseDTO
-// @Failure 400 {object} models.ErrorResponseDTO
-// @Failure 404 {object} models.ErrorResponseDTO
-// @Router /books/{id} [put]
+// @Summary		Update a book
+// @Description	Updates the details of a specific book. Librarian access required.
+// @Tags			Books
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id		path		string					true	"Book ID"
+// @Param			book	body		models.UpdateBookDTO	true	"Book data to update"
+// @Success		200		{object}	models.SuccessResponseDTO{Data=models.Book}
+// @Failure		400		{object}	models.ErrorResponseDTO
+// @Failure		401		{object}	models.ErrorResponseDTO
+// @Failure		404		{object}	models.ErrorResponseDTO
+// @Router			/books/{id} [put]
 func (h *BookHandler) UpdateBook(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -208,16 +210,17 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 }
 
 // DeleteBook godoc
-// @Summary Delete a book
-// @Description Delete a book by its ID
-// @Tags books
-// @Produce  json
-// @Security ApiKeyAuth
-// @Param id path string true "Book ID"
-// @Success 200 {object} models.SuccessResponseDTO
-// @Failure 400 {object} models.ErrorResponseDTO
-// @Failure 404 {object} models.ErrorResponseDTO
-// @Router /books/{id} [delete]
+// @Summary		Delete a book
+// @Description	Deletes a book from the library. Librarian access required.
+// @Tags			Books
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id	path		string	true	"Book ID"
+// @Success		200	{object}	models.SuccessResponseDTO
+// @Failure		400	{object}	models.ErrorResponseDTO
+// @Failure		401	{object}	models.ErrorResponseDTO
+// @Failure		404	{object}	models.ErrorResponseDTO
+// @Router			/books/{id} [delete]
 func (h *BookHandler) DeleteBook(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -240,5 +243,44 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.SuccessResponseDTO{
 		Message: "Книга удалена успешно",
+	})
+}
+
+// GetRecommendations godoc
+// @Summary		Get book recommendations
+// @Description	Retrieves a list of recommended books based on the reading history of users who read the specified book.
+// @Tags			Books
+// @Produce		json
+// @Param			id		path		string	true	"Book ID"
+// @Param			limit	query		int		false	"Limit for recommendations"	default(10)
+// @Success		200		{object}	models.SuccessResponseDTO{Data=[]models.Book}
+// @Failure		400		{object}	models.ErrorResponseDTO
+// @Failure		500		{object}	models.ErrorResponseDTO
+// @Router			/books/{id}/recommendations [get]
+func (h *BookHandler) GetRecommendations(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseDTO{
+			Error:   "Неверный ID книги",
+			Message: "ID должен быть в формате UUID",
+		})
+		return
+	}
+
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	books, err := h.bookService.GetRecommendations(id, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseDTO{
+			Error:   "Ошибка получения рекомендаций",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponseDTO{
+		Message: "Рекомендации успешно получены",
+		Data:    books,
 	})
 }

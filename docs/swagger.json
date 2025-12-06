@@ -1,17 +1,17 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a powerful API for a library management system.",
-        "title": "Library API",
+        "description": "API for a digital library application, providing functionalities for book management, user authentication, and reading features.",
+        "title": "Digital Library API",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
-            "url": "https://github.com/oneErrortime",
-            "email": "dev@oneerrortime.com"
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
         },
         "version": "2.0"
     },
@@ -20,7 +20,7 @@
     "paths": {
         "/auth/login": {
             "post": {
-                "description": "Log in a user with email and password",
+                "description": "Logs in a user with the provided email and password, returning a JWT token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,13 +28,13 @@
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Log in a user",
                 "parameters": [
                     {
-                        "description": "Auth Request",
-                        "name": "auth_request",
+                        "description": "User login data",
+                        "name": "authRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -68,17 +68,17 @@
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Get the current user's profile",
+                "description": "Retrieves the profile information for the currently authenticated user.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
-                "summary": "Get the current user",
+                "summary": "Get current user's profile",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -103,7 +103,7 @@
         },
         "/auth/register": {
             "post": {
-                "description": "Register a new user with email and password",
+                "description": "Registers a new user with the provided email and password.",
                 "consumes": [
                     "application/json"
                 ],
@@ -111,13 +111,13 @@
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "Auth Request",
-                        "name": "auth_request",
+                        "description": "User registration data",
+                        "name": "authRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -147,26 +147,204 @@
                 }
             }
         },
-        "/books": {
-            "get": {
-                "description": "Get a list of all books with pagination",
+        "/bookmarks": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds a new bookmark for a book by the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "books"
+                    "Bookmarks"
+                ],
+                "summary": "Create a new bookmark",
+                "parameters": [
+                    {
+                        "description": "Bookmark data",
+                        "name": "bookmark",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateBookmarkDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Bookmark"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/bookmarks/book/{book_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves all bookmarks for a specific book by the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get bookmarks for a book",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "book_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Bookmark"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/bookmarks/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a bookmark by its ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Delete a bookmark",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bookmark ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/books": {
+            "get": {
+                "description": "Retrieves a paginated list of all available books.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Books"
                 ],
                 "summary": "Get all books",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Limit",
+                        "default": 20,
+                        "description": "Number of books to return",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Offset",
+                        "default": 0,
+                        "description": "Offset for pagination",
                         "name": "offset",
                         "in": "query"
                     }
@@ -175,7 +353,22 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponseDTO"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Book"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
@@ -189,10 +382,10 @@
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Create a new book",
+                "description": "Adds a new book to the library. Librarian access required.",
                 "consumes": [
                     "application/json"
                 ],
@@ -200,13 +393,13 @@
                     "application/json"
                 ],
                 "tags": [
-                    "books"
+                    "Books"
                 ],
                 "summary": "Create a new book",
                 "parameters": [
                     {
-                        "description": "Book Request",
-                        "name": "book_request",
+                        "description": "Book creation data",
+                        "name": "book",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -218,11 +411,29 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponseDTO"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "$ref": "#/definitions/models.Book"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponseDTO"
                         }
@@ -238,17 +449,18 @@
         },
         "/books/{id}": {
             "get": {
-                "description": "Get a single book by its UUID",
+                "description": "Retrieves the details of a specific book by its UUID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "books"
+                    "Books"
                 ],
                 "summary": "Get a book by ID",
                 "parameters": [
                     {
                         "type": "string",
+                        "format": "uuid",
                         "description": "Book ID",
                         "name": "id",
                         "in": "path",
@@ -279,10 +491,10 @@
             "put": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Update a book's details",
+                "description": "Updates the details of a specific book. Librarian access required.",
                 "consumes": [
                     "application/json"
                 ],
@@ -290,7 +502,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "books"
+                    "Books"
                 ],
                 "summary": "Update a book",
                 "parameters": [
@@ -302,8 +514,8 @@
                         "required": true
                     },
                     {
-                        "description": "Book Update",
-                        "name": "book_update",
+                        "description": "Book data to update",
+                        "name": "book",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -315,11 +527,29 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponseDTO"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "$ref": "#/definitions/models.Book"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponseDTO"
                         }
@@ -335,15 +565,15 @@
             "delete": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Delete a book by its ID",
+                "description": "Deletes a book from the library. Librarian access required.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "books"
+                    "Books"
                 ],
                 "summary": "Delete a book",
                 "parameters": [
@@ -368,8 +598,722 @@
                             "$ref": "#/definitions/models.ErrorResponseDTO"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{id}/recommendations": {
+            "get": {
+                "description": "Retrieves a list of recommended books based on the reading history of users who read the specified book.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Get book recommendations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit for recommendations",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponseDTO"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Book"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves all collections for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Get user's collections",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Collection"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new collection for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Create a new collection",
+                "parameters": [
+                    {
+                        "description": "Collection data",
+                        "name": "collection",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCollectionDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Collection"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a single collection by its ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Get a collection by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Collection"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a collection's name and/or description.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Update a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Collection data to update",
+                        "name": "collection",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateCollectionDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Collection"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a collection by its ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Delete a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/books": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds a specific book to a specific collection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Add a book to a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Book ID to add",
+                        "name": "book",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddBookToCollectionDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}/books/{book_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Removes a specific book from a specific collection.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Remove a book from a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "book_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds a new review for a book by the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Create a new review",
+                "parameters": [
+                    {
+                        "description": "Review data",
+                        "name": "review",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateReviewDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Review"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews/book/{book_id}": {
+            "get": {
+                "description": "Retrieves all reviews for a specific book.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get reviews for a book",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "book_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Review"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a review written by the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Update a review",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Review ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Review data to update",
+                        "name": "review",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateReviewDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Review"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a review by its ID. Can be done by the author or an admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Delete a review",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Review ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponseDTO"
                         }
@@ -381,27 +1325,30 @@
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Get a list of all users with pagination",
+                "description": "Get a paginated list of users. Admin access required.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "Users"
                 ],
-                "summary": "List all users",
+                "summary": "List users",
                 "parameters": [
                     {
+                        "maximum": 100,
+                        "minimum": 1,
                         "type": "integer",
-                        "description": "Limit",
+                        "description": "Limit per page",
                         "name": "limit",
                         "in": "query"
                     },
                     {
+                        "minimum": 0,
                         "type": "integer",
-                        "description": "Offset",
+                        "description": "Offset for pagination",
                         "name": "offset",
                         "in": "query"
                     }
@@ -410,7 +1357,22 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ListResponseDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.ListResponseDTO"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.UserResponseDTO"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
@@ -426,10 +1388,10 @@
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Create a new admin user",
+                "description": "Creates a new user with the admin role. Admin access required.",
                 "consumes": [
                     "application/json"
                 ],
@@ -437,13 +1399,13 @@
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "Users"
                 ],
                 "summary": "Create a new admin user",
                 "parameters": [
                     {
-                        "description": "Admin Request",
-                        "name": "admin_request",
+                        "description": "Admin user data",
+                        "name": "adminRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -477,10 +1439,10 @@
             "put": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Update a user's details by an admin",
+                "description": "Update user details by their ID. Admin access required.",
                 "consumes": [
                     "application/json"
                 ],
@@ -488,9 +1450,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "Users"
                 ],
-                "summary": "Update a user by admin",
+                "summary": "Update a user by ID",
                 "parameters": [
                     {
                         "type": "string",
@@ -500,8 +1462,8 @@
                         "required": true
                     },
                     {
-                        "description": "User Update",
-                        "name": "user_update",
+                        "description": "User data to update",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -524,6 +1486,149 @@
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/follow": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Subscribes the authenticated user to another user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Social"
+                ],
+                "summary": "Follow a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID to follow",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Unsubscribes the authenticated user from another user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Social"
+                ],
+                "summary": "Unfollow a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID to unfollow",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/profile": {
+            "get": {
+                "description": "Retrieves a user's public profile including follower counts, collections, and reviews.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Social"
+                ],
+                "summary": "Get a user's public profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserPublicProfileDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponseDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponseDTO"
                         }
@@ -553,6 +1658,17 @@
                 }
             }
         },
+        "models.AddBookToCollectionDTO": {
+            "type": "object",
+            "required": [
+                "book_id"
+            ],
+            "properties": {
+                "book_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AuthRequestDTO": {
             "type": "object",
             "required": [
@@ -561,17 +1677,14 @@
             ],
             "properties": {
                 "email": {
-                    "type": "string",
-                    "example": "user@example.com"
+                    "type": "string"
                 },
                 "name": {
-                    "type": "string",
-                    "example": "John Doe"
+                    "type": "string"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 6,
-                    "example": "password123"
+                    "minLength": 6
                 }
             }
         },
@@ -579,12 +1692,10 @@
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string",
-                    "example": "Successfully authenticated"
+                    "type": "string"
                 },
                 "token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    "type": "string"
                 },
                 "user": {
                     "$ref": "#/definitions/models.UserResponseDTO"
@@ -599,8 +1710,7 @@
             ],
             "properties": {
                 "author": {
-                    "type": "string",
-                    "example": "Alan A. A. Donovan"
+                    "type": "string"
                 },
                 "categories": {
                     "type": "array",
@@ -610,24 +1720,19 @@
                 },
                 "copies_count": {
                     "type": "integer",
-                    "minimum": 0,
-                    "example": 10
+                    "minimum": 0
                 },
                 "cover_url": {
-                    "type": "string",
-                    "example": "https://images.gr-assets.com/books/1435093416l/25132924.jpg"
+                    "type": "string"
                 },
                 "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T12:00:00Z"
+                    "type": "string"
                 },
                 "description": {
-                    "type": "string",
-                    "example": "A masterpiece of programming language books."
+                    "type": "string"
                 },
                 "download_count": {
-                    "type": "integer",
-                    "example": 50
+                    "type": "integer"
                 },
                 "files": {
                     "type": "array",
@@ -636,62 +1741,45 @@
                     }
                 },
                 "id": {
-                    "type": "string",
-                    "example": "a8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b4"
+                    "type": "string"
                 },
                 "is_premium": {
-                    "type": "boolean",
-                    "example": false
+                    "type": "boolean"
                 },
                 "isbn": {
-                    "type": "string",
-                    "example": "978-0134190440"
+                    "type": "string"
                 },
                 "language": {
-                    "type": "string",
-                    "example": "English"
+                    "type": "string"
                 },
                 "page_count": {
-                    "type": "integer",
-                    "example": 380
+                    "type": "integer"
                 },
                 "publication_year": {
                     "type": "integer",
                     "maximum": 9999,
-                    "minimum": 0,
-                    "example": 2015
+                    "minimum": 0
                 },
                 "publisher": {
-                    "type": "string",
-                    "example": "Addison-Wesley Professional"
+                    "type": "string"
                 },
                 "rating": {
-                    "type": "number",
-                    "example": 4.5
+                    "type": "number"
                 },
                 "rating_count": {
-                    "type": "integer",
-                    "example": 25
+                    "type": "integer"
                 },
                 "status": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.BookStatus"
-                        }
-                    ],
-                    "example": "published"
+                    "$ref": "#/definitions/models.BookStatus"
                 },
                 "title": {
-                    "type": "string",
-                    "example": "The Go Programming Language"
+                    "type": "string"
                 },
                 "updated_at": {
-                    "type": "string",
-                    "example": "2023-01-01T12:00:00Z"
+                    "type": "string"
                 },
                 "view_count": {
-                    "type": "integer",
-                    "example": 100
+                    "type": "integer"
                 }
             }
         },
@@ -752,6 +1840,30 @@
                 "BookStatusArchived"
             ]
         },
+        "models.Bookmark": {
+            "type": "object",
+            "properties": {
+                "book_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Может быть номером страницы, CFI для EPUB, и т.д.",
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Category": {
             "type": "object",
             "required": [
@@ -802,6 +1914,35 @@
                 }
             }
         },
+        "models.Collection": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Book"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateBookDTO": {
             "type": "object",
             "required": [
@@ -810,8 +1951,7 @@
             ],
             "properties": {
                 "author": {
-                    "type": "string",
-                    "example": "Alan A. A. Donovan"
+                    "type": "string"
                 },
                 "category_ids": {
                     "type": "array",
@@ -821,46 +1961,91 @@
                 },
                 "copies_count": {
                     "type": "integer",
-                    "minimum": 0,
-                    "example": 10
+                    "minimum": 0
                 },
                 "cover_url": {
-                    "type": "string",
-                    "example": "https://images.gr-assets.com/books/1435093416l/25132924.jpg"
+                    "type": "string"
                 },
                 "description": {
-                    "type": "string",
-                    "example": "A masterpiece of programming language books."
+                    "type": "string"
                 },
                 "is_premium": {
-                    "type": "boolean",
-                    "example": false
+                    "type": "boolean"
                 },
                 "isbn": {
-                    "type": "string",
-                    "example": "978-0134190440"
+                    "type": "string"
                 },
                 "language": {
-                    "type": "string",
-                    "example": "English"
+                    "type": "string"
                 },
                 "page_count": {
-                    "type": "integer",
-                    "example": 380
+                    "type": "integer"
                 },
                 "publication_year": {
                     "type": "integer",
                     "maximum": 9999,
-                    "minimum": 0,
-                    "example": 2015
+                    "minimum": 0
                 },
                 "publisher": {
-                    "type": "string",
-                    "example": "Addison-Wesley Professional"
+                    "type": "string"
                 },
                 "title": {
-                    "type": "string",
-                    "example": "The Go Programming Language"
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateBookmarkDTO": {
+            "type": "object",
+            "required": [
+                "book_id",
+                "location"
+            ],
+            "properties": {
+                "book_id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateCollectionDTO": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateReviewDTO": {
+            "type": "object",
+            "required": [
+                "book_id",
+                "rating"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "book_id": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },
@@ -868,12 +2053,10 @@
             "type": "object",
             "properties": {
                 "error": {
-                    "type": "string",
-                    "example": "Resource not found"
+                    "type": "string"
                 },
                 "message": {
-                    "type": "string",
-                    "example": "The requested resource was not found on the server"
+                    "type": "string"
                 }
             }
         },
@@ -903,20 +2086,48 @@
             "type": "object",
             "properties": {
                 "last_page": {
-                    "type": "integer",
-                    "example": 5
+                    "type": "integer"
                 },
                 "limit": {
-                    "type": "integer",
-                    "example": 20
+                    "type": "integer"
                 },
                 "page": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "integer"
                 },
                 "total": {
-                    "type": "integer",
-                    "example": 100
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Review": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "book_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         },
@@ -1019,8 +2230,7 @@
             "type": "object",
             "properties": {
                 "author": {
-                    "type": "string",
-                    "example": "Alan A. A. Donovan"
+                    "type": "string"
                 },
                 "category_ids": {
                     "type": "array",
@@ -1030,54 +2240,66 @@
                 },
                 "copies_count": {
                     "type": "integer",
-                    "minimum": 0,
-                    "example": 10
+                    "minimum": 0
                 },
                 "cover_url": {
-                    "type": "string",
-                    "example": "https://images.gr-assets.com/books/1435093416l/25132924.jpg"
+                    "type": "string"
                 },
                 "description": {
-                    "type": "string",
-                    "example": "A masterpiece of programming language books."
+                    "type": "string"
                 },
                 "is_premium": {
-                    "type": "boolean",
-                    "example": false
+                    "type": "boolean"
                 },
                 "isbn": {
-                    "type": "string",
-                    "example": "978-0134190440"
+                    "type": "string"
                 },
                 "language": {
-                    "type": "string",
-                    "example": "English"
+                    "type": "string"
                 },
                 "page_count": {
-                    "type": "integer",
-                    "example": 380
+                    "type": "integer"
                 },
                 "publication_year": {
                     "type": "integer",
                     "maximum": 9999,
-                    "minimum": 0,
-                    "example": 2015
+                    "minimum": 0
                 },
                 "publisher": {
-                    "type": "string",
-                    "example": "Addison-Wesley Professional"
+                    "type": "string"
                 },
                 "status": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.BookStatus"
-                        }
-                    ],
-                    "example": "published"
+                    "$ref": "#/definitions/models.BookStatus"
                 },
                 "title": {
-                    "type": "string",
-                    "example": "The Go Programming Language"
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateCollectionDTO": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateReviewDTO": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },
@@ -1085,24 +2307,16 @@
             "type": "object",
             "properties": {
                 "group_id": {
-                    "type": "string",
-                    "example": "b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5"
+                    "type": "string"
                 },
                 "is_active": {
-                    "type": "boolean",
-                    "example": true
+                    "type": "boolean"
                 },
                 "name": {
-                    "type": "string",
-                    "example": "John Doe"
+                    "type": "string"
                 },
                 "role": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.UserRole"
-                        }
-                    ],
-                    "example": "librarian"
+                    "$ref": "#/definitions/models.UserRole"
                 }
             }
         },
@@ -1211,51 +2425,67 @@
                 "GroupTypeSubscriber"
             ]
         },
+        "models.UserPublicProfileDTO": {
+            "type": "object",
+            "properties": {
+                "collections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Collection"
+                    }
+                },
+                "follower_count": {
+                    "type": "integer"
+                },
+                "following_count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "reviews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Review"
+                    }
+                }
+            }
+        },
         "models.UserResponseDTO": {
             "type": "object",
             "properties": {
                 "avatar_url": {
-                    "type": "string",
-                    "example": "https://example.com/avatar.png"
+                    "type": "string"
                 },
                 "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T12:00:00Z"
+                    "type": "string"
                 },
                 "email": {
-                    "type": "string",
-                    "example": "user@example.com"
+                    "type": "string"
                 },
                 "email_verified": {
-                    "type": "boolean",
-                    "example": true
+                    "type": "boolean"
                 },
                 "group": {
                     "$ref": "#/definitions/models.UserGroup"
                 },
                 "group_id": {
-                    "type": "string",
-                    "example": "b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5"
+                    "type": "string"
                 },
                 "id": {
-                    "type": "string",
-                    "example": "a8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b4"
+                    "type": "string"
                 },
                 "is_active": {
-                    "type": "boolean",
-                    "example": true
+                    "type": "boolean"
                 },
                 "name": {
-                    "type": "string",
-                    "example": "John Doe"
+                    "type": "string"
                 },
                 "role": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.UserRole"
-                        }
-                    ],
-                    "example": "user"
+                    "$ref": "#/definitions/models.UserRole"
                 },
                 "subscription": {
                     "$ref": "#/definitions/models.Subscription"
@@ -1277,7 +2507,8 @@
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and a JWT token.",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

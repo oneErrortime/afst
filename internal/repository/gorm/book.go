@@ -33,6 +33,33 @@ func (r *bookRepository) GetByID(id uuid.UUID) (*models.Book, error) {
 	return &book, nil
 }
 
+// GetRecommendations возвращает список рекомендованных книг.
+func (r *bookRepository) GetRecommendations(bookID uuid.UUID, limit int) ([]models.Book, error) {
+	var recommendedBooks []models.Book
+
+	// 1. Находим всех пользователей, которые взаимодействовали с данной книгой (через BookAccess).
+	var userIDs []uuid.UUID
+	r.db.Model(&models.BookAccess{}).Where("book_id = ?", bookID).Pluck("user_id", &userIDs)
+
+	if len(userIDs) == 0 {
+		// Если никто не читал, можно вернуть просто популярные книги
+		return r.GetAll(limit, 0)
+	}
+
+	// 2. Находим все книги, с которыми взаимодействовали эти пользователи, исключая текущую.
+	// 3. Группируем по ID книги, считаем количество, сортируем по популярности.
+	err := r.db.Model(&models.Book{}).
+		Joins("JOIN book_accesses ON book_accesses.book_id = books.id").
+		Where("book_accesses.user_id IN (?)", userIDs).
+		Where("books.id != ?", bookID).
+		Group("books.id").
+		Order("count(books.id) DESC").
+		Limit(limit).
+		Find(&recommendedBooks).Error
+
+	return recommendedBooks, err
+}
+
 // Count возвращает общее количество книг
 func (r *bookRepository) Count() (int64, error) {
 	var count int64

@@ -51,6 +51,7 @@ func Migrate(db *gorm.DB) error {
 		&models.Book{},
 		&models.BookFile{},
 		&models.Subscription{},
+		&models.Follow{},
 		&models.BookAccess{},
 		&models.ReadingSession{},
 		&models.Reader{},

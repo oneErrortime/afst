@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { booksApi } from '@/api';
 import { useAuthStore } from '@/store/authStore';
 import { Button, Input, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
 import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash } from 'lucide-react';
-import type { Book, CreateBookRequest, UpdateBookRequest } from '@/types';
+import { Book, BooksService, CreateBookDTO, UpdateBookDTO, OpenAPI } from '@/shared/api';
 import { AxiosError } from 'axios';
-import { http } from '@/api/client';
+
+// Configure the base path for the generated API client
+OpenAPI.BASE = 'http://localhost:8080/api/v1';
+
 
 export function Books() {
   const navigate = useNavigate();
@@ -19,9 +21,19 @@ export function Books() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, token } = useAuthStore();
 
-  const [form, setForm] = useState<CreateBookRequest>({
+  // Set the token for authenticated requests
+  useEffect(() => {
+    if (token) {
+      OpenAPI.HEADERS = {
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }, [token]);
+
+
+  const [form, setForm] = useState<CreateBookDTO>({
     title: '',
     author: '',
     publication_year: undefined,
@@ -32,8 +44,14 @@ export function Books() {
 
   const fetchBooks = async () => {
     try {
-      const response = await booksApi.getAll({ limit: 100 });
-      setBooks(response || []);
+      // Use the generated BooksService to fetch books
+      const response = await BooksService.getBooks({ limit: 100 });
+      // The actual book data is in the 'Data' property of the response
+      if (response.Data) {
+        setBooks(response.Data as Book[]);
+      } else {
+        setBooks([]);
+      }
     } catch (error) {
       toast.error('Ошибка загрузки книг');
     } finally {
@@ -80,7 +98,7 @@ export function Books() {
 
     setSaving(true);
     try {
-      const data: CreateBookRequest | UpdateBookRequest = {
+      const data: CreateBookDTO | UpdateBookDTO = {
         title: form.title,
         author: form.author,
         publication_year: form.publication_year || undefined,
@@ -90,10 +108,10 @@ export function Books() {
       };
 
       if (editingBook) {
-        await booksApi.update(editingBook.id, data);
+        await BooksService.putBooks({ id: editingBook.id, requestBody: data as UpdateBookDTO });
         toast.success('Книга обновлена');
       } else {
-        await booksApi.create(data as CreateBookRequest);
+        await BooksService.postBooks({ requestBody: data as CreateBookDTO });
         toast.success('Книга создана');
       }
       setModalOpen(false);
@@ -111,7 +129,7 @@ export function Books() {
     
     setDeleting(true);
     try {
-      await booksApi.delete(deleteBook.id);
+      await BooksService.deleteBooks({ id: deleteBook.id });
       toast.success('Книга удалена');
       setDeleteBook(null);
       fetchBooks();
