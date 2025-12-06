@@ -22,7 +22,10 @@ func NewDatabase(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 		path = "library.db"
 	}
 
-	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{
+	// WAL mode allows for better concurrency
+	dsn := fmt.Sprintf("%s?_pragma=journal_mode=WAL", path)
+
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		Logger: logMode,
 	})
 	if err != nil {
@@ -112,7 +115,7 @@ func seedFeatureFlags(db *gorm.DB) {
 		{Name: "enable_exports", IsActive: true},
 		{Name: "enable_webhooks", IsActive: true},
 		{Name: "enable_graphql", IsActive: false},
-		{Name: "maintenance_mode", IsActive: true},
+		{Name: "maintenance_mode", IsActive: false},
 	}
 
 	for _, flag := range flags {

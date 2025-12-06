@@ -26,6 +26,8 @@ type BookRepository interface {
 	Update(book *models.Book) error
 	Delete(id uuid.UUID) error
 	GetByISBN(isbn string) (*models.Book, error)
+	Count() (int64, error)
+	CountPublished() (int64, error)
 }
 
 // ReaderRepository определяет интерфейс для работы с читателями
@@ -36,6 +38,7 @@ type ReaderRepository interface {
 	Update(reader *models.Reader) error
 	Delete(id uuid.UUID) error
 	GetByEmail(email string) (*models.Reader, error)
+	Count() (int64, error)
 }
 
 // BorrowedBookRepository определяет интерфейс для работы с выданными книгами

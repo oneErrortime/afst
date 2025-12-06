@@ -25,6 +25,8 @@ type BookService interface {
 	GetAllBooks(limit, offset int) ([]models.Book, error)
 	UpdateBook(id uuid.UUID, dto *models.UpdateBookDTO) (*models.Book, error)
 	DeleteBook(id uuid.UUID) error
+	Count() (int64, error)
+	CountPublished() (int64, error)
 }
 
 // ReaderService определяет интерфейс для управления читателями
@@ -34,6 +36,7 @@ type ReaderService interface {
 	GetAllReaders(limit, offset int) ([]models.Reader, error)
 	UpdateReader(id uuid.UUID, dto *models.UpdateReaderDTO) (*models.Reader, error)
 	DeleteReader(id uuid.UUID) error
+	Count() (int64, error)
 }
 
 // BorrowService определяет интерфейс для управления выдачей книг
@@ -51,6 +54,7 @@ type UserGroupService interface {
 	Delete(id uuid.UUID) error
 	GetUsersByGroup(groupID uuid.UUID) ([]models.User, error)
 	AssignUserToGroup(userID, groupID uuid.UUID) error
+	Count() (int64, error)
 }
 
 type CategoryService interface {
@@ -61,6 +65,7 @@ type CategoryService interface {
 	Update(id uuid.UUID, dto *models.UpdateCategoryDTO) (*models.Category, error)
 	Delete(id uuid.UUID) error
 	GetChildren(parentID uuid.UUID) ([]models.Category, error)
+	Count() (int64, error)
 }
 
 type SubscriptionService interface {

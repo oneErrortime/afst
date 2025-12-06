@@ -55,3 +55,9 @@ func (r *categoryRepository) Update(category *models.Category) error {
 func (r *categoryRepository) Delete(id uuid.UUID) error {
 	return r.db.Delete(&models.Category{}, "id = ?", id).Error
 }
+
+func (r *categoryRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Category{}).Where("is_active = ?", true).Count(&count).Error
+	return count, err
+}

@@ -60,6 +60,12 @@ func (s *featureFlagService) StartCacheUpdate(interval time.Duration) {
 	}
 	s.ticker = time.NewTicker(interval)
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("CRITICAL: Panic recovered in feature flag cache update: %v", r)
+			}
+		}()
+
 		for {
 			select {
 			case <-s.ticker.C:

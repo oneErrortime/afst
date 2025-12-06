@@ -120,3 +120,8 @@ func (s *readerService) DeleteReader(id uuid.UUID) error {
 
 	return s.readerRepo.Delete(id)
 }
+
+// Count возвращает общее количество читателей
+func (s *readerService) Count() (int64, error) {
+	return s.readerRepo.Count()
+}
