@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { booksApi } from '@/api';
 import { useAuthStore } from '@/store/authStore';
 import { Button, Input, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
 import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash } from 'lucide-react';
 import type { Book, CreateBookRequest, UpdateBookRequest } from '@/types';
 import { AxiosError } from 'axios';
+import { http } from '@/api/client';
 
 export function Books() {
+  const navigate = useNavigate();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -215,6 +218,13 @@ export function Books() {
 
                 {isAuthenticated && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => navigate(`/books/${book.id}/read`)}
+                      className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      title="Читать"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                    </button>
                     <button
                       onClick={() => openEditModal(book)}
                       className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"

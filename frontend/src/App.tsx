@@ -66,7 +66,7 @@ export default function App() {
             <Route path="/groups" element={<Groups />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/library" element={<Library />} />
-            <Route path="/reader/:bookId" element={<Reader />} />
+            <Route path="/books/:bookId/read" element={<Reader />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/admin/books" element={<AdminBooks />} />
             <Route path="/admin/users" element={<Users />} />

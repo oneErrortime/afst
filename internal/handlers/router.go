@@ -179,6 +179,17 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		sessions.GET("/my", handlers.ReadingSession.GetMySessions)
 	}
 
+	collections := api.Group("/collections").Use(authMiddleware)
+	{
+		collections.POST("", handlers.Collection.CreateCollection)
+		collections.GET("", handlers.Collection.GetCollections)
+		collections.GET("/:id", handlers.Collection.GetCollectionByID)
+		collections.PUT("/:id", handlers.Collection.UpdateCollection)
+		collections.DELETE("/:id", handlers.Collection.DeleteCollection)
+		collections.POST("/:id/books", handlers.Collection.AddBookToCollection)
+		collections.DELETE("/:id/books/:book_id", handlers.Collection.RemoveBookFromCollection)
+	}
+
 	api.GET("/stats/dashboard", authMiddleware, requireLibrarian, handlers.GetDashboardStats)
 
 	api.GET("/health", func(c *gin.Context) {

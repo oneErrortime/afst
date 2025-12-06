@@ -104,6 +104,16 @@ type ReadingSessionService interface {
 	GetBookStats(bookID uuid.UUID) (*models.BookReadingStats, error)
 }
 
+type CollectionService interface {
+	CreateCollection(collection *models.Collection) error
+	GetCollectionsByUserID(userID uuid.UUID) ([]models.Collection, error)
+	GetCollectionByID(id uuid.UUID) (*models.Collection, error)
+	UpdateCollection(collection *models.Collection) error
+	DeleteCollection(id uuid.UUID) error
+	AddBookToCollection(collectionID, bookID uuid.UUID) error
+	RemoveBookFromCollection(collectionID, bookID uuid.UUID) error
+}
+
 type Services struct {
 	Auth           AuthService
 	Book           BookService
@@ -116,4 +126,5 @@ type Services struct {
 	BookFile       BookFileService
 	ReadingSession ReadingSessionService
 	FeatureFlag    FeatureFlagService
+	Collection     CollectionService
 }

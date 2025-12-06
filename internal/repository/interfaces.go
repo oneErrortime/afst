@@ -57,10 +57,21 @@ type FeatureFlagRepository interface {
 	GetAll() ([]models.FeatureFlag, error)
 }
 
+type CollectionRepository interface {
+	Create(collection *models.Collection) error
+	GetByUserID(userID uuid.UUID) ([]models.Collection, error)
+	GetByID(id uuid.UUID) (*models.Collection, error)
+	Update(collection *models.Collection) error
+	Delete(id uuid.UUID) error
+	AddBook(collectionID, bookID uuid.UUID) error
+	RemoveBook(collectionID, bookID uuid.UUID) error
+}
+
 type Repository struct {
 	User         UserRepository
 	Book         BookRepository
 	Reader       ReaderRepository
 	BorrowedBook BorrowedBookRepository
 	FeatureFlag  FeatureFlagRepository
+	Collection   CollectionRepository
 }

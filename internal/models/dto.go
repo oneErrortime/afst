@@ -211,3 +211,17 @@ type DashboardStatsDTO struct {
 	ActiveSubscriptions  int64 `json:"active_subscriptions"`
 	TotalReadingSessions int64 `json:"total_reading_sessions"`
 }
+
+type CreateCollectionDTO struct {
+	Name        string `json:"name" validate:"required"`
+	Description string `json:"description"`
+}
+
+type UpdateCollectionDTO struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+}
+
+type AddBookToCollectionDTO struct {
+	BookID uuid.UUID `json:"book_id" validate:"required"`
+}
