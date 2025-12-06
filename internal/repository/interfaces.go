@@ -28,6 +28,7 @@ type BookRepository interface {
 	GetByISBN(isbn string) (*models.Book, error)
 	Count() (int64, error)
 	CountPublished() (int64, error)
+	GetRecommendations(bookID uuid.UUID, limit int) ([]models.Book, error)
 }
 
 // ReaderRepository определяет интерфейс для работы с читателями

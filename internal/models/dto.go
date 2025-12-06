@@ -7,45 +7,45 @@ import (
 )
 
 type AuthRequestDTO struct {
-	Email    string `json:"email" validate:"required,email" example:"user@example.com"`
-	Password string `json:"password" validate:"required,min=6" example:"password123"`
-	Name     string `json:"name,omitempty" example:"John Doe"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
+	Name     string `json:"name,omitempty"`
 }
 
 type AuthResponseDTO struct {
-	Token   string           `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	Token   string           `json:"token"`
 	User    *UserResponseDTO `json:"user,omitempty"`
-	Message string           `json:"message" example:"Successfully authenticated"`
+	Message string           `json:"message"`
 }
 
 type CreateBookDTO struct {
-	Title           string      `json:"title" validate:"required" example:"The Go Programming Language"`
-	Author          string      `json:"author" validate:"required" example:"Alan A. A. Donovan"`
-	PublicationYear *int        `json:"publication_year,omitempty" validate:"omitempty,gte=0,lte=9999" example:"2015"`
-	ISBN            *string     `json:"isbn,omitempty" example:"978-0134190440"`
-	CopiesCount     int         `json:"copies_count" validate:"gte=0" example:"10"`
-	Description     *string     `json:"description,omitempty" example:"A masterpiece of programming language books."`
-	CoverURL        *string     `json:"cover_url,omitempty" example:"https://images.gr-assets.com/books/1435093416l/25132924.jpg"`
-	Language        *string     `json:"language,omitempty" example:"English"`
-	PageCount       *int        `json:"page_count,omitempty" example:"380"`
-	Publisher       *string     `json:"publisher,omitempty" example:"Addison-Wesley Professional"`
-	IsPremium       bool        `json:"is_premium" example:"false"`
+	Title           string      `json:"title" validate:"required"`
+	Author          string      `json:"author" validate:"required"`
+	PublicationYear *int        `json:"publication_year,omitempty" validate:"omitempty,gte=0,lte=9999"`
+	ISBN            *string     `json:"isbn,omitempty"`
+	CopiesCount     int         `json:"copies_count" validate:"gte=0"`
+	Description     *string     `json:"description,omitempty"`
+	CoverURL        *string     `json:"cover_url,omitempty"`
+	Language        *string     `json:"language,omitempty"`
+	PageCount       *int        `json:"page_count,omitempty"`
+	Publisher       *string     `json:"publisher,omitempty"`
+	IsPremium       bool        `json:"is_premium"`
 	CategoryIDs     []uuid.UUID `json:"category_ids,omitempty"`
 }
 
 type UpdateBookDTO struct {
-	Title           *string     `json:"title,omitempty" example:"The Go Programming Language"`
-	Author          *string     `json:"author,omitempty" example:"Alan A. A. Donovan"`
-	PublicationYear *int        `json:"publication_year,omitempty" validate:"omitempty,gte=0,lte=9999" example:"2015"`
-	ISBN            *string     `json:"isbn,omitempty" example:"978-0134190440"`
-	CopiesCount     *int        `json:"copies_count,omitempty" validate:"omitempty,gte=0" example:"10"`
-	Description     *string     `json:"description,omitempty" example:"A masterpiece of programming language books."`
-	CoverURL        *string     `json:"cover_url,omitempty" example:"https://images.gr-assets.com/books/1435093416l/25132924.jpg"`
-	Language        *string     `json:"language,omitempty" example:"English"`
-	PageCount       *int        `json:"page_count,omitempty" example:"380"`
-	Publisher       *string     `json:"publisher,omitempty" example:"Addison-Wesley Professional"`
-	Status          *BookStatus `json:"status,omitempty" example:"published"`
-	IsPremium       *bool       `json:"is_premium,omitempty" example:"false"`
+	Title           *string     `json:"title,omitempty"`
+	Author          *string     `json:"author,omitempty"`
+	PublicationYear *int        `json:"publication_year,omitempty" validate:"omitempty,gte=0,lte=9999"`
+	ISBN            *string     `json:"isbn,omitempty"`
+	CopiesCount     *int        `json:"copies_count,omitempty" validate:"omitempty,gte=0"`
+	Description     *string     `json:"description,omitempty"`
+	CoverURL        *string     `json:"cover_url,omitempty"`
+	Language        *string     `json:"language,omitempty"`
+	PageCount       *int        `json:"page_count,omitempty"`
+	Publisher       *string     `json:"publisher,omitempty"`
+	Status          *BookStatus `json:"status,omitempty"`
+	IsPremium       *bool       `json:"is_premium,omitempty"`
 	CategoryIDs     []uuid.UUID `json:"category_ids,omitempty"`
 }
 
@@ -140,15 +140,15 @@ type CreateSubscriptionDTO struct {
 }
 
 type UpdateUserDTO struct {
-	Name     *string    `json:"name,omitempty" example:"John Doe"`
-	Role     *UserRole  `json:"role,omitempty" example:"librarian"`
-	GroupID  *uuid.UUID `json:"group_id,omitempty" example:"b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5"`
-	IsActive *bool      `json:"is_active,omitempty" example:"true"`
+	Name     *string    `json:"name,omitempty"`
+	Role     *UserRole  `json:"role,omitempty"`
+	GroupID  *uuid.UUID `json:"group_id,omitempty"`
+	IsActive *bool      `json:"is_active,omitempty"`
 }
 
 type ErrorResponseDTO struct {
-	Error   string `json:"error" example:"Resource not found"`
-	Message string `json:"message,omitempty" example:"The requested resource was not found on the server"`
+	Error   string `json:"error"`
+	Message string `json:"message,omitempty"`
 }
 
 type SuccessResponseDTO struct {
@@ -157,10 +157,10 @@ type SuccessResponseDTO struct {
 }
 
 type PaginationDTO struct {
-	Page     int   `json:"page" example:"1"`
-	Limit    int   `json:"limit" example:"20"`
-	Total    int64 `json:"total" example:"100"`
-	LastPage int   `json:"last_page" example:"5"`
+	Page     int   `json:"page"`
+	Limit    int   `json:"limit"`
+	Total    int64 `json:"total"`
+	LastPage int   `json:"last_page"`
 }
 
 type ListResponseDTO struct {
@@ -169,17 +169,17 @@ type ListResponseDTO struct {
 }
 
 type UserResponseDTO struct {
-	ID            uuid.UUID     `json:"id" example:"a8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b4"`
-	Email         string        `json:"email" example:"user@example.com"`
-	Name          string        `json:"name" example:"John Doe"`
-	Role          UserRole      `json:"role" example:"user"`
-	GroupID       *uuid.UUID    `json:"group_id,omitempty" example:"b8e7e72a-1c7b-4d7a-8f7a-8e7e72a1c7b5"`
+	ID            uuid.UUID     `json:"id"`
+	Email         string        `json:"email"`
+	Name          string        `json:"name"`
+	Role          UserRole      `json:"role"`
+	GroupID       *uuid.UUID    `json:"group_id,omitempty"`
 	Group         *UserGroup    `json:"group,omitempty"`
-	AvatarURL     *string       `json:"avatar_url,omitempty" example:"https://example.com/avatar.png"`
-	EmailVerified bool          `json:"email_verified" example:"true"`
-	IsActive      bool          `json:"is_active" example:"true"`
+	AvatarURL     *string       `json:"avatar_url,omitempty"`
+	EmailVerified bool          `json:"email_verified"`
+	IsActive      bool          `json:"is_active"`
 	Subscription  *Subscription `json:"subscription,omitempty"`
-	CreatedAt     time.Time     `json:"created_at" example:"2023-01-01T12:00:00Z"`
+	CreatedAt     time.Time     `json:"created_at"`
 }
 
 type BookAccessWithBook struct {

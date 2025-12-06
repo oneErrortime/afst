@@ -69,6 +69,15 @@ type ReadingSessionRepository interface {
 	GetBookStats(bookID uuid.UUID) (totalReaders, totalSessions, totalReadTime int64, err error)
 }
 
+type SocialRepository interface {
+	Follow(userID, targetUserID uuid.UUID) error
+	Unfollow(userID, targetUserID uuid.UUID) error
+	GetFollowers(targetUserID uuid.UUID) ([]models.User, error)
+	GetFollowing(userID uuid.UUID) ([]models.User, error)
+	IsFollowing(userID, targetUserID uuid.UUID) (bool, error)
+	GetUserPublicProfile(userID uuid.UUID) (*models.UserPublicProfileDTO, error)
+}
+
 type ExtendedRepository struct {
 	Repository
 	UserGroup      UserGroupRepository
@@ -77,6 +86,7 @@ type ExtendedRepository struct {
 	BookAccess     BookAccessRepository
 	BookFile       BookFileRepository
 	ReadingSession ReadingSessionRepository
+	Social         SocialRepository
 	DB             interface{}
 }
 

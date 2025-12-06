@@ -150,3 +150,11 @@ func (s *bookService) Count() (int64, error) {
 func (s *bookService) CountPublished() (int64, error) {
 	return s.bookRepo.CountPublished()
 }
+
+// GetRecommendations возвращает список рекомендованных книг
+func (s *bookService) GetRecommendations(bookID uuid.UUID, limit int) ([]models.Book, error) {
+	if limit <= 0 || limit > 20 {
+		limit = 10 // Default limit
+	}
+	return s.bookRepo.GetRecommendations(bookID, limit)
+}

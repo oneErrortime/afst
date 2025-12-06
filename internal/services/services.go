@@ -29,5 +29,6 @@ func NewExtendedServices(repos *repository.ExtendedRepository, jwtService *auth.
 		BookFile:       NewBookFileService(repos.BookFile, repos.Book, fileStorage),
 		ReadingSession: NewReadingSessionService(repos.ReadingSession, repos.BookAccess),
 		FeatureFlag:    NewFeatureFlagService(repos.FeatureFlag),
+		Social:         NewSocialService(repos.Social),
 	}
 }

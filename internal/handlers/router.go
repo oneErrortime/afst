@@ -31,12 +31,12 @@ func corsMiddleware() gin.HandlerFunc {
 func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	router := gin.Default()
 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	router.Use(corsMiddleware())
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(middleware.APIRouteMismatchLogger())
-
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := router.Group("/api/v1")
 
@@ -58,6 +58,7 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	{
 		books.GET("", handlers.Book.GetAllBooks)
 		books.GET("/:id", handlers.Book.GetBook)
+		books.GET("/:id/recommendations", handlers.Book.GetRecommendations)
 	}
 
 	categories := api.Group("/categories")
@@ -93,6 +94,15 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		adminUsers.GET("", handlers.Auth.ListUsers)
 		adminUsers.PUT("/:id", handlers.Auth.UpdateUserByAdmin)
 		adminUsers.POST("/admin", handlers.Auth.CreateAdmin)
+	}
+
+	socialUsers := api.Group("/users")
+	{
+		socialUsers.GET("/:id/profile", handlers.Social.GetUserProfile)
+
+		authProtectedSocial := socialUsers.Use(authMiddleware)
+		authProtectedSocial.POST("/:id/follow", handlers.Social.FollowUser)
+		authProtectedSocial.DELETE("/:id/follow", handlers.Social.UnfollowUser)
 	}
 
 	protectedBooks := api.Group("/books").Use(authMiddleware, requireLibrarian)

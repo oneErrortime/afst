@@ -1,72 +1,98 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
-import { booksApi, bookmarksApi } from '@/api';
-import { Bookmark } from '@/types';
-import { Button, toast } from '@/components/ui';
-import { Bookmark as BookmarkIcon } from 'lucide-react';
+import ePub from 'epubjs';
+import { BooksService, Bookmark, OpenAPI } from '@/shared/api';
+import { Button, toast, Loading, EmptyState } from '@/components/ui';
+import { Bookmark as BookmarkIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
-const Reader = () => {
+OpenAPI.BASE = 'http://localhost:8080/api/v1';
+
+export function Reader() {
   const { bookId } = useParams<{ bookId: string }>();
+  const [fileType, setFileType] = useState<'pdf' | 'epub' | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+
+  // PDF state
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pdf, setPdf] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const [pdfPage, setPdfPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+
+  // EPUB state
+  const epubViewerRef = useRef<HTMLDivElement>(null);
+  const renditionRef = useRef<any>(null);
+
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const { token } = useAuthStore();
 
   useEffect(() => {
-    const fetchFileIdAndRenderPdf = async () => {
+    if (token) {
+      OpenAPI.HEADERS = {
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const fetchBookFile = async () => {
       if (!bookId) return;
       setLoading(true);
       setError(null);
 
       try {
-        const files = await booksApi.getFiles(bookId);
-        if (files.length === 0) {
-          setError('No files found for this book.');
-          setLoading(false);
-          return;
+        const files = await BooksService.getBooksFiles({ id: bookId });
+        if (!files || files.length === 0) {
+          throw new Error('Для этой книги не найдено файлов.');
         }
 
-        const fileId = files[0].id;
-        const url = `/api/v1/files/${fileId}`;
+        const primaryFile = files[0]; // Берем первый файл
 
-        const loadingTask = pdfjsLib.getDocument(url);
-        const loadedPdf = await loadingTask.promise;
+        if (primaryFile.mime_type === 'application/pdf') {
+          setFileType('pdf');
+        } else if (primaryFile.mime_type === 'application/epub+zip') {
+          setFileType('epub');
+        } else {
+          throw new Error('Формат файла не поддерживается.');
+        }
+        setFileUrl(`/api/v1/files/${primaryFile.id}`);
 
-        setPdf(loadedPdf);
-        setTotalPages(loadedPdf.numPages);
-      } catch (err) {
-        setError('Failed to load PDF.');
-        console.error(err);
+      } catch (err: any) {
+        setError(err.message || 'Не удалось загрузить книгу.');
       } finally {
         setLoading(false);
       }
     };
-
-    const fetchBookmarks = async () => {
-      if (!bookId) return;
-      try {
-        const data = await bookmarksApi.getBookmarksByBook(bookId);
-        setBookmarks(data);
-      } catch (error) {
-        console.error("Failed to fetch bookmarks");
-      }
-    };
-
-    fetchFileIdAndRenderPdf();
-    fetchBookmarks();
+    fetchBookFile();
   }, [bookId]);
 
+  // PDF Loading Effect
   useEffect(() => {
-    if (!pdf || !canvasRef.current) return;
+    if (fileType !== 'pdf' || !fileUrl) return;
+    const loadingTask = pdfjsLib.getDocument(fileUrl);
+    loadingTask.promise.then(loadedPdf => {
+      setPdf(loadedPdf);
+      setTotalPages(loadedPdf.numPages);
+    }).catch(err => {
+      setError('Ошибка при загрузке PDF.');
+      console.error(err);
+    });
+  }, [fileType, fileUrl]);
+
+
+  // PDF Rendering Effect
+  useEffect(() => {
+    if (!pdf || !canvasRef.current || fileType !== 'pdf') return;
 
     const renderPage = async () => {
-      const page = await pdf.getPage(pageNumber);
+      const page = await pdf.getPage(pdfPage);
       const viewport = page.getViewport({ scale: 1.5 });
       const canvas = canvasRef.current;
       if (canvas) {
@@ -75,94 +101,93 @@ const Reader = () => {
         canvas.width = viewport.width;
 
         if (context) {
-          const renderContext = {
-            canvasContext: context,
-            viewport: viewport,
-          };
-          await page.render(renderContext).promise;
+          await page.render({ canvasContext: context, viewport }).promise;
         }
       }
     };
-
     renderPage();
-  }, [pdf, pageNumber, canvasRef]);
+  }, [pdf, pdfPage, canvasRef, fileType]);
 
-  const handleAddBookmark = async () => {
-    if (!bookId) return;
-    try {
-      const newBookmark = await bookmarksApi.createBookmark({
-        book_id: bookId,
-        location: String(pageNumber),
-        label: `Page ${pageNumber}`,
-      });
-      setBookmarks([...bookmarks, newBookmark]);
-      toast.success('Bookmark added!');
-    } catch (error) {
-      toast.error('Failed to add bookmark.');
+  // EPUB Rendering Effect
+  useEffect(() => {
+    if (fileType !== 'epub' || !fileUrl || !epubViewerRef.current) return;
+    const book = ePub(fileUrl);
+    const rendition = book.renderTo(epubViewerRef.current, {
+      width: '100%',
+      height: '100%',
+      flow: 'paginated',
+    });
+    renditionRef.current = rendition;
+    rendition.display();
+
+    return () => {
+      book.destroy();
+    };
+  }, [fileType, fileUrl, epubViewerRef]);
+
+
+  const goToPrevPage = () => {
+    if (fileType === 'pdf') {
+      setPdfPage(prev => Math.max(1, prev - 1));
+    } else if (renditionRef.current) {
+      renditionRef.current.prev();
     }
   };
 
-  const goToPreviousPage = () => {
-    setPageNumber(prev => Math.max(1, prev - 1));
-  };
-
   const goToNextPage = () => {
-    setPageNumber(prev => Math.min(totalPages, prev + 1));
+    if (fileType === 'pdf') {
+      setPdfPage(prev => Math.min(totalPages, prev + 1));
+    } else if (renditionRef.current) {
+      renditionRef.current.next();
+    }
   };
 
   if (loading) {
-    return <div>Loading PDF...</div>;
+    return <Loading text="Загрузка книги..." />;
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <EmptyState title="Ошибка" description={error} />;
+  }
+
+  const renderReader = () => {
+    switch (fileType) {
+      case 'pdf':
+        return <canvas ref={canvasRef} className="shadow-lg" />;
+      case 'epub':
+        return (
+          <div ref={epubViewerRef} style={{ height: 'calc(100vh - 150px)', width: '800px' }} />
+        );
+      default:
+        return <EmptyState title="Нет файла" description="Не удалось определить формат файла." />;
+    }
   }
 
   return (
-    <div className="flex gap-8">
-      <div className="flex-grow">
-        <div className="sticky top-20 bg-white p-4 border rounded-lg shadow-sm z-10 flex items-center justify-between">
-          <div className="flex gap-2">
-            <Button onClick={goToPreviousPage} disabled={pageNumber <= 1}>
-              Previous
-            </Button>
-            <span className="self-center">
-              Page {pageNumber} of {totalPages}
+    <div className="space-y-4">
+       <div className="sticky top-20 bg-white p-4 border rounded-lg shadow-sm z-10 flex items-center justify-center gap-4">
+          <Button onClick={goToPrevPage} variant="outline">
+            <ChevronLeft className="h-4 w-4" />
+            Назад
+          </Button>
+          {fileType === 'pdf' && (
+            <span className="text-sm font-medium">
+              Страница {pdfPage} из {totalPages}
             </span>
-            <Button onClick={goToNextPage} disabled={pageNumber >= totalPages}>
-              Next
-            </Button>
-          </div>
-          <Button onClick={handleAddBookmark}>
-            <BookmarkIcon className="h-4 w-4 mr-2" />
-            Add Bookmark
+          )}
+           {fileType === 'epub' && (
+            <span className="text-sm font-medium">
+              E-Book
+            </span>
+          )}
+          <Button onClick={goToNextPage} variant="outline">
+            Вперед
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div className="mt-4 flex justify-center">
-          <canvas ref={canvasRef} className="shadow-lg" />
-        </div>
-      </div>
-      <div className="w-64 flex-shrink-0">
-        <h2 className="text-lg font-semibold mb-4">Bookmarks</h2>
-        {bookmarks.length === 0 ? (
-          <p className="text-sm text-gray-500">No bookmarks yet.</p>
-        ) : (
-          <ul className="space-y-2">
-            {bookmarks.map(bookmark => (
-              <li key={bookmark.id} className="text-sm">
-                <button
-                  className="text-blue-600 hover:underline"
-                  onClick={() => setPageNumber(parseInt(bookmark.location))}
-                >
-                  {bookmark.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="flex justify-center">
+        {renderReader()}
       </div>
     </div>
   );
-};
-
-export { Reader };
+}

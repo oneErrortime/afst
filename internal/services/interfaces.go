@@ -27,6 +27,7 @@ type BookService interface {
 	DeleteBook(id uuid.UUID) error
 	Count() (int64, error)
 	CountPublished() (int64, error)
+	GetRecommendations(bookID uuid.UUID, limit int) ([]models.Book, error)
 }
 
 // ReaderService определяет интерфейс для управления читателями
@@ -129,6 +130,12 @@ type BookmarkService interface {
 	DeleteBookmark(id uuid.UUID) error
 }
 
+type SocialService interface {
+	FollowUser(userID, targetUserID uuid.UUID) error
+	UnfollowUser(userID, targetUserID uuid.UUID) error
+	GetUserProfile(userID uuid.UUID) (*models.UserPublicProfileDTO, error)
+}
+
 type Services struct {
 	Auth           AuthService
 	Book           BookService
@@ -144,4 +151,5 @@ type Services struct {
 	Collection     CollectionService
 	Review         ReviewService
 	Bookmark       BookmarkService
+	Social         SocialService
 }
