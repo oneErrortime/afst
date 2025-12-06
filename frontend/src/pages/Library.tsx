@@ -1,24 +1,10 @@
 import { useState, useEffect } from 'react';
 import { accessApi, booksApi } from '@/api';
 import type { UserLibrary, BookAccess, Book } from '@/types';
-import { Button, Loading } from '@/components/ui';
+import { Button, Loading, toast } from '@/components/ui';
 import { Layout } from '@/components/layout';
 import { useNavigate } from 'react-router-dom';
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function daysRemaining(endDate: string) {
-  const end = new Date(endDate);
-  const now = new Date();
-  const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  return diff;
-}
+import { formatDate, daysRemaining } from '@/utils/formatters';
 
 function BookCard({ access, onRead }: { access: BookAccess; onRead: () => void }) {
   const book = access.book;
@@ -99,9 +85,10 @@ export default function Library() {
       setBorrowing(bookId);
       await accessApi.borrowBook(bookId);
       await loadData();
+      toast.success('Книга добавлена в библиотеку');
     } catch (error) {
       console.error('Failed to borrow book:', error);
-      alert('Не удалось взять книгу');
+      toast.error('Не удалось взять книгу');
     } finally {
       setBorrowing(null);
     }

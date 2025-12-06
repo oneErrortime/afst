@@ -17,6 +17,10 @@ type Handlers struct {
 	BookAccess     *BookAccessHandler
 	BookFile       *BookFileHandler
 	ReadingSession *ReadingSessionHandler
+	Collection     *CollectionHandler
+	Bookmark       *BookmarkHandler
+	Annotation     *AnnotationHandler
+	Review         *ReviewHandler
 	Setup          *SetupHandler
 	Services       *services.Services
 }
@@ -44,6 +48,10 @@ func NewExtendedHandlers(services *services.Services, fileStorage storage.FileSt
 		BookAccess:     NewBookAccessHandler(services.BookAccess, validator),
 		BookFile:       NewBookFileHandler(services.BookFile, services.BookAccess, fileStorage, validator),
 		ReadingSession: NewReadingSessionHandler(services.ReadingSession, services.BookAccess, validator),
+		Collection:     NewCollectionHandler(services.Collection, validator),
+		Bookmark:       NewBookmarkHandler(services.Bookmark, validator),
+		Annotation:     NewAnnotationHandler(services.Annotation, validator),
+		Review:         NewReviewHandler(services.Review, validator),
 		Setup:          NewSetupHandler(services.Auth, validator),
 		Services:       services,
 	}

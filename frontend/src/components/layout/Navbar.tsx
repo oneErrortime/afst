@@ -93,7 +93,8 @@ export function Navbar() {
               <NavLink to="/categories">Категории</NavLink>
               {isAuthenticated && (
                 <>
-                  <NavLink to="/library">Моя библиотека</NavLink>
+                  <NavLink to="/library">Библиотека</NavLink>
+                  <NavLink to="/collections">Коллекции</NavLink>
                   <NavLink to="/groups">Группы</NavLink>
                   {isLibrarian && (
                     <>
@@ -222,7 +223,16 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Моя библиотека
+                  Библиотека
+                </Link>
+                <Link
+                  to="/collections"
+                  className={`block px-3 py-2.5 rounded-lg font-medium ${
+                    isActive('/collections') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Коллекции
                 </Link>
                 <Link
                   to="/groups"
@@ -233,36 +243,40 @@ export function Navbar() {
                 >
                   Группы
                 </Link>
-                <Link
-                  to="/readers"
-                  className={`block px-3 py-2.5 rounded-lg font-medium ${
-                    isActive('/readers') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Читатели
-                </Link>
-                <Link
-                  to="/borrow"
-                  className={`block px-3 py-2.5 rounded-lg font-medium ${
-                    isActive('/borrow') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Выдача
-                </Link>
-                <Link
-                  to="/admin/books"
-                  className={`block px-3 py-2.5 rounded-lg font-medium ${
-                    isActive('/admin/books') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <span className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Админ
-                  </span>
-                </Link>
+                {isLibrarian && (
+                  <>
+                    <Link
+                      to="/readers"
+                      className={`block px-3 py-2.5 rounded-lg font-medium ${
+                        isActive('/readers') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Читатели
+                    </Link>
+                    <Link
+                      to="/borrow"
+                      className={`block px-3 py-2.5 rounded-lg font-medium ${
+                        isActive('/borrow') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Выдача
+                    </Link>
+                    <Link
+                      to="/admin/books"
+                      className={`block px-3 py-2.5 rounded-lg font-medium ${
+                        isActive('/admin/books') ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Админ
+                      </span>
+                    </Link>
+                  </>
+                )}
               </>
             )}
             <Link

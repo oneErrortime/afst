@@ -28,6 +28,10 @@ func NewExtendedServices(repos *repository.ExtendedRepository, jwtService *auth.
 		BookAccess:     NewBookAccessService(repos.BookAccess, repos.Book, repos.User, repos.Subscription, repos.UserGroup),
 		BookFile:       NewBookFileService(repos.BookFile, repos.Book, fileStorage),
 		ReadingSession: NewReadingSessionService(repos.ReadingSession, repos.BookAccess),
+		Collection:     NewCollectionService(repos.Collection, repos.Book),
+		Bookmark:       NewBookmarkService(repos.Bookmark, repos.Book, repos.BookAccess),
+		Annotation:     NewAnnotationService(repos.Annotation, repos.Book, repos.BookAccess),
+		Review:         NewReviewService(repos.Review, repos.Book, repos.BookAccess),
 		FeatureFlag:    NewFeatureFlagService(repos.FeatureFlag),
 	}
 }

@@ -39,14 +39,22 @@ func (s *bookAccessService) GrantAccess(dto *models.GrantAccessDTO) (*models.Boo
 		return nil, errors.New("пользователь не найден")
 	}
 
+	if !user.IsActive {
+		return nil, errors.New("пользователь неактивен")
+	}
+
 	book, err := s.bookRepo.GetByID(dto.BookID)
 	if err != nil {
 		return nil, errors.New("книга не найдена")
 	}
 
+	if book.Status != models.BookStatusPublished {
+		return nil, errors.New("книга не опубликована")
+	}
+
 	if book.IsPremium {
-		sub, _ := s.subscriptionRepo.GetActiveByUserID(dto.UserID)
-		if sub == nil || !sub.CanAccessPremium {
+		sub, err := s.subscriptionRepo.GetActiveByUserID(dto.UserID)
+		if err != nil || sub == nil || !sub.CanAccessPremium {
 			return nil, errors.New("для доступа к премиум книгам требуется подписка")
 		}
 	}
@@ -60,11 +68,15 @@ func (s *bookAccessService) GrantAccess(dto *models.GrantAccessDTO) (*models.Boo
 	loanDays := dto.Days
 	if user.GroupID != nil {
 		group, err := s.groupRepo.GetByID(*user.GroupID)
-		if err == nil {
-			maxBooks = group.MaxBooks
-			if loanDays > group.LoanDays {
-				loanDays = group.LoanDays
-			}
+		if err != nil {
+			return nil, errors.New("группа пользователя не найдена")
+		}
+		if !group.IsActive {
+			return nil, errors.New("группа пользователя неактивна")
+		}
+		maxBooks = group.MaxBooks
+		if loanDays > group.LoanDays {
+			loanDays = group.LoanDays
 		}
 	}
 
@@ -74,13 +86,21 @@ func (s *bookAccessService) GrantAccess(dto *models.GrantAccessDTO) (*models.Boo
 	}
 
 	now := time.Now()
+	endDate := now.AddDate(0, 0, loanDays)
+	
+	if dto.Type == models.AccessTypePurchase {
+		endDate = now.AddDate(100, 0, 0)
+	}
+
 	access := &models.BookAccess{
-		UserID:    dto.UserID,
-		BookID:    dto.BookID,
-		Type:      dto.Type,
-		Status:    models.AccessStatusActive,
-		StartDate: now,
-		EndDate:   now.AddDate(0, 0, loanDays),
+		UserID:     dto.UserID,
+		BookID:     dto.BookID,
+		Type:       dto.Type,
+		Status:     models.AccessStatusActive,
+		StartDate:  now,
+		EndDate:    endDate,
+		GrantedBy:  dto.GrantedBy,
+		Notes:      dto.Notes,
 	}
 
 	if err := s.accessRepo.Create(access); err != nil {

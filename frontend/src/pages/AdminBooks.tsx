@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { booksApi, filesApi, categoriesApi } from '@/api';
 import type { Book, BookFile, Category, CreateBookRequest } from '@/types';
 import { Button, Input, Loading, Modal, DropZone, toast } from '@/components/ui';
 import { Layout } from '@/components/layout';
-import { Upload, Trash2, FileText, Plus, Search, Filter, Eye, Edit, X, Check, BookOpen, BarChart3 } from 'lucide-react';
+import { Upload, Trash2, FileText, Plus, Search, Filter, Eye, Edit, X, Check, BookOpen, BarChart3, BookMarked } from 'lucide-react';
 
 function formatFileSize(bytes: number) {
   if (bytes === 0) return '0 Bytes';
@@ -349,6 +350,7 @@ function QuickUploadModal({ isOpen, onClose, onSuccess, categories }: QuickUploa
 }
 
 export default function AdminBooks() {
+  const navigate = useNavigate();
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -618,6 +620,15 @@ export default function AdminBooks() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      {book.files && book.files.length > 0 && (
+                        <button
+                          onClick={() => navigate(`/reader/${book.id}`)}
+                          className="p-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg"
+                          title="Читать"
+                        >
+                          <BookMarked className="h-4 w-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => setSelectedBook(book)}
                         className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"

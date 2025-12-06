@@ -179,6 +179,59 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		sessions.GET("/my", handlers.ReadingSession.GetMySessions)
 	}
 
+	collections := api.Group("/collections").Use(authMiddleware)
+	{
+		collections.POST("", handlers.Collection.Create)
+		collections.GET("", handlers.Collection.GetMyCollections)
+		collections.GET("/:id", handlers.Collection.GetByID)
+		collections.PUT("/:id", handlers.Collection.Update)
+		collections.DELETE("/:id", handlers.Collection.Delete)
+		collections.POST("/:id/books", handlers.Collection.AddBooks)
+		collections.DELETE("/:id/books/:book_id", handlers.Collection.RemoveBook)
+		collections.GET("/:id/books", handlers.Collection.GetBooks)
+	}
+
+	api.GET("/collections/public", handlers.Collection.GetPublicCollections)
+
+	bookmarks := api.Group("/bookmarks").Use(authMiddleware)
+	{
+		bookmarks.POST("", handlers.Bookmark.Create)
+		bookmarks.GET("", handlers.Bookmark.GetMyBookmarks)
+		bookmarks.PUT("/:id", handlers.Bookmark.Update)
+		bookmarks.DELETE("/:id", handlers.Bookmark.Delete)
+	}
+
+	bookBookmarks := api.Group("/books/:book_id/bookmarks").Use(authMiddleware)
+	{
+		bookBookmarks.GET("", handlers.Bookmark.GetBookBookmarks)
+	}
+
+	annotations := api.Group("/annotations").Use(authMiddleware)
+	{
+		annotations.POST("", handlers.Annotation.Create)
+		annotations.PUT("/:id", handlers.Annotation.Update)
+		annotations.DELETE("/:id", handlers.Annotation.Delete)
+	}
+
+	bookAnnotations := api.Group("/books/:book_id/annotations").Use(authMiddleware)
+	{
+		bookAnnotations.GET("", handlers.Annotation.GetBookAnnotations)
+	}
+
+	reviews := api.Group("/reviews").Use(authMiddleware)
+	{
+		reviews.POST("", handlers.Review.Create)
+		reviews.GET("/my", handlers.Review.GetMyReviews)
+		reviews.PUT("/:id", handlers.Review.Update)
+		reviews.DELETE("/:id", handlers.Review.Delete)
+	}
+
+	bookReviews := api.Group("/books/:book_id/reviews")
+	{
+		bookReviews.GET("", handlers.Review.GetBookReviews)
+		bookReviews.GET("/stats", handlers.Review.GetStatistics)
+	}
+
 	api.GET("/stats/dashboard", authMiddleware, requireLibrarian, handlers.GetDashboardStats)
 
 	api.GET("/health", func(c *gin.Context) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { booksApi, filesApi, sessionsApi, accessApi } from '@/api';
-import type { Book, BookFile, ReadingSession } from '@/types';
+import { booksApi, filesApi, sessionsApi, accessApi, bookmarksApi, annotationsApi } from '@/api';
+import type { Book, BookFile, ReadingSession, Bookmark, Annotation } from '@/types';
 import { Button, Loading, toast } from '@/components/ui';
 import { 
   X, 
@@ -16,7 +16,14 @@ import {
   FileText,
   Download,
   RotateCw,
-  Home
+  Home,
+  Bookmark as BookmarkIcon,
+  MessageSquare,
+  Star,
+  Highlighter,
+  Pencil,
+  Trash2,
+  Plus
 } from 'lucide-react';
 
 export default function Reader() {
@@ -37,6 +44,11 @@ export default function Reader() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [readingTime, setReadingTime] = useState(0);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<'bookmarks' | 'annotations'>('bookmarks');
+  const [addingBookmark, setAddingBookmark] = useState(false);
 
   useEffect(() => {
     if (bookId) {
@@ -134,6 +146,17 @@ export default function Reader() {
           console.error('Failed to start reading session:', error);
         }
       }
+
+      try {
+        const [bookmarksData, annotationsData] = await Promise.all([
+          bookmarksApi.getByBook(bookId),
+          annotationsApi.getByBook(bookId, false),
+        ]);
+        setBookmarks(bookmarksData);
+        setAnnotations(annotationsData);
+      } catch (error) {
+        console.error('Failed to load bookmarks/annotations:', error);
+      }
     } catch (error) {
       console.error('Failed to load book:', error);
       toast.error('Не удалось загрузить книгу');
@@ -180,6 +203,47 @@ export default function Reader() {
       document.exitFullscreen?.();
     }
     setIsFullscreen(!isFullscreen);
+  };
+
+  const handleAddBookmark = async () => {
+    if (!bookId) return;
+
+    try {
+      setAddingBookmark(true);
+      await bookmarksApi.create({
+        book_id: bookId,
+        page_number: currentPage,
+        title: `Страница ${currentPage}`,
+        is_important: false,
+      });
+      const updatedBookmarks = await bookmarksApi.getByBook(bookId);
+      setBookmarks(updatedBookmarks);
+      toast.success('Закладка добавлена');
+    } catch (error) {
+      console.error('Failed to add bookmark:', error);
+      toast.error('Не удалось добавить закладку');
+    } finally {
+      setAddingBookmark(false);
+    }
+  };
+
+  const handleDeleteBookmark = async (id: string) => {
+    if (!bookId) return;
+
+    try {
+      await bookmarksApi.delete(id);
+      const updatedBookmarks = await bookmarksApi.getByBook(bookId);
+      setBookmarks(updatedBookmarks);
+      toast.success('Закладка удалена');
+    } catch (error) {
+      console.error('Failed to delete bookmark:', error);
+      toast.error('Не удалось удалить закладку');
+    }
+  };
+
+  const handleGoToBookmark = (pageNumber: number) => {
+    handlePageChange(pageNumber);
+    setShowSidebar(false);
   };
 
   const formatTime = (seconds: number) => {
@@ -308,6 +372,25 @@ export default function Reader() {
             title={isFullscreen ? 'Выйти из полноэкранного режима (F)' : 'Полноэкранный режим (F)'}
           >
             {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+          </button>
+
+          <div className="h-6 w-px bg-gray-700" />
+
+          <button
+            onClick={handleAddBookmark}
+            disabled={addingBookmark}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+            title="Добавить закладку"
+          >
+            <BookmarkIcon className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className={`p-2 rounded-lg transition-colors ${showSidebar ? 'text-white bg-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-700'}`}
+            title="Закладки и заметки"
+          >
+            <MessageSquare className="w-4 h-4" />
           </button>
         </div>
       </header>
@@ -455,6 +538,121 @@ export default function Reader() {
           </div>
         </div>
       </footer>
+
+      {showSidebar && (
+        <div className="fixed inset-y-0 right-0 w-80 bg-gray-800 border-l border-gray-700 shadow-2xl z-50 flex flex-col">
+          <div className="p-4 border-b border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-semibold">Заметки</h3>
+              <button onClick={() => setShowSidebar(false)} className="p-1 text-gray-400 hover:text-white">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSidebarTab('bookmarks')}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  sidebarTab === 'bookmarks' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <BookmarkIcon className="h-4 w-4 inline mr-1" />
+                Закладки ({bookmarks.length})
+              </button>
+              <button
+                onClick={() => setSidebarTab('annotations')}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  sidebarTab === 'annotations' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Highlighter className="h-4 w-4 inline mr-1" />
+                Аннотации ({annotations.length})
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto p-4">
+            {sidebarTab === 'bookmarks' ? (
+              <div className="space-y-2">
+                {bookmarks.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <BookmarkIcon className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Нет закладок</p>
+                    <p className="text-xs mt-1">Добавьте закладку на текущую страницу</p>
+                  </div>
+                ) : (
+                  bookmarks.map((bookmark) => (
+                    <div
+                      key={bookmark.id}
+                      className="bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors cursor-pointer group"
+                      onClick={() => handleGoToBookmark(bookmark.page_number)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-400">Стр. {bookmark.page_number}</span>
+                            {bookmark.is_important && (
+                              <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                            )}
+                          </div>
+                          {bookmark.title && (
+                            <p className="text-white text-sm font-medium mt-1">{bookmark.title}</p>
+                          )}
+                          {bookmark.notes && (
+                            <p className="text-gray-300 text-xs mt-1 line-clamp-2">{bookmark.notes}</p>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteBookmark(bookmark.id);
+                          }}
+                          className="p-1 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {annotations.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <Highlighter className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Нет аннотаций</p>
+                    <p className="text-xs mt-1">Выделите текст для создания заметки</p>
+                  </div>
+                ) : (
+                  annotations.map((annotation) => (
+                    <div
+                      key={annotation.id}
+                      className="bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs text-gray-400">Стр. {annotation.page_number}</span>
+                            <span className="text-xs px-1.5 py-0.5 bg-gray-600 text-gray-300 rounded">
+                              {annotation.type}
+                            </span>
+                          </div>
+                          {annotation.selected_text && (
+                            <p className="text-gray-300 text-xs italic mb-1">"{annotation.selected_text}"</p>
+                          )}
+                          {annotation.content && (
+                            <p className="text-white text-sm">{annotation.content}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
