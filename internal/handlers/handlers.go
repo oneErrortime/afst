@@ -19,6 +19,7 @@ type Handlers struct {
 	ReadingSession *ReadingSessionHandler
 	Setup          *SetupHandler
 	Collection     *CollectionHandler
+	Review         *ReviewHandler
 	Services       *services.Services
 }
 
@@ -47,6 +48,7 @@ func NewExtendedHandlers(services *services.Services, fileStorage storage.FileSt
 		ReadingSession: NewReadingSessionHandler(services.ReadingSession, services.BookAccess, validator),
 		Setup:          NewSetupHandler(services.Auth, validator),
 		Collection:     NewCollectionHandler(services.Collection),
+		Review:         NewReviewHandler(services.Review),
 		Services:       services,
 	}
 }

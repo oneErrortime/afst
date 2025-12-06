@@ -225,3 +225,16 @@ type UpdateCollectionDTO struct {
 type AddBookToCollectionDTO struct {
 	BookID uuid.UUID `json:"book_id" validate:"required"`
 }
+
+type CreateReviewDTO struct {
+	BookID uuid.UUID `json:"book_id" validate:"required"`
+	Rating int       `json:"rating" validate:"required,min=1,max=5"`
+	Title  string    `json:"title"`
+	Body   string    `json:"body"`
+}
+
+type UpdateReviewDTO struct {
+	Rating *int    `json:"rating" validate:"omitempty,min=1,max=5"`
+	Title  *string `json:"title"`
+	Body   *string `json:"body"`
+}

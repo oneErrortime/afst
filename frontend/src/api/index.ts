@@ -31,6 +31,10 @@ import type {
   ReadingSession,
   StartSessionRequest,
   BookReadingStats,
+  Collection,
+  CreateCollectionRequest,
+  UpdateCollectionRequest,
+  AddBookToCollectionRequest,
 } from '@/types';
 
 export const authApi = {
@@ -47,6 +51,34 @@ export const authApi = {
   getMe: async (): Promise<User> => {
     const response = await api.get<User>('/auth/me');
     return response.data;
+  },
+};
+
+export const collectionsApi = {
+  getMyCollections: async (): Promise<Collection[]> => {
+    const response = await api.get<Collection[]>('/collections');
+    return response.data;
+  },
+  getCollectionById: async (id: string): Promise<Collection> => {
+    const response = await api.get<Collection>(`/collections/${id}`);
+    return response.data;
+  },
+  createCollection: async (data: CreateCollectionRequest): Promise<Collection> => {
+    const response = await api.post<Collection>('/collections', data);
+    return response.data;
+  },
+  updateCollection: async (id: string, data: UpdateCollectionRequest): Promise<Collection> => {
+    const response = await api.put<Collection>(`/collections/${id}`, data);
+    return response.data;
+  },
+  deleteCollection: async (id: string): Promise<void> => {
+    await api.delete(`/collections/${id}`);
+  },
+  addBookToCollection: async (id: string, data: AddBookToCollectionRequest): Promise<void> => {
+    await api.post(`/collections/${id}/books`, data);
+  },
+  removeBookFromCollection: async (id: string, bookId: string): Promise<void> => {
+    await api.delete(`/collections/${id}/books/${bookId}`);
   },
 };
 

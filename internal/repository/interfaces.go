@@ -67,6 +67,14 @@ type CollectionRepository interface {
 	RemoveBook(collectionID, bookID uuid.UUID) error
 }
 
+type ReviewRepository interface {
+	Create(review *models.Review) error
+	GetByBookID(bookID uuid.UUID) ([]models.Review, error)
+	GetByID(id uuid.UUID) (*models.Review, error)
+	Update(review *models.Review) error
+	Delete(id uuid.UUID) error
+}
+
 type Repository struct {
 	User         UserRepository
 	Book         BookRepository
@@ -74,4 +82,5 @@ type Repository struct {
 	BorrowedBook BorrowedBookRepository
 	FeatureFlag  FeatureFlagRepository
 	Collection   CollectionRepository
+	Review       ReviewRepository
 }

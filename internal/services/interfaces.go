@@ -114,6 +114,14 @@ type CollectionService interface {
 	RemoveBookFromCollection(collectionID, bookID uuid.UUID) error
 }
 
+type ReviewService interface {
+	CreateReview(review *models.Review) error
+	GetReviewsByBookID(bookID uuid.UUID) ([]models.Review, error)
+	GetReviewByID(id uuid.UUID) (*models.Review, error)
+	UpdateReview(review *models.Review) error
+	DeleteReview(id uuid.UUID) error
+}
+
 type Services struct {
 	Auth           AuthService
 	Book           BookService
@@ -127,4 +135,5 @@ type Services struct {
 	ReadingSession ReadingSessionService
 	FeatureFlag    FeatureFlagService
 	Collection     CollectionService
+	Review         ReviewService
 }
