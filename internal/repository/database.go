@@ -115,7 +115,7 @@ func seedFeatureFlags(db *gorm.DB) {
 		{Name: "enable_exports", IsActive: true},
 		{Name: "enable_webhooks", IsActive: true},
 		{Name: "enable_graphql", IsActive: false},
-		{Name: "maintenance_mode", IsActive: true},
+		{Name: "maintenance_mode", IsActive: false},
 	}
 
 	for _, flag := range flags {
