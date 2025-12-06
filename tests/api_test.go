@@ -93,6 +93,8 @@ func (suite *APITestSuite) createTestUser() {
 	user := &models.User{
 		Email:    "test@gmail.com",
 		Password: hashedPassword,
+		Role:     models.RoleAdmin,
+		IsActive: true,
 	}
 
 	err = suite.db.Create(user).Error
@@ -101,7 +103,7 @@ func (suite *APITestSuite) createTestUser() {
 	suite.testUser = user
 
 	// Генерируем токен
-	token, err := suite.jwtService.GenerateToken(user.ID, user.Email)
+	token, err := suite.jwtService.GenerateToken(user.ID, user.Email, user.Role, user.GroupID)
 	suite.Require().NoError(err)
 	suite.authToken = token
 }

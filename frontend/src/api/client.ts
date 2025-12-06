@@ -88,4 +88,14 @@ export const checkApiConnection = async (): Promise<{
   }
 };
 
+export const getSetupStatus = async (): Promise<{ setup_needed: boolean }> => {
+  const response = await api.get('/setup/status');
+  return response.data;
+};
+
+export const createAdmin = async (data: any): Promise<any> => {
+  const response = await api.post('/setup/create-admin', data);
+  return response.data;
+};
+
 export default api;

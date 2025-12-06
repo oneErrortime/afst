@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-
 	"github.com/google/uuid"
 	"github.com/oneErrortime/afst/internal/auth"
 	"github.com/oneErrortime/afst/internal/models"
@@ -39,11 +38,16 @@ func (s *authService) Register(email, password string) (*models.AuthResponseDTO,
 	}
 
 	var freeGroup *models.UserGroup
-	groups, _ := s.groupRepo.List(10, 0)
-	for _, g := range groups {
-		if g.Type == models.GroupTypeFree {
-			freeGroup = &g
-			break
+	if s.groupRepo != nil {
+		groups, err := s.groupRepo.List(10, 0)
+		if err != nil {
+			return nil, err
+		}
+		for _, g := range groups {
+			if g.Type == models.GroupTypeFree {
+				freeGroup = &g
+				break
+			}
 		}
 	}
 
@@ -171,6 +175,14 @@ func (s *authService) UpdateUser(id string, dto *models.UpdateUserDTO) (*models.
 	}
 
 	return user, nil
+}
+
+func (s *authService) HasAdminAccount() (bool, error) {
+	count, err := s.userRepo.CountByRole(models.RoleAdmin)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (s *authService) ListUsers(limit, offset int) ([]models.User, int64, error) {

@@ -55,6 +55,12 @@ func (r *userRepository) List(limit, offset int) ([]models.User, error) {
 	return users, nil
 }
 
+func (r *userRepository) CountByRole(role models.UserRole) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.User{}).Where("role = ?", role).Count(&count).Error
+	return count, err
+}
+
 func (r *userRepository) Count() (int64, error) {
 	var count int64
 	err := r.db.Model(&models.User{}).Count(&count).Error

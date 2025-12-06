@@ -68,3 +68,15 @@ func (u *User) IsLibrarian() bool {
 func (u *User) CanManageBooks() bool {
 	return u.Role == RoleAdmin || u.Role == RoleLibrarian
 }
+
+type FeatureFlag struct {
+	ID        uint      `json:"id" gorm:"primary_key"`
+	Name      string    `json:"name" gorm:"uniqueIndex;not null"`
+	IsActive  bool      `json:"is_active" gorm:"default:false"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (FeatureFlag) TableName() string {
+	return "feature_flags"
+}
