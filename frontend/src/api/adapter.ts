@@ -66,7 +66,7 @@ export function updateApiConfig(config: Partial<ApiConfig>) {
 export function getApiConfig(): ApiConfig {
   return {
     baseUrl: OpenAPI.BASE,
-    token: OpenAPI.TOKEN,
+    token: OpenAPI.TOKEN as string | undefined,
   };
 }
 
@@ -121,23 +121,23 @@ export function listenToStorageChanges() {
   console.log('[API] Storage listener setup complete');
 }
 
-export function handleApiError(error: unknown): never {
+export function handleApiError(error: any): never {
   console.error('[API] Error:', error);
   
-  if (error.status === 401) {
+  if (error?.status === 401) {
     clearApiToken();
     window.location.href = '/afst/login';
   }
   
-  if (error.status === 403) {
+  if (error?.status === 403) {
     console.error('[API] Forbidden - insufficient permissions');
   }
   
-  if (error.status === 404) {
+  if (error?.status === 404) {
     console.error('[API] Resource not found');
   }
   
-  if (error.status >= 500) {
+  if (error?.status >= 500) {
     console.error('[API] Server error');
   }
   

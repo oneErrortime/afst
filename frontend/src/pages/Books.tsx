@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Button, Input, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
 import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash } from 'lucide-react';
-import { Book, BooksService, CreateBookDTO, UpdateBookDTO, OpenAPI } from '@/shared/api';
+import { BooksService, OpenAPI } from '@/shared/api';
+import { Book, CreateBookDTO, UpdateBookDTO } from '@/api/wrapper';
 import { AxiosError } from 'axios';
 
 // Configure the base path for the generated API client
@@ -45,7 +46,7 @@ export function Books() {
   const fetchBooks = async () => {
     try {
       // Use the generated BooksService to fetch books
-      const response = await BooksService.getBooks({ limit: 100 });
+      const response = await BooksService.getBooks(100);
       // The actual book data is in the 'Data' property of the response
       if (response.Data) {
         setBooks(response.Data as Book[]);
@@ -107,11 +108,11 @@ export function Books() {
         description: form.description || undefined,
       };
 
-      if (editingBook) {
-        await BooksService.putBooks({ id: editingBook.id, requestBody: data as UpdateBookDTO });
+      if (editingBook && editingBook.id) {
+        await BooksService.putBooks(editingBook.id, data as UpdateBookDTO);
         toast.success('Книга обновлена');
       } else {
-        await BooksService.postBooks({ requestBody: data as CreateBookDTO });
+        await BooksService.postBooks(data as CreateBookDTO);
         toast.success('Книга создана');
       }
       setModalOpen(false);
@@ -129,7 +130,9 @@ export function Books() {
     
     setDeleting(true);
     try {
-      await BooksService.deleteBooks({ id: deleteBook.id });
+      if (deleteBook.id) {
+        await BooksService.deleteBooks(deleteBook.id);
+      }
       toast.success('Книга удалена');
       setDeleteBook(null);
       fetchBooks();
@@ -225,10 +228,10 @@ export function Books() {
               <div className="mt-4 flex items-center justify-between">
                 <span
                   className={`badge ${
-                    book.copies_count > 0 ? 'badge-success' : 'badge-danger'
+                    (book.copies_count ?? 0) > 0 ? 'badge-success' : 'badge-danger'
                   }`}
                 >
-                  {book.copies_count > 0 ? `${book.copies_count} экз.` : 'Нет в наличии'}
+                  {(book.copies_count ?? 0) > 0 ? `${book.copies_count} экз.` : 'Нет в наличии'}
                 </span>
 
                 {isAuthenticated && (

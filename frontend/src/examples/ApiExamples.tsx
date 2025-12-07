@@ -52,7 +52,9 @@ export function MutationExample() {
     {
       onSuccess: (book) => {
         console.log('Book created successfully:', book);
-        alert(`Book "${book.title}" created!`);
+        if (book) {
+          alert(`Book "${book.title}" created!`);
+        }
         setFormData({ title: '', author: '', isbn: '', description: '' });
       },
       onError: (error) => {
@@ -367,7 +369,7 @@ export function OptimisticUpdateExample() {
         {allReviews.map(review => (
           <div key={review.id}>
             <p>Rating: {review.rating}/5</p>
-            <p>{review.comment}</p>
+            <p>{review.body}</p>
           </div>
         ))}
       </div>

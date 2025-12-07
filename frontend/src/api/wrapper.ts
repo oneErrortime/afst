@@ -23,6 +23,18 @@ import type {
   UpdateProgressDTO,
   StartSessionDTO,
 } from './types';
+import type {
+  models_User,
+  models_CreateBookDTO,
+  models_UpdateBookDTO,
+  models_CreateCollectionDTO,
+  models_UpdateCollectionDTO,
+  models_CreateReviewDTO,
+  models_UpdateReviewDTO,
+  models_CreateBookmarkDTO,
+  models_UpdateUserDTO,
+  handlers_CreateAdminRequest,
+} from '@/shared/api';
 
 export type {
   models_Book as Book,
@@ -55,7 +67,6 @@ export type {
 } from '@/shared/api';
 
 export type UserPublicProfileDTO = models_User;
-export type { models_User as User };
 
 const getBaseUrl = (): string => {
   if (import.meta.env.VITE_API_URL) {
@@ -97,9 +108,9 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-const handleApiError = (error: unknown): never => {
+const handleApiError = (error: any): never => {
   console.error('API Error:', error);
-  if (error.status === 401) {
+  if (error?.status === 401) {
     localStorage.removeItem('token');
     window.location.href = '/afst/login';
   }

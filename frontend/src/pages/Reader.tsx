@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import ePub from 'epubjs';
-import { BooksService, Bookmark, OpenAPI } from '@/shared/api';
+import { OpenAPI } from '@/shared/api';
+import { Bookmark } from '@/api/wrapper';
+import { booksApi } from '@/api/wrapper';
 import { Button, toast, Loading, EmptyState } from '@/components/ui';
 import { Bookmark as BookmarkIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -48,7 +50,7 @@ export function Reader() {
       setError(null);
 
       try {
-        const files = await BooksService.getBooksFiles({ id: bookId });
+        const files = await booksApi.getFiles(bookId);
         if (!files || files.length === 0) {
           throw new Error('Для этой книги не найдено файлов.');
         }
@@ -101,7 +103,7 @@ export function Reader() {
         canvas.width = viewport.width;
 
         if (context) {
-          await page.render({ canvasContext: context, viewport }).promise;
+          await page.render({ canvasContext: context, viewport, canvas }).promise;
         }
       }
     };
@@ -166,7 +168,7 @@ export function Reader() {
   return (
     <div className="space-y-4">
        <div className="sticky top-20 bg-white p-4 border rounded-lg shadow-sm z-10 flex items-center justify-center gap-4">
-          <Button onClick={goToPrevPage} variant="outline">
+          <Button onClick={goToPrevPage} variant="secondary">
             <ChevronLeft className="h-4 w-4" />
             Назад
           </Button>
@@ -180,7 +182,7 @@ export function Reader() {
               E-Book
             </span>
           )}
-          <Button onClick={goToNextPage} variant="outline">
+          <Button onClick={goToNextPage} variant="secondary">
             Вперед
             <ChevronRight className="h-4 w-4" />
           </Button>

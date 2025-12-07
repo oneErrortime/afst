@@ -224,8 +224,10 @@ function QuickUploadModal({ isOpen, onClose, onSuccess, categories }: QuickUploa
       setCreating(true);
       const book = await booksApi.create(bookData);
       
-      for (const file of files) {
-        await booksApi.uploadFile(book.id, file);
+      if (book?.id) {
+        for (const file of files) {
+          await booksApi.uploadFile(book.id, file);
+        }
       }
 
       toast.success('Книга создана и файлы загружены');
@@ -377,7 +379,7 @@ export default function AdminBooks() {
         booksApi.getAll(),
         categoriesApi.getAll(),
       ]);
-      setBooks(booksData);
+      setBooks(booksData as Book[]);
       setCategories(categoriesData);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -421,7 +423,7 @@ export default function AdminBooks() {
         description: editingBook.description,
         cover_url: editingBook.cover_url,
         is_premium: editingBook.is_premium,
-        status: editingBook.status,
+        status: editingBook.status as any,
       });
       await loadData();
       setEditingBook(null);

@@ -86,7 +86,7 @@ export default function Library() {
         booksApi.getAll(),
       ]);
       setLibrary(libraryData);
-      setAllBooks(booksData);
+      setAllBooks(booksData as Book[]);
     } catch (error) {
       console.error('Failed to load library:', error);
     } finally {

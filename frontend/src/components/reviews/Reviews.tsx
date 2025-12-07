@@ -3,13 +3,8 @@ import { reviewsApi } from '@/api';
 import { Button, Input } from '@/components/ui';
 import { Star } from 'lucide-react';
 
-interface Review {
-  id: string;
-  book_id: string;
-  rating: number;
-  comment: string;
-  created_at: string;
-}
+import type { models_Review } from '@/shared/api';
+type Review = models_Review;
 
 export function Reviews({ bookId }: { bookId: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -35,7 +30,7 @@ export function Reviews({ bookId }: { bookId: string }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await reviewsApi.create({ book_id: bookId, rating, comment });
+      await reviewsApi.create({ book_id: bookId, rating, body: comment });
       setComment('');
       setRating(5);
       loadReviews();
@@ -81,11 +76,11 @@ export function Reviews({ bookId }: { bookId: string }) {
         {reviews.map((review) => (
           <div key={review.id} className="p-4 bg-white rounded-lg border">
             <div className="flex gap-1 mb-2">
-              {Array.from({ length: review.rating }).map((_, i) => (
+              {Array.from({ length: review.rating || 0 }).map((_, i) => (
                 <Star key={i} className="h-4 w-4 text-yellow-500 fill-current" />
               ))}
             </div>
-            <p className="text-gray-700">{review.comment}</p>
+            <p className="text-gray-700">{review.body}</p>
           </div>
         ))}
       </div>
