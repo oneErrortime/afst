@@ -90,22 +90,18 @@ export function Navbar() {
 
             <div className="hidden md:flex items-center gap-1">
               <NavLink to="/books">Книги</NavLink>
-              <NavLink to="/categories">Категории</NavLink>
               {isAuthenticated && (
                 <>
-                  <NavLink to="/library">Моя библиотека</NavLink>
+                  <NavLink to="/library">Библиотека</NavLink>
                   <NavLink to="/collections">Коллекции</NavLink>
-                  <NavLink to="/groups">Группы</NavLink>
                   {isLibrarian && (
                     <>
                       <NavLink to="/readers">Читатели</NavLink>
-                      <NavLink to="/borrow">Выдача</NavLink>
                       <NavLink to="/admin/dashboard">Панель</NavLink>
-                      <NavLink to="/admin/books">Книги</NavLink>
                     </>
                   )}
                   {isAdmin && (
-                    <NavLink to="/admin/users">Пользователи</NavLink>
+                    <NavLink to="/auto">API</NavLink>
                   )}
                 </>
               )}

@@ -78,12 +78,12 @@ export function setupAuthInterceptor() {
     const token = getApiToken();
     
     if (token && config) {
-      const headers = new Headers(config.headers);
+      const headers = new Headers(config.headers as HeadersInit);
       if (!headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);
       }
       
-      config.headers = headers;
+      (config as any).headers = headers;
     }
     
     try {

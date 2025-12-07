@@ -133,7 +133,7 @@ export const authApi = {
 };
 
 export const booksApi = {
-  getAll: async (params?: { limit?: number; offset?: number }) => {
+  getAll: async (params?: { limit?: number; offset?: number; search?: string }) => {
     try {
       const response = await BooksService.getBooks(params?.limit, params?.offset);
       return response.Data || [];

@@ -17,3 +17,5 @@ export { default as Dashboard } from './Dashboard';
 export { Setup } from './Setup';
 export { BookDetail } from './BookDetail';
 export { Profile } from './Profile';
+export { AutoDashboard } from './AutoDashboard';
+export { AutoResource } from './AutoResource';

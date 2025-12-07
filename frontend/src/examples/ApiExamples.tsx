@@ -47,7 +47,7 @@ export function MutationExample() {
     description: '',
   });
 
-  const { mutate: createBook, loading, error } = useMutation<Book, CreateBookDTO>(
+  const { mutate: createBook, loading, error } = useMutation<Book | undefined, CreateBookDTO>(
     (data) => booksApi.create(data),
     {
       onSuccess: (book) => {
