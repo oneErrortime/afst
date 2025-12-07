@@ -18,3 +18,4 @@ export type models_UserGroup = {
     type: models_UserGroupType;
     updated_at?: string;
 };
+

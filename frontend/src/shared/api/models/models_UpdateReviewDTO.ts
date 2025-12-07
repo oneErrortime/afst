@@ -7,3 +7,4 @@ export type models_UpdateReviewDTO = {
     rating?: number;
     title?: string;
 };
+

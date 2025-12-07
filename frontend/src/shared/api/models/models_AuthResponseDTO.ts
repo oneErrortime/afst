@@ -8,3 +8,4 @@ export type models_AuthResponseDTO = {
     token?: string;
     user?: models_UserResponseDTO;
 };
+

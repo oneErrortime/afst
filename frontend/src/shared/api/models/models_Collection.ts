@@ -12,3 +12,4 @@ export type models_Collection = {
     updated_at?: string;
     user_id?: string;
 };
+

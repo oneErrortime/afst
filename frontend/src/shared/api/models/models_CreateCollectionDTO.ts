@@ -6,3 +6,4 @@ export type models_CreateCollectionDTO = {
     description?: string;
     name: string;
 };
+

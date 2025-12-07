@@ -7,3 +7,4 @@ export type handlers_CreateAdminRequest = {
     name: string;
     password: string;
 };
+

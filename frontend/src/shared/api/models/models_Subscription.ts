@@ -24,3 +24,4 @@ export type models_Subscription = {
     user?: models_User;
     user_id?: string;
 };
+

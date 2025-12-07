@@ -18,3 +18,4 @@ export type models_User = {
     role?: models_UserRole;
     updated_at?: string;
 };
+

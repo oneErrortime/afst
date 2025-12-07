@@ -9,3 +9,4 @@ export type models_UpdateUserDTO = {
     name?: string;
     role?: models_UserRole;
 };
+

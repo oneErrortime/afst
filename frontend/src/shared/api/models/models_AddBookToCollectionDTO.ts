@@ -5,3 +5,4 @@
 export type models_AddBookToCollectionDTO = {
     book_id: string;
 };
+

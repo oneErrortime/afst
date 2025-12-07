@@ -6,3 +6,4 @@ export type models_SuccessResponseDTO = {
     data?: any;
     message?: string;
 };
+

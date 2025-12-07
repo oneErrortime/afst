@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, BookDetail, Profile } from '@/pages';
+import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, BookDetail, Profile, AutoDashboard, AutoResource } from '@/pages';
 import { Layout } from '@/components/layout';
 import { ToastContainer } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { getSetupStatus } from '@/api/client';
+import { initializeApiSystem } from '@/api';
 import { Loader2 } from 'lucide-react';
 
 function SetupRedirect({ children }: { children: React.ReactNode }) {
@@ -45,6 +46,10 @@ export default function App() {
   const { isAuthenticated, user, fetchUser } = useAuthStore();
 
   useEffect(() => {
+    initializeApiSystem();
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated && !user) {
       fetchUser();
     }
@@ -74,6 +79,8 @@ export default function App() {
             <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/auto" element={<AutoDashboard />} />
+            <Route path="/auto/:resource" element={<AutoResource />} />
           </Route>
         </Routes>
         <ToastContainer />

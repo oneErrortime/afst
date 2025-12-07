@@ -7,3 +7,4 @@ export type models_CreateBookmarkDTO = {
     label?: string;
     location: string;
 };
+

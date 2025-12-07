@@ -18,3 +18,4 @@ export type models_UserResponseDTO = {
     role?: models_UserRole;
     subscription?: models_Subscription;
 };
+
