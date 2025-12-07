@@ -5,6 +5,7 @@ import { Layout } from '@/components/layout';
 import { ToastContainer } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { getSetupStatus } from '@/api/client';
+import { initializeApiSystem } from '@/api';
 import { Loader2 } from 'lucide-react';
 
 function SetupRedirect({ children }: { children: React.ReactNode }) {
@@ -43,6 +44,10 @@ function SetupRedirect({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const { isAuthenticated, user, fetchUser } = useAuthStore();
+
+  useEffect(() => {
+    initializeApiSystem();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && !user) {
