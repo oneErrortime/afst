@@ -103,7 +103,7 @@ export function Reader() {
         canvas.width = viewport.width;
 
         if (context) {
-          await page.render({ canvas, canvasContext: context, viewport }).promise;
+          await page.render({ canvasContext: context, viewport }).promise;
         }
       }
     };
