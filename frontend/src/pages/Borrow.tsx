@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { booksApi, readersApi, borrowApi } from '@/api';
 import { useAuthStore } from '@/store/authStore';
-import { Button, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
+import { Button, Modal, Loading, toast, ConfirmDialog } from '@/components/ui';
 import { BookOpen, RotateCcw, ArrowRightLeft, User, Book as BookIcon, Check, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 import type { Book, Reader, BorrowedBook } from '@/types';
 import { AxiosError } from 'axios';
@@ -31,7 +31,7 @@ export function Borrow() {
       ]);
       setBooks((booksRes || []) as Book[]);
       setReaders(readersRes || []);
-    } catch (error) {
+    } catch {
       toast.error('Ошибка загрузки данных');
     } finally {
       setLoading(false);
@@ -53,7 +53,7 @@ export function Borrow() {
     try {
       const response = await borrowApi.getByReader(readerId);
       setReaderBooks((response || []).filter((b: BorrowedBook) => !b.return_date));
-    } catch (error) {
+    } catch {
       toast.error('Ошибка загрузки книг');
     } finally {
       setLoadingReaderBooks(false);

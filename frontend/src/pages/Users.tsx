@@ -5,7 +5,7 @@ import type { User, UserGroup } from '@/types';
 import { Button, Input, Modal, Loading, toast } from '@/components/ui';
 import { Layout } from '@/components/layout';
 import { useAuthStore } from '@/store/authStore';
-import { Search, Edit, UserPlus, Shield, BookOpen, Users as UsersIcon, ChevronDown } from 'lucide-react';
+import { Search, Edit, UserPlus, Shield, BookOpen, Users as UsersIcon } from 'lucide-react';
 import apiClient from '@/api/client';
 
 const ROLES = [
@@ -38,6 +38,7 @@ export default function Users() {
       return;
     }
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const loadData = async () => {

@@ -26,6 +26,7 @@ export function ResourceManager({ resourceName, api }: ResourceManagerProps) {
     const found = resources.find(r => r.name.toLowerCase() === resourceName.toLowerCase());
     setResource(found || null);
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resourceName]);
 
   const loadData = async () => {

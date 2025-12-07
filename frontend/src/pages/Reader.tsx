@@ -5,8 +5,8 @@ import ePub from 'epubjs';
 import { OpenAPI } from '@/shared/api';
 import { Bookmark } from '@/api/wrapper';
 import { booksApi } from '@/api/wrapper';
-import { Button, toast, Loading, EmptyState } from '@/components/ui';
-import { Bookmark as BookmarkIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button, Loading, EmptyState } from '@/components/ui';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 
@@ -32,7 +32,7 @@ export function Reader() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [, ] = useState<Bookmark[]>([]);
   const { token } = useAuthStore();
 
   useEffect(() => {

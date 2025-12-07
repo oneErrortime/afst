@@ -41,7 +41,7 @@ export function Register() {
       await storeRegister(email, password, name);
       toast.success('Registration successful!');
       setTimeout(() => navigate('/books'), 500);
-    } catch (error) {
+    } catch {
       toast.error('Registration failed');
       setLoading(false);
     }

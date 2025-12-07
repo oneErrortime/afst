@@ -31,7 +31,7 @@ export function Readers() {
     try {
       const response = await readersApi.getAll({ limit: 100 });
       setReaders(response || []);
-    } catch (error) {
+    } catch {
       toast.error('Ошибка загрузки читателей');
     } finally {
       setLoading(false);
@@ -49,7 +49,7 @@ export function Readers() {
     try {
       const response = await borrowApi.getByReader(readerId);
       setBorrowedBooks(response || []);
-    } catch (error) {
+    } catch {
       toast.error('Ошибка загрузки книг читателя');
     } finally {
       setLoadingBooks(false);
@@ -67,8 +67,8 @@ export function Readers() {
     setModalOpen(true);
   };
 
-  const openEditModal = (reader: Reader, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const openEditModal = (reader: Reader, ev: React.MouseEvent) => {
+    ev.stopPropagation();
     setEditingReader(reader);
     setForm({ name: reader.name, email: reader.email });
     setModalOpen(true);

@@ -8,8 +8,6 @@ import {
   Plus, 
   Trash2, 
   Edit2, 
-  Check, 
-  X, 
   RefreshCw,
   Wifi,
   WifiOff,
@@ -39,7 +37,13 @@ export function Settings() {
   const [form, setForm] = useState({ name: '', url: '', description: '' });
 
   useEffect(() => {
-    handleCheckConnection();
+    const checkConnection = async () => {
+      setChecking(true);
+      const result = await checkApiConnection();
+      setLatency(result.latency || null);
+      setChecking(false);
+    };
+    checkConnection();
   }, [activeEndpointId]);
 
   const handleCheckConnection = async () => {

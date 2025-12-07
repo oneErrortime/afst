@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { authApi } from '@/api';
+
 import { Button, Input, toast } from '@/components/ui';
 import { BookOpen, Mail, Lock, Wifi, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
 import { AxiosError } from 'axios';

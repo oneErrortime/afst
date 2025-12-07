@@ -36,8 +36,8 @@ export function Reviews({ bookId }: ReviewsProps) {
       setLoading(true);
       const data = await ReviewService.getReviewsBook({ bookId });
       setReviews(data || []);
-    } catch (err) {
-      toast.error('Failed to fetch reviews.');
+    } catch {
+      toast.error('Failed to fetch reviews');
     } finally {
       setLoading(false);
     }
@@ -45,6 +45,7 @@ export function Reviews({ bookId }: ReviewsProps) {
 
   useEffect(() => {
     fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
   const openCreateModal = () => {
@@ -77,7 +78,7 @@ export function Reviews({ bookId }: ReviewsProps) {
       }
       setModalOpen(false);
       fetchReviews();
-    } catch (error) {
+    } catch {
       toast.error('Failed to save review.');
     } finally {
       setSaving(false);
@@ -92,7 +93,7 @@ export function Reviews({ bookId }: ReviewsProps) {
       toast.success('Review deleted');
       setDeletingReview(null);
       fetchReviews();
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete review.');
     } finally {
       setDeleting(false);

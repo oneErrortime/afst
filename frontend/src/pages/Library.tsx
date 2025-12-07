@@ -5,13 +5,7 @@ import { Button, Loading } from '@/components/ui';
 import { Layout } from '@/components/layout';
 import { useNavigate } from 'react-router-dom';
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
+
 
 function daysRemaining(endDate: string) {
   const end = new Date(endDate);

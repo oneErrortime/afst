@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createAdmin } from '@/api/client';
 import { Button, Input, toast } from '@/components/ui';
-import { UserPlus, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { UserPlus, Mail, Lock, User } from 'lucide-react';
 import { AxiosError } from 'axios';
 
 export function Setup() {

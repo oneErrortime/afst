@@ -18,7 +18,7 @@ export function BookDetail() {
       try {
         const data = await booksApi.getById(id);
         setBook(data as Book);
-      } catch (err) {
+      } catch {
         setError('Failed to fetch book details.');
       } finally {
         setLoading(false);

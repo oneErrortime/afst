@@ -15,16 +15,13 @@ import type {
   BorrowRequestDTO,
   ReturnRequestDTO,
   CreateCategoryDTO,
-  UpdateCategoryDTO,
   CreateGroupDTO,
   UpdateGroupDTO,
-  SubscribePlanDTO,
   GrantAccessDTO,
   UpdateProgressDTO,
   StartSessionDTO,
 } from './types';
 import type {
-  models_User,
   models_CreateBookDTO,
   models_UpdateBookDTO,
   models_CreateCollectionDTO,
