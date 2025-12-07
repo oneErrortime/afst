@@ -31,6 +31,9 @@ func NewExtendedRepository(db *gorm.DB) *repository.ExtendedRepository {
 		BookFile:       NewBookFileRepository(db),
 		ReadingSession: NewReadingSessionRepository(db),
 		Social:         NewSocialRepository(db),
+		Collection:     NewCollectionRepository(db),
+		Review:         NewReviewRepository(db),
+		Bookmark:       NewBookmarkRepository(db),
 		DB:             db,
 	}
 }

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { Button } from '@/components/ui';
+import { Button, Loading } from '@/components/ui';
 import { 
   BookOpen, 
   Users, 
@@ -14,20 +14,50 @@ import {
   WifiOff,
   Settings,
   Github,
-  ExternalLink
+  ExternalLink,
+  Star,
+  Clock,
+  TrendingUp,
+  Library,
+  Heart,
+  MessageSquare
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { checkApiConnection } from '@/api/client';
+import { booksApi, reviewsApi, type Book, type Review } from '@/api/wrapper';
+
+interface RecentActivity {
+  type: 'review' | 'new_book';
+  book?: Book;
+  review?: Review;
+  timestamp: Date;
+}
 
 export function Home() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
+  const [recentBooks, setRecentBooks] = useState<Book[]>([]);
+  const [popularBooks, setPopularBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const activeEndpoint = getActiveEndpoint();
 
   useEffect(() => {
     checkApiConnection();
+    loadHomeData();
   }, []);
+
+  const loadHomeData = async () => {
+    try {
+      const books = await booksApi.getAll({ limit: 12 });
+      setRecentBooks((books || []).slice(0, 6));
+      setPopularBooks((books || []).slice(0, 4).sort(() => Math.random() - 0.5));
+    } catch (error) {
+      console.error('Failed to load home data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-16">
@@ -60,10 +90,17 @@ export function Home() {
               <ArrowRight className="h-5 w-5" />
             </Button>
           </Link>
-          {!isAuthenticated && (
+          {!isAuthenticated ? (
             <Link to="/register">
               <Button variant="secondary" size="lg">
                 Регистрация
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/library">
+              <Button variant="secondary" size="lg">
+                <Library className="h-5 w-5 mr-2" />
+                Моя библиотека
               </Button>
             </Link>
           )}
@@ -96,6 +133,87 @@ export function Home() {
           </Link>
         </div>
       </section>
+
+      {recentBooks.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary-100 rounded-lg">
+                <Clock className="h-5 w-5 text-primary-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Новые книги</h2>
+            </div>
+            <Link to="/books" className="text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+              Все книги
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            {recentBooks.map((book) => (
+              <Link 
+                key={book.id} 
+                to={`/books/${book.id}`}
+                className="group"
+              >
+                <div className="aspect-[2/3] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden mb-3 relative shadow-sm group-hover:shadow-lg transition-all">
+                  {book.cover_url ? (
+                    <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <BookOpen className="h-10 w-10 text-gray-300" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                    <span className="text-white text-xs font-medium">Подробнее</span>
+                  </div>
+                </div>
+                <h3 className="font-medium text-gray-900 line-clamp-1 group-hover:text-primary-600 transition-colors">
+                  {book.title}
+                </h3>
+                <p className="text-sm text-gray-500 line-clamp-1">{book.author}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {popularBooks.length > 0 && (
+        <section className="card p-8 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-amber-100 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Популярное</h2>
+          </div>
+          
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {popularBooks.map((book, index) => (
+              <Link 
+                key={book.id} 
+                to={`/books/${book.id}`}
+                className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all flex gap-4 group"
+              >
+                <div className="text-3xl font-bold text-amber-200 group-hover:text-amber-300 transition-colors">
+                  {index + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-primary-600 transition-colors">
+                    {book.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">{book.author}</p>
+                  {(book.rating || 0) > 0 && (
+                    <div className="flex items-center gap-1 mt-2 text-amber-500">
+                      <Star className="h-4 w-4 fill-current" />
+                      <span className="text-sm font-medium">{(book.rating || 0).toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="grid gap-6 md:grid-cols-3">
         {[
@@ -132,6 +250,37 @@ export function Home() {
           </div>
         ))}
       </section>
+
+      {isAuthenticated && (
+        <section className="card p-8 bg-gradient-to-r from-primary-50 to-blue-50 border-primary-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <Users className="h-5 w-5 text-primary-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Социальные возможности</h2>
+          </div>
+          
+          <div className="grid gap-4 md:grid-cols-3">
+            <Link to="/collections" className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all group">
+              <Library className="h-8 w-8 text-primary-500 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-gray-900 mb-1">Коллекции</h3>
+              <p className="text-sm text-gray-500">Создавайте списки любимых книг</p>
+            </Link>
+            
+            <Link to="/profile/me" className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all group">
+              <Heart className="h-8 w-8 text-red-500 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-gray-900 mb-1">Подписки</h3>
+              <p className="text-sm text-gray-500">Следите за другими читателями</p>
+            </Link>
+            
+            <Link to="/books" className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all group">
+              <MessageSquare className="h-8 w-8 text-amber-500 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-gray-900 mb-1">Отзывы</h3>
+              <p className="text-sm text-gray-500">Делитесь мнением о прочитанном</p>
+            </Link>
+          </div>
+        </section>
+      )}
 
       <section className="card overflow-hidden">
         <div className="p-8 bg-gradient-to-r from-gray-50 to-white">

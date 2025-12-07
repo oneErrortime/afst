@@ -3,12 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Button, Input, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
 import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash } from 'lucide-react';
-import { BooksService, OpenAPI } from '@/shared/api';
-import { Book, CreateBookDTO, UpdateBookDTO } from '@/api/wrapper';
+import { booksApi, type Book, type CreateBookDTO, type UpdateBookDTO } from '@/api/wrapper';
 import { AxiosError } from 'axios';
-
-// Configure the base path for the generated API client
-OpenAPI.BASE = 'http://localhost:8080/api/v1';
 
 
 export function Books() {
@@ -22,16 +18,7 @@ export function Books() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const { isAuthenticated, token } = useAuthStore();
-
-  // Set the token for authenticated requests
-  useEffect(() => {
-    if (token) {
-      OpenAPI.HEADERS = {
-        Authorization: `Bearer ${token}`,
-      };
-    }
-  }, [token]);
+  const { isAuthenticated } = useAuthStore();
 
 
   const [form, setForm] = useState<CreateBookDTO>({
@@ -45,14 +32,8 @@ export function Books() {
 
   const fetchBooks = async () => {
     try {
-      // Use the generated BooksService to fetch books
-      const response = await BooksService.getBooks(100);
-      // The actual book data is in the 'Data' property of the response
-      if (response.Data) {
-        setBooks(response.Data as Book[]);
-      } else {
-        setBooks([]);
-      }
+      const data = await booksApi.getAll({ limit: 100 });
+      setBooks(data as Book[]);
     } catch {
       toast.error('Ошибка загрузки книг');
     } finally {
@@ -109,10 +90,10 @@ export function Books() {
       };
 
       if (editingBook && editingBook.id) {
-        await BooksService.putBooks(editingBook.id, data as UpdateBookDTO);
+        await booksApi.update(editingBook.id, data as UpdateBookDTO);
         toast.success('Книга обновлена');
       } else {
-        await BooksService.postBooks(data as CreateBookDTO);
+        await booksApi.create(data as CreateBookDTO);
         toast.success('Книга создана');
       }
       setModalOpen(false);
@@ -131,7 +112,7 @@ export function Books() {
     setDeleting(true);
     try {
       if (deleteBook.id) {
-        await BooksService.deleteBooks(deleteBook.id);
+        await booksApi.delete(deleteBook.id);
       }
       toast.success('Книга удалена');
       setDeleteBook(null);

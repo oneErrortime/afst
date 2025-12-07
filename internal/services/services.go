@@ -30,5 +30,8 @@ func NewExtendedServices(repos *repository.ExtendedRepository, jwtService *auth.
 		ReadingSession: NewReadingSessionService(repos.ReadingSession, repos.BookAccess),
 		FeatureFlag:    NewFeatureFlagService(repos.FeatureFlag),
 		Social:         NewSocialService(repos.Social),
+		Collection:     NewCollectionService(repos.Collection),
+		Review:         NewReviewService(repos.Review),
+		Bookmark:       NewBookmarkService(repos.Bookmark),
 	}
 }
