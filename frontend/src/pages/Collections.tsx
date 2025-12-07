@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collectionsApi, type Collection, type CreateCollectionDTO, type UpdateCollectionDTO } from '@/api';
 import { Button, Input, Modal, Loading } from '@/components/ui';
 import { Plus, Edit, Trash2, BookOpen } from 'lucide-react';
-import { toast } from '@/components/ui/Toast';
+import { toast } from '@/components/ui';
 
 export function Collections() {
   const [collections, setCollections] = useState<Collection[]>([]);

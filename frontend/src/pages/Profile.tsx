@@ -4,7 +4,7 @@ import { socialApi, type User, type Collection, type Review } from '@/api';
 import { Loading, Button } from '@/components/ui';
 import { UserPlus, UserMinus, BookOpen, FolderOpen, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { toast } from '@/components/ui/Toast';
+import { toast } from '@/components/ui';
 
 export function Profile() {
   const { id } = useParams<{ id: string }>();
