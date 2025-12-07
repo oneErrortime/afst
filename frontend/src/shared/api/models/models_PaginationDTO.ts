@@ -8,3 +8,4 @@ export type models_PaginationDTO = {
     page?: number;
     total?: number;
 };
+

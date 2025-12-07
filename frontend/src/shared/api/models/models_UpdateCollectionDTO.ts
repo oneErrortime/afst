@@ -6,3 +6,4 @@ export type models_UpdateCollectionDTO = {
     description?: string;
     name?: string;
 };
+

@@ -7,3 +7,4 @@ export type models_AuthRequestDTO = {
     name?: string;
     password: string;
 };
+

@@ -13,3 +13,4 @@ export type models_Bookmark = {
     location?: string;
     user_id?: string;
 };
+

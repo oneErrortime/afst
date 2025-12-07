@@ -6,3 +6,4 @@ export type models_ErrorResponseDTO = {
     error?: string;
     message?: string;
 };
+

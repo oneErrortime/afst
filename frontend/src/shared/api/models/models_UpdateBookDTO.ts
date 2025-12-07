@@ -18,3 +18,4 @@ export type models_UpdateBookDTO = {
     status?: models_BookStatus;
     title?: string;
 };
+
