@@ -6,7 +6,15 @@ import {
   reviewsApi, 
   usersApi,
   categoriesApi,
-  groupsApi
+  groupsApi,
+  bookmarksApi,
+  readersApi,
+  borrowApi,
+  socialApi,
+  subscriptionsApi,
+  accessApi,
+  sessionsApi,
+  filesApi,
 } from '@/api';
 
 const apiMap: Record<string, any> = {
@@ -16,6 +24,14 @@ const apiMap: Record<string, any> = {
   users: usersApi,
   categories: categoriesApi,
   groups: groupsApi,
+  bookmarks: bookmarksApi,
+  readers: readersApi,
+  borrow: borrowApi,
+  social: socialApi,
+  subscriptions: subscriptionsApi,
+  access: accessApi,
+  sessions: sessionsApi,
+  files: filesApi,
 };
 
 export function AutoResource() {
