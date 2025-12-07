@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Edit, Trash2, Eye } from 'lucide-react';
 
 interface Column {
@@ -17,19 +17,17 @@ interface AutoTableProps {
 }
 
 export function AutoTable({ data, columns, onEdit, onDelete, onView, loading }: AutoTableProps) {
-  const [autoColumns, setAutoColumns] = useState<Column[]>([]);
-
-  useEffect(() => {
+  const autoColumns = useMemo(() => {
     if (columns) {
-      setAutoColumns(columns);
+      return columns;
     } else if (data.length > 0) {
       const keys = Object.keys(data[0]);
-      const newColumns = keys.slice(0, 5).map(key => ({
+      return keys.slice(0, 5).map(key => ({
         key,
         label: key.replace(/_/g, ' ').toUpperCase()
       }));
-      setAutoColumns(newColumns);
     }
+    return [];
   }, [data, columns]);
 
   if (loading) {

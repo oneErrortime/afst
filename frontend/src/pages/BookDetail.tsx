@@ -11,12 +11,9 @@ import {
   Calendar, 
   FileText, 
   Download, 
-  Share2, 
   Heart, 
   ListPlus, 
   Clock, 
-  CheckCircle,
-  AlertCircle,
   Star
 } from 'lucide-react';
 import { toast } from '@/components/ui';
@@ -24,7 +21,7 @@ import { toast } from '@/components/ui';
 export function BookDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);

@@ -4,14 +4,11 @@ import type { UserLibrary, BookAccess, Book, Bookmark } from '@/types';
 import { Button, Loading } from '@/components/ui';
 import { Layout } from '@/components/layout';
 import { useNavigate, Link } from 'react-router-dom';
-import { BookOpen, Bookmark as BookmarkIcon, History, Clock } from 'lucide-react';
+import { BookOpen, Bookmark as BookmarkIcon, History } from 'lucide-react';
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+function formatDate(_dateString: string) {
+  // Kept for structure if needed later, otherwise remove usage
+  return '';
 }
 
 function daysRemaining(endDate: string) {

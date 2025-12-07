@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { parseSwaggerSpec, APIResource } from '@/lib/swagger-parser';
 import { BookOpen, Users, FolderOpen, Star, Bookmark, Settings, FileText, Key, UserPlus, Zap, Clock, Files } from 'lucide-react';
@@ -19,13 +19,9 @@ const iconMap: Record<string, any> = {
 };
 
 export function AutoDashboard() {
-  const [resources, setResources] = useState<APIResource[]>([]);
   const [selectedResource, setSelectedResource] = useState<APIResource | null>(null);
 
-  useEffect(() => {
-    const parsed = parseSwaggerSpec();
-    setResources(parsed);
-  }, []);
+  const resources = useMemo(() => parseSwaggerSpec(), []);
 
   const allEndpoints = resources.flatMap(r => 
     r.endpoints.map(e => ({ ...e, resource: r.name }))

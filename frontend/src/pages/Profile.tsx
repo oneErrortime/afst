@@ -1,14 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { socialApi, type User, type Collection, type Review, type UserPublicProfileDTO } from '@/api';
+import { type UserPublicProfileDTO, type Collection, type Review, socialApi } from '@/api';
 import { Loading, Button, toast } from '@/components/ui';
-import { UserPlus, UserMinus, BookOpen, FolderOpen, MessageSquare, Users, Star, Quote } from 'lucide-react';
+import { UserPlus, UserMinus, FolderOpen, MessageSquare, Users, Star, Quote } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-
-function formatDate(dateString?: string) {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString();
-}
 
 export function Profile() {
   const { id } = useParams<{ id: string }>();

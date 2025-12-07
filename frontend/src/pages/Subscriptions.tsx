@@ -45,6 +45,7 @@ export default function Subscriptions() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   const loadData = async () => {
