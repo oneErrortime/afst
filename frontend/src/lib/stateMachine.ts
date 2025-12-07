@@ -114,7 +114,8 @@ export function useMachine<TContext>(
       context,
       history: [],
     };
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.initial]);
 
   const [state, dispatch] = useReducer(machineReducer<TContext>, initialState);
 

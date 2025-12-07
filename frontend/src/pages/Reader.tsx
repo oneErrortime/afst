@@ -233,7 +233,8 @@ export function Reader() {
         bookRef.current.destroy();
       }
     };
-  }, [fileType, fileUrl, theme, fontSize]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileType, fileUrl]);
 
   const applyEpubTheme = useCallback((rendition: Rendition, currentTheme: Theme, currentFontSize: number) => {
     const themeConfig = themes[currentTheme];
@@ -253,27 +254,29 @@ export function Reader() {
     rendition.themes.select('default');
   }, []);
 
+  const goToPrevPage = useCallback(() => {
+    if (fileType === 'pdf') {
+      setPdfPage(prev => Math.max(1, prev - 1));
+    } else if (renditionRef.current) {
+      renditionRef.current.prev();
+    }
+  }, [fileType]);
+
+  const goToNextPage = useCallback(() => {
+    if (fileType === 'pdf') {
+      setPdfPage(prev => Math.min(totalPages, prev + 1));
+    } else if (renditionRef.current) {
+      renditionRef.current.next();
+    }
+  }, [fileType, totalPages]);
+
   useEffect(() => {
     if (renditionRef.current) {
       applyEpubTheme(renditionRef.current, theme, fontSize);
     }
   }, [theme, fontSize, applyEpubTheme]);
 
-  const goToPrevPage = () => {
-    if (fileType === 'pdf') {
-      setPdfPage(prev => Math.max(1, prev - 1));
-    } else if (renditionRef.current) {
-      renditionRef.current.prev();
-    }
-  };
-
-  const goToNextPage = () => {
-    if (fileType === 'pdf') {
-      setPdfPage(prev => Math.min(totalPages, prev + 1));
-    } else if (renditionRef.current) {
-      renditionRef.current.next();
-    }
-  };
+  
 
   const goToTocItem = (href: string) => {
     if (renditionRef.current) {
@@ -370,7 +373,7 @@ export function Reader() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen, fileType, pdf, totalPages]);
+  }, [isFullscreen, goToPrevPage, goToNextPage]);
 
   const currentTheme = themes[theme];
 

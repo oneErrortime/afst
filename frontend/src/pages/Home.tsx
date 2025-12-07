@@ -22,7 +22,7 @@ import {
   Heart,
   MessageSquare
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { checkApiConnection } from '@/api/client';
 import { booksApi, type Book } from '@/api/wrapper';
 
@@ -31,15 +31,11 @@ export function Home() {
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
   const [recentBooks, setRecentBooks] = useState<Book[]>([]);
   const [popularBooks, setPopularBooks] = useState<Book[]>([]);
+  const [, setLoading] = useState(true);
 
   const activeEndpoint = getActiveEndpoint();
 
-  useEffect(() => {
-    checkApiConnection();
-    loadHomeData();
-  }, []);
-
-  const loadHomeData = async () => {
+  const loadHomeData = useCallback(async () => {
     try {
       const books = await booksApi.getAll({ limit: 12 });
       setRecentBooks((books || []).slice(0, 6));
@@ -49,7 +45,14 @@ export function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkApiConnection();
+    loadHomeData();
+  }, [loadHomeData]);
+
+  
 
   return (
     <div className="space-y-16">
