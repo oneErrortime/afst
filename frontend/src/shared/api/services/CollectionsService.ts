@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
+ 
 import type { models_AddBookToCollectionDTO } from '../models/models_AddBookToCollectionDTO';
 import type { models_Collection } from '../models/models_Collection';
 import type { models_CreateCollectionDTO } from '../models/models_CreateCollectionDTO';

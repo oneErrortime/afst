@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
+ 
 import type { models_SubscriptionPlan } from './models_SubscriptionPlan';
 import type { models_SubscriptionStatus } from './models_SubscriptionStatus';
 import type { models_User } from './models_User';

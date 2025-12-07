@@ -9,6 +9,20 @@ import {
   OpenAPI
 } from '@/shared/api';
 import axios, { AxiosInstance } from 'axios';
+import type {
+  CreateReaderDTO,
+  UpdateReaderDTO,
+  BorrowRequestDTO,
+  ReturnRequestDTO,
+  CreateCategoryDTO,
+  UpdateCategoryDTO,
+  CreateGroupDTO,
+  UpdateGroupDTO,
+  SubscribePlanDTO,
+  GrantAccessDTO,
+  UpdateProgressDTO,
+  StartSessionDTO,
+} from './types';
 
 export type {
   models_Book as Book,
@@ -81,7 +95,7 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-const handleApiError = (error: any): never => {
+const handleApiError = (error: unknown): never => {
   console.error('API Error:', error);
   if (error.status === 401) {
     localStorage.removeItem('token');
@@ -150,7 +164,7 @@ export const booksApi = {
     }
   },
   
-  create: async (data: any) => {
+  create: async (data: models_CreateBookDTO) => {
     try {
       const response = await BooksService.postBooks(data);
       return response.Data;
@@ -159,7 +173,7 @@ export const booksApi = {
     }
   },
   
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: models_UpdateBookDTO) => {
     try {
       const response = await BooksService.putBooks(id, data);
       return response.Data;
@@ -234,7 +248,7 @@ export const collectionsApi = {
     }
   },
   
-  create: async (data: any) => {
+  create: async (data: models_CreateCollectionDTO) => {
     try {
       return await CollectionsService.postCollections(data);
     } catch (error) {
@@ -242,7 +256,7 @@ export const collectionsApi = {
     }
   },
   
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: models_UpdateCollectionDTO) => {
     try {
       return await CollectionsService.putCollections(id, data);
     } catch (error) {
@@ -284,7 +298,7 @@ export const reviewsApi = {
     }
   },
   
-  create: async (data: any) => {
+  create: async (data: models_CreateReviewDTO) => {
     try {
       return await ReviewsService.postReviews(data);
     } catch (error) {
@@ -292,7 +306,7 @@ export const reviewsApi = {
     }
   },
   
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: models_UpdateReviewDTO) => {
     try {
       return await ReviewsService.putReviews(id, data);
     } catch (error) {
@@ -318,7 +332,7 @@ export const bookmarksApi = {
     }
   },
   
-  create: async (data: any) => {
+  create: async (data: models_CreateBookmarkDTO) => {
     try {
       return await BookmarksService.postBookmarks(data);
     } catch (error) {
@@ -371,7 +385,7 @@ export const usersApi = {
     }
   },
   
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: models_UpdateUserDTO) => {
     try {
       return await UsersService.putUsers(id, data);
     } catch (error) {
@@ -379,7 +393,7 @@ export const usersApi = {
     }
   },
   
-  createAdmin: async (data: any) => {
+  createAdmin: async (data: handlers_CreateAdminRequest) => {
     try {
       return await UsersService.postUsersAdmin(data);
     } catch (error) {
@@ -407,7 +421,7 @@ export const readersApi = {
     }
   },
   
-  create: async (data: any) => {
+  create: async (data: CreateReaderDTO) => {
     try {
       const response = await axiosInstance.post('/readers', data);
       return response.data;
@@ -416,7 +430,7 @@ export const readersApi = {
     }
   },
   
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: UpdateReaderDTO) => {
     try {
       const response = await axiosInstance.put(`/readers/${id}`, data);
       return response.data;
@@ -435,7 +449,7 @@ export const readersApi = {
 };
 
 export const borrowApi = {
-  borrow: async (data: any) => {
+  borrow: async (data: BorrowRequestDTO) => {
     try {
       const response = await axiosInstance.post('/borrow', data);
       return response.data;
@@ -444,7 +458,7 @@ export const borrowApi = {
     }
   },
   
-  return: async (data: any) => {
+  return: async (data: ReturnRequestDTO) => {
     try {
       const response = await axiosInstance.post('/borrow/return', data);
       return response.data;
@@ -500,7 +514,7 @@ export const categoriesApi = {
     }
   },
   
-  create: async (data: any) => {
+  create: async (data: CreateCategoryDTO) => {
     try {
       const response = await axiosInstance.post('/categories', data);
       return response.data;
@@ -546,7 +560,7 @@ export const groupsApi = {
     }
   },
   
-  create: async (data: any) => {
+  create: async (data: CreateGroupDTO) => {
     try {
       const response = await axiosInstance.post('/groups', data);
       return response.data;
@@ -555,7 +569,7 @@ export const groupsApi = {
     }
   },
   
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: UpdateGroupDTO) => {
     try {
       const response = await axiosInstance.put(`/groups/${id}`, data);
       return response.data;
@@ -672,7 +686,7 @@ export const accessApi = {
     }
   },
   
-  grantAccess: async (data: any) => {
+  grantAccess: async (data: GrantAccessDTO) => {
     try {
       const response = await axiosInstance.post('/access', data);
       return response.data;
@@ -698,7 +712,7 @@ export const accessApi = {
     }
   },
   
-  updateProgress: async (id: string, data: any) => {
+  updateProgress: async (id: string, data: UpdateProgressDTO) => {
     try {
       await axiosInstance.put(`/access/${id}/progress`, data);
     } catch (error) {
@@ -731,7 +745,7 @@ export const filesApi = {
 };
 
 export const sessionsApi = {
-  start: async (data: any) => {
+  start: async (data: StartSessionDTO) => {
     try {
       const response = await axiosInstance.post('/reading-sessions', data);
       return response.data;
@@ -773,3 +787,4 @@ export const getAuthToken = (): string | null => {
 };
 
 export { OpenAPI };
+ OpenAPI };

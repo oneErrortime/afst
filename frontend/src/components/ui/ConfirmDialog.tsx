@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect } from 'react';
-import { AlertTriangle, Trash2, LogOut, Check, X, Info, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Trash2, Check, X, Info, AlertCircle } from 'lucide-react';
 import { Button } from './Button';
 
 type DialogType = 'danger' | 'warning' | 'info' | 'success';
@@ -69,9 +69,12 @@ export function ConfirmDialog({
 
   useEffect(() => {
     if (!isOpen) {
-      setTypedText('');
-      setIsConfirming(false);
-      setShowSuccess(false);
+      const timer = setTimeout(() => {
+        setTypedText('');
+        setIsConfirming(false);
+        setShowSuccess(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 

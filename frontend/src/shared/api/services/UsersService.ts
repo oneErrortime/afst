@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
+ 
 import type { handlers_CreateAdminRequest } from '../models/handlers_CreateAdminRequest';
 import type { models_ListResponseDTO } from '../models/models_ListResponseDTO';
 import type { models_UpdateUserDTO } from '../models/models_UpdateUserDTO';

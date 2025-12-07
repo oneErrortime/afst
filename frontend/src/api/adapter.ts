@@ -83,7 +83,7 @@ export function setupAuthInterceptor() {
         headers.set('Authorization', `Bearer ${token}`);
       }
       
-      (config as any).headers = headers;
+      (config as RequestInit).headers = headers;
     }
     
     try {
@@ -121,7 +121,7 @@ export function listenToStorageChanges() {
   console.log('[API] Storage listener setup complete');
 }
 
-export function handleApiError(error: any): never {
+export function handleApiError(error: unknown): never {
   console.error('[API] Error:', error);
   
   if (error.status === 401) {

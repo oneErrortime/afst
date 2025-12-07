@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
+ 
 import type { models_CreateReviewDTO } from '../models/models_CreateReviewDTO';
 import type { models_Review } from '../models/models_Review';
 import type { models_SuccessResponseDTO } from '../models/models_SuccessResponseDTO';

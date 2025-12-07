@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
+ 
 import type { models_AuthRequestDTO } from '../models/models_AuthRequestDTO';
 import type { models_AuthResponseDTO } from '../models/models_AuthResponseDTO';
 import type { models_UserResponseDTO } from '../models/models_UserResponseDTO';
