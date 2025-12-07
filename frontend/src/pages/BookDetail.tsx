@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { booksApi, accessApi, collectionsApi, bookmarksApi, filesApi } from '@/api';
 import { Book, Collection, BookAccess } from '@/types';
-import { Loading, Button, Modal, toast } from '@/components/ui';
+import { Loading, Button, Modal } from '@/components/ui';
 import { Reviews } from '@/components/reviews/Reviews';
 import { RecommendedBooks } from '@/components/books/RecommendedBooks';
 import { useAuthStore } from '@/store/authStore';
@@ -16,6 +16,7 @@ import {
   Clock, 
   Star
 } from 'lucide-react';
+import { toast } from '@/components/ui';
 import { toast } from '@/components/ui';
 
 export function BookDetail() {
