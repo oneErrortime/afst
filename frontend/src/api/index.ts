@@ -50,6 +50,8 @@ export type {
   AuthResponseDTO,
 } from './wrapper';
 
+export type { CreateReaderDTO, UpdateReaderDTO, BorrowRequestDTO, ReturnRequestDTO } from './types';
+
 export {
   initializeAPI,
   initializeApiSystem,

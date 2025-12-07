@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
- 
+/* eslint-disable */
 import type { models_BookFile } from './models_BookFile';
 import type { models_BookStatus } from './models_BookStatus';
 import type { models_Category } from './models_Category';

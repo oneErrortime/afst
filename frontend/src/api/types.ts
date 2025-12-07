@@ -19,7 +19,9 @@ export interface BorrowRequestDTO {
 }
 
 export interface ReturnRequestDTO {
-  borrow_id: string;
+  book_id?: string;
+  reader_id?: string;
+  borrow_id?: string;
   returned_date?: string;
 }
 

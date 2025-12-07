@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
- 
+/* eslint-disable */
 import type { models_Bookmark } from '../models/models_Bookmark';
 import type { models_CreateBookmarkDTO } from '../models/models_CreateBookmarkDTO';
 import type { models_SuccessResponseDTO } from '../models/models_SuccessResponseDTO';

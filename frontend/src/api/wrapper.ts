@@ -47,13 +47,15 @@ export type {
   models_User as User,
   models_UserGroup as UserGroup,
   models_UserGroupType as UserGroupType,
-  models_UserPublicProfileDTO as UserPublicProfileDTO,
   models_UserResponseDTO as UserResponseDTO,
   models_UserRole as UserRole,
   models_AddBookToCollectionDTO as AddBookToCollectionDTO,
   models_AuthRequestDTO as AuthRequestDTO,
   models_AuthResponseDTO as AuthResponseDTO,
 } from '@/shared/api';
+
+export type UserPublicProfileDTO = models_User;
+export type { models_User as User };
 
 const getBaseUrl = (): string => {
   if (import.meta.env.VITE_API_URL) {

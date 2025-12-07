@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
- 
+/* eslint-disable */
 import type { models_BookStatus } from './models_BookStatus';
 export type models_UpdateBookDTO = {
     author?: string;

@@ -1,67 +1,56 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { SocialService, UserPublicProfileDTO, OpenAPI } from '@/shared/api';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { socialApi, type User, type Collection, type Review } from '@/api';
+import { Loading, Button } from '@/components/ui';
+import { UserPlus, UserMinus, BookOpen, FolderOpen, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { Button, Loading, EmptyState, toast } from '@/components/ui';
-import { User, Users, Book, Star, Plus, Minus } from 'lucide-react';
-
-// Configure the base path for the generated API client
-OpenAPI.BASE = 'http://localhost:8080/api/v1';
+import { toast } from '@/components/ui/Toast';
 
 export function Profile() {
   const { id } = useParams<{ id: string }>();
-  const [profile, setProfile] = useState<UserPublicProfileDTO | null>(null);
+  const { user, isAuthenticated } = useAuthStore();
+  const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
-  const { user, token, isAuthenticated } = useAuthStore();
-
-  useEffect(() => {
-    if (token) {
-      OpenAPI.HEADERS = {
-        Authorization: `Bearer ${token}`,
-      };
-    }
-  }, [token]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!id) return;
+    
     try {
-      const profileData = await SocialService.getUsers({ id });
+      setLoading(true);
+      const profileData = await socialApi.getUserProfile(id);
       setProfile(profileData);
-      // Here you would ideally have an endpoint to check if the current user is following this profile
-      // For now, we'll just keep it as false. We'll add this logic later.
-    } catch (error) {
-      toast.error('Не удалось загрузить профиль');
+    } catch {
+      setProfile(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchProfile();
-  }, [id]);
+  }, [fetchProfile]);
 
-  const handleFollow = async () => {
+  const toggleFollow = async () => {
     if (!id || !isAuthenticated) {
-      toast.info('Нужно войти в аккаунт, чтобы подписаться');
+      toast.info('Нужно войти в аккаунт');
       return;
     }
+    
     setFollowLoading(true);
     try {
       if (isFollowing) {
-        await SocialService.deleteUsersFollow({ id });
-        toast.success(`Вы отписались от ${profile?.name}`);
+        await socialApi.unfollowUser(id);
+        toast.success('Вы отписались');
         setIsFollowing(false);
       } else {
-        await SocialService.postUsersFollow({ id });
-        toast.success(`Вы подписались на ${profile?.name}`);
+        await socialApi.followUser(id);
+        toast.success('Вы подписались');
         setIsFollowing(true);
       }
-      // Re-fetch profile to update follower count
       fetchProfile();
-    } catch (error) {
+    } catch {
       toast.error('Действие не удалось');
     } finally {
       setFollowLoading(false);
@@ -69,33 +58,26 @@ export function Profile() {
   };
 
   if (loading) return <Loading text="Загрузка профиля..." />;
-  if (!profile) return <EmptyState title="Профиль не найден" />;
+  if (!profile) return <div className="text-center py-8">Профиль не найден</div>;
 
   const isOwnProfile = user?.id === profile.id;
+  const collections = (profile as any).collections || [];
+  const reviews = (profile as any).reviews || [];
 
   return (
     <div className="space-y-8">
       <div className="card p-6">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           <div className="p-4 bg-gradient-to-br from-primary-100 to-primary-50 rounded-full">
-            <User className="h-12 w-12 text-primary-600" />
+            <BookOpen className="h-12 w-12 text-primary-600" />
           </div>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
-            <div className="flex items-center gap-6 mt-2 text-gray-500">
-              <span className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                <b>{profile.follower_count}</b> подписчиков
-              </span>
-              <span className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                <b>{profile.following_count}</b> подписок
-              </span>
-            </div>
+            <h1 className="text-3xl font-bold text-gray-900">{profile.name || profile.email}</h1>
+            <p className="text-gray-600 mt-1">{profile.email}</p>
           </div>
           {!isOwnProfile && isAuthenticated && (
-            <Button onClick={handleFollow} loading={followLoading} variant={isFollowing ? 'secondary' : 'primary'}>
-              {isFollowing ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            <Button onClick={toggleFollow} loading={followLoading} variant={isFollowing ? 'secondary' : 'primary'}>
+              {isFollowing ? <UserMinus className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
               {isFollowing ? 'Отписаться' : 'Подписаться'}
             </Button>
           )}
@@ -103,13 +85,18 @@ export function Profile() {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Коллекции ({profile.collections?.length || 0})</h2>
-        {profile.collections && profile.collections.length > 0 ? (
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <FolderOpen className="h-5 w-5" />
+          Коллекции ({collections.length})
+        </h2>
+        {collections.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {profile.collections.map(collection => (
+            {collections.map((collection: Collection) => (
               <div key={collection.id} className="card p-4">
                 <h3 className="font-semibold">{collection.name}</h3>
-                <p className="text-sm text-gray-600">{collection.description}</p>
+                {collection.description && (
+                  <p className="text-sm text-gray-600 mt-1">{collection.description}</p>
+                )}
               </div>
             ))}
           </div>
@@ -119,22 +106,24 @@ export function Profile() {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Отзывы ({profile.reviews?.length || 0})</h2>
-        {profile.reviews && profile.reviews.length > 0 ? (
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <MessageSquare className="h-5 w-5" />
+          Отзывы ({reviews.length})
+        </h2>
+        {reviews.length > 0 ? (
           <div className="space-y-4">
-            {profile.reviews.map(review => (
+            {reviews.map((review: Review) => (
               <div key={review.id} className="card p-4">
-                 <div className="flex items-center justify-between">
-                    <Link to={`/books/${review.book_id}`} className="font-semibold hover:underline">
-                      {review.book?.title || 'Книга'}
-                    </Link>
-                    <div className="flex items-center gap-1 text-yellow-500">
-                      <Star className="h-4 w-4 fill-current" />
-                      <b>{review.rating}</b>
-                    </div>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">Отзыв на книгу</h3>
+                  <div className="flex items-center gap-1 text-yellow-500">
+                    <span>⭐</span>
+                    <b>{review.rating}</b>
+                  </div>
                 </div>
-                <h4 className="font-medium mt-1">{review.title}</h4>
-                <p className="text-sm text-gray-600 mt-1">{review.body}</p>
+                {review.comment && (
+                  <p className="text-sm text-gray-600 mt-2">{review.comment}</p>
+                )}
               </div>
             ))}
           </div>
@@ -142,7 +131,6 @@ export function Profile() {
           <p className="text-gray-500">Пользователь пока не оставлял отзывов.</p>
         )}
       </div>
-
     </div>
   );
 }
