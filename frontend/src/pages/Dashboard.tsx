@@ -112,11 +112,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      
-        <Loading />
-      
-    );
+    return <Loading />;
   }
 
   const statCards = [
@@ -186,8 +182,7 @@ export default function Dashboard() {
   ];
 
   return (
-    
-      <div className="space-y-8">
+    <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Панель управления</h1>
           <p className="text-gray-500">Обзор библиотечной системы</p>
@@ -340,6 +335,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    
+    </div>
   );
 }

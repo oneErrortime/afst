@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, BookDetail, Profile, AutoDashboard, AutoResource } from '@/pages';
 import { Layout } from '@/components/layout';
-import { ToastContainer } from '@/components/ui';
+import { ToastContainer, ErrorBoundary } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { getSetupStatus } from '@/api/client';
 import { initializeApiSystem } from '@/api';
 import { Loader2 } from 'lucide-react';
+import { eventBus } from '@/lib/eventBus';
 
 function SetupRedirect({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -43,11 +44,15 @@ function SetupRedirect({ children }: { children: React.ReactNode }) {
 
 
 export default function App() {
-  const { isAuthenticated, user, fetchUser } = useAuthStore();
+  const { isAuthenticated, user, fetchUser, logout } = useAuthStore();
 
   useEffect(() => {
     initializeApiSystem();
-  }, []);
+    const unsubscribe = eventBus.on('api:unauthorized', () => {
+      logout();
+    });
+    return () => unsubscribe();
+  }, [logout]);
 
   useEffect(() => {
     if (isAuthenticated && !user) {
@@ -56,9 +61,10 @@ export default function App() {
   }, [isAuthenticated, user, fetchUser]);
 
   return (
-    <BrowserRouter basename="/afst">
-      <SetupRedirect>
-        <Routes>
+    <ErrorBoundary showDetails>
+      <BrowserRouter basename="/afst">
+        <SetupRedirect>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/setup" element={<Setup />} />
@@ -83,8 +89,9 @@ export default function App() {
             <Route path="/auto/:resource" element={<AutoResource />} />
           </Route>
         </Routes>
-        <ToastContainer />
-      </SetupRedirect>
-    </BrowserRouter>
+          <ToastContainer />
+        </SetupRedirect>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

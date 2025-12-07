@@ -115,10 +115,10 @@ export default function Users() {
     readers: users.filter(u => u.role === 'reader').length,
   };
 
-  if (loading) return <Loading;
+  if (loading) return <Loading />;
 
   return (
-    
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -430,6 +430,6 @@ export default function Users() {
           </div>
         </div>
       </Modal>
-    
+    </>
   );
 }

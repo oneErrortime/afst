@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Button, Input, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
-import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash } from 'lucide-react';
+import { Button, Input, Modal, EmptyState, toast, ConfirmDialog, SkeletonBooksGrid, ErrorState } from '@/components/ui';
+import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash, RefreshCw } from 'lucide-react';
 import { booksApi, type Book, type CreateBookDTO, type UpdateBookDTO } from '@/api/wrapper';
 import { AxiosError } from 'axios';
 
@@ -11,6 +11,7 @@ export function Books() {
   const navigate = useNavigate();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
@@ -32,9 +33,12 @@ export function Books() {
 
   const fetchBooks = async () => {
     try {
+      setError(null);
+      setLoading(true);
       const data = await booksApi.getAll({ limit: 100 });
       setBooks(data as Book[]);
-    } catch {
+    } catch (err) {
+      setError('Не удалось загрузить книги. Проверьте соединение.');
       toast.error('Ошибка загрузки книг');
     } finally {
       setLoading(false);
@@ -131,7 +135,34 @@ export function Books() {
       book.author.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <Loading text="Загрузка книг..." />;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Каталог книг</h1>
+            <p className="text-gray-500">Загрузка...</p>
+          </div>
+        </div>
+        <SkeletonBooksGrid count={6} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Каталог книг</h1>
+        </div>
+        <ErrorState
+          title="Ошибка загрузки"
+          message={error}
+          onRetry={fetchBooks}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
