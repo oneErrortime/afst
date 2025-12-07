@@ -787,4 +787,3 @@ export const getAuthToken = (): string | null => {
 };
 
 export { OpenAPI };
- OpenAPI };

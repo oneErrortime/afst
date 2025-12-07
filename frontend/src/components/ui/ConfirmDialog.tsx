@@ -93,7 +93,7 @@ export function ConfirmDialog({
       setTimeout(() => {
         onClose();
       }, 500);
-    } catch (error) {
+    } catch {
       setIsConfirming(false);
     }
   };
