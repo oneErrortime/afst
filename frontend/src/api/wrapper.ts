@@ -48,7 +48,7 @@ const getBaseUrl = (): string => {
   if (import.meta.env.DEV) {
     return 'http://localhost:8080/api/v1';
   }
-  return 'https://afst-1.onrender.com/api/v1';
+  return 'https://afst-4.onrender.com/api/v1';
 };
 
 OpenAPI.BASE = getBaseUrl();

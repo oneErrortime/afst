@@ -16,7 +16,7 @@ const getBaseUrl = (): string => {
     return '/api/v1';
   }
   
-  return 'https://afst-1.onrender.com/api/v1';
+  return 'https://afst-4.onrender.com/api/v1';
 };
 
 export const createApiClient = () => {
