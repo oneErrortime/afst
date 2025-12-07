@@ -1,97 +1,72 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, BookDetail, Profile, AutoDashboard, AutoResource } from '@/pages';
-import { Layout } from '@/components/layout';
-import { ToastContainer, ErrorBoundary } from '@/components/ui';
-import { useAuthStore } from '@/store/authStore';
-import { getSetupStatus } from '@/api/client';
-import { initializeApiSystem } from '@/api';
-import { Loader2 } from 'lucide-react';
-import { eventBus } from '@/lib/eventBus';
+import { useEffect } from 'react';
+import ConnectorSelector from './features/connectors/ConnectorSelector';
+import SetupWizard from './features/setup/SetupWizard';
+import AuthGate from './features/auth/AuthGate';
+import Dashboard from './features/dashboard/Dashboard';
+import { useApiConfigStore } from './store/apiConfigStore';
+import { useSpecStore } from './store/specStore';
+import { useSetupStatus } from './hooks/useSetupStatus';
+import { useSessionStore } from './store/sessionStore';
+import LoadingScreen from './components/common/LoadingScreen';
+import ErrorScreen from './components/common/ErrorScreen';
 
-function SetupRedirect({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
+function App() {
+  const activeConnector = useApiConfigStore((state) => state.activeConnector);
+  const loadSpec = useSpecStore((state) => state.loadSpec);
+  const specStatus = useSpecStore((state) => state.status);
+  const specError = useSpecStore((state) => state.error);
+  const { state: setupState, refresh: refreshSetup, error: setupError } = useSetupStatus(activeConnector);
+  const token = useSessionStore((state) => state.token);
 
   useEffect(() => {
-    const checkSetup = async () => {
-      try {
-        const { setup_needed } = await getSetupStatus();
-        if (setup_needed && location.pathname !== '/setup') {
-          navigate('/setup');
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Failed to check setup status", error);
-        setLoading(false); // Proceed even if check fails
-      }
-    };
-    checkSetup();
-  }, [navigate, location.pathname]);
+    if (activeConnector) {
+      loadSpec(activeConnector);
+    }
+  }, [activeConnector?.id, loadSpec]);
 
-  if (loading) {
+  if (!activeConnector) {
+    return <ConnectorSelector />;
+  }
+
+  if (specStatus === 'idle' || specStatus === 'loading') {
+    return <LoadingScreen message="Синхронизируемся с API" />;
+  }
+
+  if (specStatus === 'error') {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-      </div>
+      <ErrorScreen
+        title="Не удалось обработать спецификацию"
+        message={specError || 'Проверьте подключение или формат Swagger файла'}
+        actionLabel="Повторить"
+        onAction={() => loadSpec(activeConnector)}
+      />
     );
   }
 
-  return <>{children}</>;
+  if (setupState === 'checking') {
+    return <LoadingScreen message="Проверяем готовность сервера" />;
+  }
+
+  if (setupState === 'error') {
+    return (
+      <ErrorScreen
+        title="Ошибка настройки"
+        message={setupError || 'Не удалось получить статус установки'}
+        actionLabel="Повторить"
+        onAction={refreshSetup}
+      />
+    );
+  }
+
+  if (setupState === 'needs-admin') {
+    return <SetupWizard connector={activeConnector} onCompleted={refreshSetup} />;
+  }
+
+  if (!token) {
+    return <AuthGate connector={activeConnector} />;
+  }
+
+  return <Dashboard />;
 }
 
-
-export default function App() {
-  const { isAuthenticated, user, fetchUser, logout } = useAuthStore();
-
-  useEffect(() => {
-    initializeApiSystem();
-    const unsubscribe = eventBus.on('api:unauthorized', () => {
-      logout();
-    });
-    return () => unsubscribe();
-  }, [logout]);
-
-  useEffect(() => {
-    if (isAuthenticated && !user) {
-      fetchUser();
-    }
-  }, [isAuthenticated, user, fetchUser]);
-
-  return (
-    <ErrorBoundary showDetails>
-      <BrowserRouter basename="/afst">
-        <SetupRedirect>
-          <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/setup" element={<Setup />} />
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/books" element={<Books />} />
-            <Route path="/books/:id" element={<BookDetail />} />
-            <Route path="/readers" element={<Readers />} />
-            <Route path="/borrow" element={<Borrow />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/groups" element={<Groups />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/books/:bookId/read" element={<Reader />} />
-            <Route path="/subscriptions" element={<Subscriptions />} />
-            <Route path="/admin/books" element={<AdminBooks />} />
-            <Route path="/admin/users" element={<Users />} />
-            <Route path="/admin/dashboard" element={<Dashboard />} />
-            <Route path="/profile/:id" element={<Profile />} />
-            <Route path="/auto" element={<AutoDashboard />} />
-            <Route path="/auto/:resource" element={<AutoResource />} />
-          </Route>
-        </Routes>
-          <ToastContainer />
-        </SetupRedirect>
-      </BrowserRouter>
-    </ErrorBoundary>
-  );
-}
+export default App;
