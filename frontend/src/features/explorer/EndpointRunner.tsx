@@ -3,6 +3,7 @@ import { ParsedEndpoint } from '../../store/types';
 import { formatMethod } from '../../utils/format';
 import { createSampleFromSchema, inferInputType } from '../../utils/schemaTools';
 import { useSessionStore } from '../../store/sessionStore';
+import AutoFormBuilder from './AutoFormBuilder';
 
 interface EndpointRunnerProps {
   endpoint: ParsedEndpoint;
@@ -21,6 +22,7 @@ function EndpointRunner({ endpoint, baseUrl, schemas }: EndpointRunnerProps) {
   const token = useSessionStore((state) => state.token);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
   const [body, setBody] = useState('');
+  const [bodyMode, setBodyMode] = useState<'json' | 'form'>('json');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ResponseState>();
 
@@ -33,13 +35,16 @@ function EndpointRunner({ endpoint, baseUrl, schemas }: EndpointRunnerProps) {
     if (endpoint.requestBody?.schema) {
       const sample = createSampleFromSchema(endpoint.requestBody.schema, schemas);
       setBody(sample ? JSON.stringify(sample, null, 2) : '');
+      setBodyMode('form');
     } else {
       setBody('');
+      setBodyMode('json');
     }
     setResponse(undefined);
   }, [endpoint, schemas]);
 
   const methodMeta = useMemo(() => formatMethod(endpoint.method), [endpoint.method]);
+  const supportsForm = Boolean(endpoint.requestBody?.schema);
 
   const handleChange = (name: string, value: string) => {
     setParamValues((prev) => ({ ...prev, [name]: value }));
@@ -131,10 +136,30 @@ function EndpointRunner({ endpoint, baseUrl, schemas }: EndpointRunnerProps) {
       )}
 
       {endpoint.requestBody && (
-        <label>
-          Тело запроса ({endpoint.requestBody.contentType})
-          <textarea value={body} onChange={(e) => setBody(e.target.value)} />
-        </label>
+        <div>
+          <div className="tabs" style={{ marginBottom: 12 }}>
+            {supportsForm && (
+              <button className={bodyMode === 'form' ? 'active' : ''} onClick={() => setBodyMode('form')}>
+                Форма
+              </button>
+            )}
+            <button className={bodyMode === 'json' ? 'active' : ''} onClick={() => setBodyMode('json')}>
+              JSON
+            </button>
+          </div>
+          {bodyMode === 'form' && supportsForm ? (
+            <AutoFormBuilder
+              schema={endpoint.requestBody.schema}
+              schemas={schemas}
+              onChange={(value) => setBody(value)}
+            />
+          ) : (
+            <label>
+              Тело запроса ({endpoint.requestBody.contentType})
+              <textarea value={body} onChange={(e) => setBody(e.target.value)} />
+            </label>
+          )}
+        </div>
       )}
 
       <button className="primary" onClick={execute} disabled={loading}>
