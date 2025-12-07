@@ -24,7 +24,7 @@ export function AutoTable({ data, columns, onEdit, onDelete, onView, loading }: 
       setAutoColumns(columns);
     } else if (data.length > 0) {
       const keys = Object.keys(data[0]);
-      const newColumns = keys.slice(0, 5).map(key => ({
+      const newColumns: Column[] = keys.slice(0, 5).map(key => ({
         key,
         label: key.replace(/_/g, ' ').toUpperCase()
       }));
