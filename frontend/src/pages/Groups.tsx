@@ -3,7 +3,7 @@ import { groupsApi, categoriesApi } from '@/api';
 import type { UserGroup, Category, User } from '@/types';
 import { Button, Input, Modal, Loading, toast } from '@/components/ui';
 import { Layout } from '@/components/layout';
-import { Plus, Edit, Trash2, Users, BookOpen, Calendar, Download, ChevronRight, Search, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Calendar, Download, ChevronRight, X } from 'lucide-react';
 
 const GROUP_TYPES = [
   { value: 'free', label: 'Свободные читатели', color: 'bg-blue-500' },
@@ -33,6 +33,7 @@ function GroupUsersModal({ group, onClose }: GroupUsersModalProps) {
 
   useEffect(() => {
     loadUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group.id]);
 
   const loadUsers = async () => {

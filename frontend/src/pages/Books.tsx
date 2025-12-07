@@ -53,7 +53,7 @@ export function Books() {
       } else {
         setBooks([]);
       }
-    } catch (error) {
+    } catch {
       toast.error('Ошибка загрузки книг');
     } finally {
       setLoading(false);

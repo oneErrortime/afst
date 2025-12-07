@@ -17,7 +17,6 @@ import {
   Star
 } from 'lucide-react';
 import { toast } from '@/components/ui';
-import { toast } from '@/components/ui';
 
 export function BookDetail() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +35,7 @@ export function BookDetail() {
     if (id) {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isAuthenticated]);
 
   const loadData = async () => {
@@ -58,8 +58,8 @@ export function BookDetail() {
         // We'll check bookmarks if authenticated.
         checkBookmarkStatus();
       }
-    } catch (error) {
-      console.error('Failed to load book data:', error);
+    } catch {
+      console.error('Failed to load book data');
       toast.error('Не удалось загрузить информацию о книге');
     } finally {
       setLoading(false);
@@ -71,7 +71,7 @@ export function BookDetail() {
     try {
       const bookmarks = await bookmarksApi.getByBook(id);
       setIsBookmarked(bookmarks.length > 0);
-    } catch (e) {
+    } catch {
       // Ignore error
     }
   };
@@ -124,11 +124,10 @@ export function BookDetail() {
             a.click();
             window.URL.revokeObjectURL(downloadUrl);
             document.body.removeChild(a);
-        } catch (e) {
-             console.error(e);
+        } catch {
              toast.error('Ошибка скачивания');
         }
-    } catch (error) {
+    } catch {
         toast.error('Ошибка скачивания');
     }
   };
@@ -155,7 +154,7 @@ export function BookDetail() {
         setIsBookmarked(true);
         toast.success('Добавлено в закладки');
       }
-    } catch (error) {
+    } catch {
         toast.error('Ошибка работы с закладками');
     }
   };
@@ -176,7 +175,7 @@ export function BookDetail() {
         await collectionsApi.addBook(collectionId, id!);
         toast.success('Книга добавлена в коллекцию');
         setShowCollectionModal(false);
-    } catch (error) {
+    } catch {
         toast.error('Ошибка добавления. Возможно книга уже там.');
     }
   };

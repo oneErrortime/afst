@@ -23,7 +23,7 @@ function BookFilesPanel({ book, onClose, onFilesUpdated }: BookFilesPanelProps) 
   const [files, setFiles] = useState<BookFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [, setUploadProgress] = useState<Record<string, number>>({});
 
   useEffect(() => {
     loadFiles();

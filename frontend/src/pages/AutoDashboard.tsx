@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { parseSwaggerSpec, APIResource } from '@/lib/swagger-parser';
-import { BookOpen, Users, FolderOpen, Star, Bookmark, Settings, FileText, Key, UserPlus, Zap, Clock, Files } from 'lucide-react';
+import { BookOpen, Users, FolderOpen, Star, Bookmark, FileText, Key, UserPlus, Zap, Clock, Files } from 'lucide-react';
 
 const iconMap: Record<string, any> = {
   Books: BookOpen,
@@ -53,15 +53,15 @@ export function AutoDashboard() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Ресурсы ({resources.length})</h2>
           <div className="grid grid-cols-1 gap-3">
-            {resources.map(resource => {
-              const Icon = iconMap[resource.name] || BookOpen;
-              const path = `/auto/${resource.name.toLowerCase()}`;
+            {resources.map(res => {
+              const Icon = iconMap[res.name] || BookOpen;
+              const path = `/auto/${res.name.toLowerCase()}`;
               
               return (
                 <div
-                  key={resource.name}
+                  key={res.name}
                   className="p-4 bg-white rounded-lg border hover:shadow-md transition cursor-pointer"
-                  onClick={() => setSelectedResource(resource)}
+                  onClick={() => setSelectedResource(res)}
                 >
                   <div className="flex items-start gap-4">
                     <div className="p-3 bg-primary-50 rounded-lg">
@@ -69,7 +69,7 @@ export function AutoDashboard() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold">{resource.name}</h3>
+                        <h3 className="text-lg font-semibold">{res.name}</h3>
                         <Link 
                           to={path}
                           className="text-sm text-primary-600 hover:underline"
@@ -79,10 +79,10 @@ export function AutoDashboard() {
                         </Link>
                       </div>
                       <p className="text-sm text-gray-600 mt-1">
-                        {resource.endpoints.length} endpoints
+                        {res.endpoints.length} endpoints
                       </p>
                       <div className="mt-2 flex gap-1 flex-wrap">
-                        {Array.from(new Set(resource.endpoints.map(e => e.method))).map(method => (
+                        {Array.from(new Set(res.endpoints.map(e => e.method))).map(method => (
                           <span
                             key={method}
                             className={`text-xs px-2 py-0.5 rounded font-mono ${
@@ -111,7 +111,6 @@ export function AutoDashboard() {
           </h2>
           <div className="bg-white rounded-lg border max-h-[600px] overflow-y-auto">
             {(selectedResource ? selectedResource.endpoints : allEndpoints).map((endpoint, idx) => {
-              const resource = 'resource' in endpoint ? endpoint.resource : selectedResource?.name;
               return (
                 <div key={idx} className="p-4 border-b last:border-b-0 hover:bg-gray-50">
                   <div className="flex items-start gap-3">

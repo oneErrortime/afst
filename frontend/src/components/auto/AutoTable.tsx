@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Edit, Trash2, Eye } from 'lucide-react';
 
 interface Column {
@@ -17,7 +17,7 @@ interface AutoTableProps {
 }
 
 export function AutoTable({ data, columns, onEdit, onDelete, onView, loading }: AutoTableProps) {
-  const autoColumns = useMemo(() => {
+  const autoColumns: Column[] = useMemo(() => {
     if (columns) {
       return columns;
     } else if (data.length > 0) {

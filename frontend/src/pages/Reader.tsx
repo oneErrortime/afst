@@ -32,7 +32,7 @@ export function Reader() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [, ] = useState<Bookmark[]>([]);
   const { token } = useAuthStore();
 
   useEffect(() => {

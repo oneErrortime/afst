@@ -31,7 +31,7 @@ export function Borrow() {
       ]);
       setBooks((booksRes || []) as Book[]);
       setReaders(readersRes || []);
-    } catch (error) {
+    } catch {
       toast.error('Ошибка загрузки данных');
     } finally {
       setLoading(false);
@@ -53,7 +53,7 @@ export function Borrow() {
     try {
       const response = await borrowApi.getByReader(readerId);
       setReaderBooks((response || []).filter((b: BorrowedBook) => !b.return_date));
-    } catch (error) {
+    } catch {
       toast.error('Ошибка загрузки книг');
     } finally {
       setLoadingReaderBooks(false);

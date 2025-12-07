@@ -8,8 +8,6 @@ import {
   Plus, 
   Trash2, 
   Edit2, 
-  Check, 
-  X, 
   RefreshCw,
   Wifi,
   WifiOff,
@@ -52,6 +50,7 @@ export function Settings() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     handleCheckConnection();
   }, [activeEndpointId]);
 

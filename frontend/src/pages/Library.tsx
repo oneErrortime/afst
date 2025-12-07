@@ -6,11 +6,6 @@ import { Layout } from '@/components/layout';
 import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, Bookmark as BookmarkIcon, History } from 'lucide-react';
 
-function formatDate(_dateString: string) {
-  // Kept for structure if needed later, otherwise remove usage
-  return '';
-}
-
 function daysRemaining(endDate: string) {
   const end = new Date(endDate);
   const now = new Date();

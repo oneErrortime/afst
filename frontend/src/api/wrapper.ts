@@ -22,8 +22,6 @@ import type {
   StartSessionDTO,
 } from './types';
 import type {
-  models_User,
-  models_UserPublicProfileDTO,
   models_CreateBookDTO,
   models_UpdateBookDTO,
   models_CreateCollectionDTO,
@@ -33,6 +31,7 @@ import type {
   models_CreateBookmarkDTO,
   models_UpdateUserDTO,
   handlers_CreateAdminRequest,
+  models_UserPublicProfileDTO,
 } from '@/shared/api';
 
 export type {

@@ -38,6 +38,7 @@ export default function Users() {
       return;
     }
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const loadData = async () => {
@@ -342,7 +343,7 @@ export default function Users() {
                <div className="flex gap-2">
                  <select
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    onChange={(e) => {
+                    onChange={() => {
                        // We'll handle this with a specific state or just separate button
                        // Let's use a local state for the plan selection
                     }}
