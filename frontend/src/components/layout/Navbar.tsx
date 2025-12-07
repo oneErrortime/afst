@@ -102,14 +102,15 @@ export function Navbar() {
                 <>
                   <NavLink to="/library" isActive={isActive('/library')}>Библиотека</NavLink>
                   <NavLink to="/collections" isActive={isActive('/collections')}>Коллекции</NavLink>
+                  <NavLink to="/groups" isActive={isActive('/groups')}>Группы</NavLink>
                   {isLibrarian && (
                     <>
                       <NavLink to="/readers" isActive={isActive('/readers')}>Читатели</NavLink>
-                      <NavLink to="/admin/dashboard" isActive={isActive('/admin/dashboard')}>Панель</NavLink>
+                      <NavLink to="/admin/dashboard" isActive={isActive('/admin/dashboard')}>Администрирование</NavLink>
                     </>
                   )}
                   {isAdmin && (
-                    <NavLink to="/auto" isActive={isActive('/auto')}>API</NavLink>
+                    <NavLink to="/auto" isActive={isActive('/auto')}>API Explorer</NavLink>
                   )}
                 </>
               )}

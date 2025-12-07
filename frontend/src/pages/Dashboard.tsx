@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout';
 import { Loading, toast } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
-import apiClient from '@/api/client';
+import { statsApi } from '@/api';
 import { 
   BookOpen, 
   Users, 
@@ -100,8 +100,8 @@ export default function Dashboard() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/stats/dashboard');
-      setStats(response.data);
+      const data = await statsApi.getDashboardStats();
+      setStats(data);
     } catch (error) {
       console.error('Failed to load dashboard stats:', error);
       toast.error('Не удалось загрузить статистику');

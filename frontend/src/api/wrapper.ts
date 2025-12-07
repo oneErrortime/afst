@@ -337,6 +337,15 @@ export const reviewsApi = {
 };
 
 export const bookmarksApi = {
+  getAll: async () => {
+    try {
+        const response = await axiosInstance.get('/bookmarks');
+        return response.data || [];
+    } catch (error) {
+        return handleApiError(error);
+    }
+  },
+
   getByBook: async (bookId: string) => {
     try {
       return await BookmarksService.getBookmarksBook(bookId);
@@ -409,6 +418,17 @@ export const usersApi = {
   createAdmin: async (data: handlers_CreateAdminRequest) => {
     try {
       return await UsersService.postUsersAdmin(data);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  },
+};
+
+export const statsApi = {
+  getDashboardStats: async () => {
+    try {
+      const response = await axiosInstance.get('/stats/dashboard');
+      return response.data;
     } catch (error) {
       return handleApiError(error);
     }
@@ -667,6 +687,15 @@ export const subscriptionsApi = {
       await axiosInstance.post(`/subscriptions/${id}/renew`);
     } catch (error) {
       return handleApiError(error);
+    }
+  },
+
+  createAdmin: async (userId: string, plan: string) => {
+    try {
+        const response = await axiosInstance.post('/subscriptions', { user_id: userId, plan });
+        return response.data;
+    } catch (error) {
+        return handleApiError(error);
     }
   },
 };

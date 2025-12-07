@@ -79,6 +79,7 @@ type ReviewRepository interface {
 type BookmarkRepository interface {
 	Create(bookmark *models.Bookmark) error
 	GetByBookID(userID, bookID uuid.UUID) ([]models.Bookmark, error)
+	GetAllByUserID(userID uuid.UUID) ([]models.Bookmark, error)
 	GetByID(id uuid.UUID) (*models.Bookmark, error)
 	Delete(id uuid.UUID) error
 }
