@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { booksApi, filesApi, categoriesApi } from '@/api';
 import type { Book, BookFile, Category, CreateBookRequest } from '@/types';
 import { Button, Input, Loading, Modal, DropZone, toast } from '@/components/ui';
 import { Layout } from '@/components/layout';
-import { Upload, Trash2, FileText, Plus, Search, Filter, Eye, Edit, X, Check, BookOpen, BarChart3 } from 'lucide-react';
+import { Upload, Trash2, FileText, Plus, Search, Eye, Edit, X, Check, BookOpen, BarChart3 } from 'lucide-react';
 
 function formatFileSize(bytes: number) {
   if (bytes === 0) return '0 Bytes';
@@ -27,6 +27,7 @@ function BookFilesPanel({ book, onClose, onFilesUpdated }: BookFilesPanelProps) 
 
   useEffect(() => {
     loadFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [book.id]);
 
   const loadFiles = async () => {

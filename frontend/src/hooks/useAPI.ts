@@ -50,6 +50,7 @@ export function useQuery<T>(
       const interval = setInterval(fetchData, refetchInterval);
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData, refetchInterval, ...deps]);
 
   return { data, loading, error, refetch: fetchData };

@@ -14,6 +14,7 @@ export {
   accessApi,
   filesApi,
   sessionsApi,
+  statsApi,
   setAuthToken,
   getAuthToken,
   OpenAPI,

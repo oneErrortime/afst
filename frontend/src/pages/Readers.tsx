@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { readersApi, borrowApi } from '@/api';
+import { readersApi, borrowApi, booksApi } from '@/api';
 import { useAuthStore } from '@/store/authStore';
 import { Button, Input, Modal, Loading, EmptyState, toast, ConfirmDialog } from '@/components/ui';
-import { Users, Plus, Edit2, Trash2, Search, User, BookOpen, Mail, Calendar } from 'lucide-react';
-import type { Reader, CreateReaderRequest, BorrowedBook } from '@/types';
+import { Users, Plus, Edit2, Trash2, Search, User, BookOpen, Mail, Calendar, RotateCcw } from 'lucide-react';
+import type { Reader, CreateReaderRequest, BorrowedBook, Book } from '@/types';
 import { AxiosError } from 'axios';
 import { Navigate } from 'react-router-dom';
 
@@ -19,6 +19,10 @@ export function Readers() {
   const [selectedReader, setSelectedReader] = useState<Reader | null>(null);
   const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
   const [loadingBooks, setLoadingBooks] = useState(false);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [showBorrowModal, setShowBorrowModal] = useState(false);
+  const [selectedBookId, setSelectedBookId] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   const { isAuthenticated } = useAuthStore();
 
@@ -54,6 +58,46 @@ export function Readers() {
     } finally {
       setLoadingBooks(false);
     }
+  };
+
+  const loadBooksForBorrow = async () => {
+    try {
+        const res = await booksApi.getAll({ limit: 100 });
+        setBooks((res || []) as Book[]);
+    } catch (e) {
+        toast.error('Ошибка загрузки списка книг');
+    }
+  };
+
+  const handleBorrowBook = async () => {
+      if (!selectedReader || !selectedBookId) return;
+      setActionLoading(true);
+      try {
+          await borrowApi.borrow({ book_id: selectedBookId, reader_id: selectedReader.id });
+          toast.success('Книга выдана');
+          setShowBorrowModal(false);
+          setSelectedBookId('');
+          fetchBorrowedBooks(selectedReader.id);
+      } catch (e: any) {
+          toast.error(e.response?.data?.message || 'Ошибка выдачи');
+      } finally {
+          setActionLoading(false);
+      }
+  };
+
+  const handleReturnBook = async (bookId: string) => {
+      if (!selectedReader) return;
+      if (!confirm('Вернуть книгу?')) return;
+      setActionLoading(true);
+      try {
+          await borrowApi.return({ book_id: bookId, reader_id: selectedReader.id });
+          toast.success('Книга возвращена');
+          fetchBorrowedBooks(selectedReader.id);
+      } catch (e: any) {
+          toast.error(e.response?.data?.message || 'Ошибка возврата');
+      } finally {
+          setActionLoading(false);
+      }
   };
 
   const openReaderDetails = (reader: Reader) => {
@@ -275,10 +319,15 @@ export function Readers() {
             </div>
 
             <div className="border-t pt-4">
-              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-primary-600" />
-                Книги на руках ({activeBooks.length})
-              </h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary-600" />
+                    Книги на руках ({activeBooks.length})
+                </h4>
+                <Button size="sm" onClick={() => { loadBooksForBorrow(); setShowBorrowModal(true); }}>
+                    Выдать
+                </Button>
+              </div>
 
               {loadingBooks ? (
                 <Loading size="sm" />
@@ -302,6 +351,9 @@ export function Readers() {
                           </p>
                         </div>
                       </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleReturnBook(borrow.book_id)} disabled={actionLoading} title="Вернуть">
+                        <RotateCcw className="h-4 w-4 text-blue-600" />
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -309,6 +361,28 @@ export function Readers() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal isOpen={showBorrowModal} onClose={() => setShowBorrowModal(false)} title="Выдача книги">
+         <div className="space-y-4">
+             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Выберите книгу</label>
+                <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500"
+                    value={selectedBookId}
+                    onChange={(e) => setSelectedBookId(e.target.value)}
+                >
+                    <option value="">-- Выберите --</option>
+                    {books.filter(b => b.copies_count > 0).map(b => (
+                        <option key={b.id} value={b.id}>{b.title} ({b.author}) - {b.copies_count} шт.</option>
+                    ))}
+                </select>
+             </div>
+             <div className="flex gap-3 pt-2">
+                <Button variant="secondary" onClick={() => setShowBorrowModal(false)} className="flex-1">Отмена</Button>
+                <Button onClick={handleBorrowBook} disabled={!selectedBookId} loading={actionLoading} className="flex-1">Выдать</Button>
+             </div>
+         </div>
       </Modal>
     </div>
   );

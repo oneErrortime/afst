@@ -217,6 +217,7 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	bookmarks := api.Group("/bookmarks").Use(authMiddleware)
 	{
 		bookmarks.POST("", handlers.Bookmark.CreateBookmark)
+		bookmarks.GET("", handlers.Bookmark.GetAllBookmarks)
 		bookmarks.GET("/book/:book_id", handlers.Bookmark.GetBookmarksByBook)
 		bookmarks.DELETE("/:id", handlers.Bookmark.DeleteBookmark)
 	}

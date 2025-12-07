@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { groupsApi, categoriesApi, authApi } from '@/api';
+import { groupsApi, categoriesApi } from '@/api';
 import type { UserGroup, Category, User } from '@/types';
 import { Button, Input, Modal, Loading, toast } from '@/components/ui';
 import { Layout } from '@/components/layout';

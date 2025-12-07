@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, FileText, X, AlertCircle } from 'lucide-react';
-import { Button } from './Button';
 
 interface FileWithPreview extends File {
   preview?: string;

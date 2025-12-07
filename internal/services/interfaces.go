@@ -126,6 +126,7 @@ type ReviewService interface {
 type BookmarkService interface {
 	CreateBookmark(bookmark *models.Bookmark) error
 	GetBookmarksByBookID(userID, bookID uuid.UUID) ([]models.Bookmark, error)
+	GetAllBookmarks(userID uuid.UUID) ([]models.Bookmark, error)
 	GetBookmarkByID(id uuid.UUID) (*models.Bookmark, error)
 	DeleteBookmark(id uuid.UUID) error
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { CheckCircle, XCircle, AlertCircle, X, Info } from 'lucide-react';
 import { create } from 'zustand';
 
@@ -34,6 +34,12 @@ export const toast = {
   warning: (message: string) => useToastStore.getState().addToast({ type: 'warning', message }),
   info: (message: string) => useToastStore.getState().addToast({ type: 'info', message }),
 };
+
+// Move these functions outside the component logic if possible or ignore for now. 
+// But for fast refresh, pure components are better.
+// The warning is "Fast refresh only works when a file only exports components."
+// We can fix this by just ignoring it or accepting it since utils + components in one file is common.
+// But let's split if needed. Actually, let's just leave ToastItem inside and export container.
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
   useEffect(() => {

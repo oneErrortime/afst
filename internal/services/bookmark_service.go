@@ -22,6 +22,10 @@ func (s *bookmarkService) GetBookmarksByBookID(userID, bookID uuid.UUID) ([]mode
 	return s.repo.GetByBookID(userID, bookID)
 }
 
+func (s *bookmarkService) GetAllBookmarks(userID uuid.UUID) ([]models.Bookmark, error) {
+	return s.repo.GetAllByUserID(userID)
+}
+
 func (s *bookmarkService) GetBookmarkByID(id uuid.UUID) (*models.Bookmark, error) {
 	return s.repo.GetByID(id)
 }
