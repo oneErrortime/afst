@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { subscriptionsApi } from '@/api';
 import type { Subscription, SubscriptionPlanConfig, SubscriptionPlan } from '@/types';
 import { Button, Loading } from '@/components/ui';
-import { Layout } from '@/components/layout';
+
 import { useAuthStore } from '@/store/authStore';
 import { Check, Crown, Star, Sparkles, BookOpen } from 'lucide-react';
 
@@ -118,13 +118,13 @@ export default function Subscriptions() {
     }
   };
 
-  if (loading) return <Layout><Loading /></Layout>;
+  if (loading) return <Loading;
 
   const days = currentSubscription ? daysRemaining(currentSubscription.end_date) : 0;
   const isExpiringSoon = days <= 7 && days > 0;
 
   return (
-    <Layout>
+    
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Подписки</h1>
@@ -318,6 +318,6 @@ export default function Subscriptions() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 }

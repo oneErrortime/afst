@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { categoriesApi } from '@/api';
 import type { Category, CreateCategoryRequest } from '@/types';
 import { Button, Input, Modal, Loading } from '@/components/ui';
-import { Layout } from '@/components/layout';
+
 
 const CATEGORY_COLORS = [
   '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
@@ -108,10 +108,10 @@ export default function Categories() {
     }
   };
 
-  if (loading) return <Layout><Loading /></Layout>;
+  if (loading) return <Loading;
 
   return (
-    <Layout>
+    
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Категории книг</h1>
@@ -252,6 +252,6 @@ export default function Categories() {
           </form>
         </Modal>
       </div>
-    </Layout>
+    
   );
 }

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { groupsApi, categoriesApi } from '@/api';
 import type { UserGroup, Category, User } from '@/types';
 import { Button, Input, Modal, Loading, toast } from '@/components/ui';
-import { Layout } from '@/components/layout';
 import { Plus, Edit, Trash2, Users, BookOpen, Calendar, Download, ChevronRight, X } from 'lucide-react';
 
 const GROUP_TYPES = [
@@ -231,10 +230,10 @@ export default function Groups() {
     }));
   };
 
-  if (loading) return <Layout><Loading /></Layout>;
+  if (loading) return <Loading />;
 
   return (
-    <Layout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -467,6 +466,6 @@ export default function Groups() {
           </div>
         </div>
       </Modal>
-    </Layout>
+    </>
   );
 }
