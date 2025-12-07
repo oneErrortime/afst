@@ -4,9 +4,9 @@ import * as pdfjsLib from 'pdfjs-dist';
 import ePub from 'epubjs';
 import { OpenAPI } from '@/shared/api';
 import { Bookmark } from '@/api/wrapper';
-import { booksApi } from '@/api/wrapper';
-import { Button, Loading, EmptyState } from '@/components/ui';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { booksApi, bookmarksApi } from '@/api/wrapper';
+import { Button, toast, Loading, EmptyState } from '@/components/ui';
+import { Bookmark as BookmarkIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 
@@ -103,7 +103,7 @@ export function Reader() {
         canvas.width = viewport.width;
 
         if (context) {
-          await page.render({ canvasContext: context, viewport, canvas }).promise;
+          await page.render({ canvasContext: context, viewport }).promise;
         }
       }
     };
@@ -141,6 +141,37 @@ export function Reader() {
       setPdfPage(prev => Math.min(totalPages, prev + 1));
     } else if (renditionRef.current) {
       renditionRef.current.next();
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!bookId) return;
+    try {
+        let location = '0';
+        let label = 'Закладка';
+        
+        if (fileType === 'pdf') {
+            location = String(pdfPage);
+            label = `Стр. ${pdfPage}`;
+        } else if (renditionRef.current) {
+             // Try to get CFI
+             try {
+                const currentLoc = renditionRef.current.location.start;
+                if (currentLoc) location = currentLoc.cfi;
+             } catch (e) {
+                 console.log('Error getting epub location', e);
+             }
+        }
+
+        await bookmarksApi.create({
+            book_id: bookId,
+            location: location,
+            label: label
+        });
+        toast.success('Закладка добавлена');
+    } catch (e) {
+        console.error(e);
+        toast.error('Ошибка добавления закладки');
     }
   };
 
@@ -185,6 +216,11 @@ export function Reader() {
           <Button onClick={goToNextPage} variant="secondary">
             Вперед
             <ChevronRight className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-6 bg-gray-200 mx-2" />
+          <Button onClick={handleBookmark} variant="outline" size="sm">
+            <BookmarkIcon className="h-4 w-4 mr-2" />
+            В закладки
           </Button>
         </div>
       <div className="flex justify-center">

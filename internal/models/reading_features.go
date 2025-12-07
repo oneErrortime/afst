@@ -68,7 +68,7 @@ type Bookmark struct {
 	Label     string    `json:"label"`
 	CreatedAt time.Time `json:"created_at"`
 	User      *User     `json:"-" gorm:"foreignKey:UserID"`
-	Book      *Book     `json:"-" gorm:"foreignKey:BookID"`
+	Book      *Book     `json:"book,omitempty" gorm:"foreignKey:BookID"`
 }
 
 // TableName возвращает имя таблицы для модели Bookmark.

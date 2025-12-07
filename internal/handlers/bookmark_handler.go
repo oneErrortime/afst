@@ -95,6 +95,32 @@ func (h *BookmarkHandler) GetBookmarksByBook(c *gin.Context) {
 	c.JSON(http.StatusOK, bookmarks)
 }
 
+// GetAllBookmarks godoc
+// @Summary		Get all bookmarks
+// @Description	Retrieves all bookmarks for the authenticated user (with book details).
+// @Tags			Bookmarks
+// @Produce		json
+// @Security		BearerAuth
+// @Success		200		{array}		models.Bookmark
+// @Failure		401		{object}	models.ErrorResponseDTO
+// @Failure		500		{object}	models.ErrorResponseDTO
+// @Router			/bookmarks [get]
+func (h *BookmarkHandler) GetAllBookmarks(c *gin.Context) {
+	userID, err := middleware.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{Error: "Unauthorized"})
+		return
+	}
+
+	bookmarks, err := h.service.GetAllBookmarks(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseDTO{Error: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, bookmarks)
+}
+
 // DeleteBookmark godoc
 // @Summary		Delete a bookmark
 // @Description	Deletes a bookmark by its ID.

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { groupsApi } from '@/api';
+import { groupsApi, subscriptionsApi } from '@/api';
 import type { User, UserGroup } from '@/types';
 import { Button, Input, Modal, Loading, toast } from '@/components/ui';
 import { Layout } from '@/components/layout';
@@ -337,6 +337,47 @@ export default function Users() {
               </label>
             </div>
 
+          <div className="space-y-4">
+            <div className="pt-4 border-t border-gray-200">
+               <h4 className="font-medium text-gray-900 mb-2">Подписка</h4>
+               <div className="flex gap-2">
+                 <select
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    onChange={() => {
+                       // We'll handle this with a specific state or just separate button
+                       // Let's use a local state for the plan selection
+                    }}
+                    id="subscription-plan-select"
+                 >
+                   <option value="free">Free</option>
+                   <option value="basic">Basic</option>
+                   <option value="premium">Premium</option>
+                   <option value="student">Student</option>
+                 </select>
+                 <Button 
+                    type="button" 
+                    variant="secondary"
+                    onClick={async () => {
+                        const select = document.getElementById('subscription-plan-select') as HTMLSelectElement;
+                        const plan = select.value;
+                        try {
+                            setSaving(true);
+                            await subscriptionsApi.createAdmin(editingUser.id, plan);
+                            toast.success('Подписка обновлена');
+                        } catch (e) {
+                            console.error(e);
+                            toast.error('Ошибка обновления подписки');
+                        } finally {
+                            setSaving(false);
+                        }
+                    }}
+                 >
+                    Назначить план
+                 </Button>
+               </div>
+               <p className="text-xs text-gray-500 mt-1">Осторожно: это действие немедленно изменит текущий план пользователя.</p>
+            </div>
+
             <div className="flex gap-3 pt-4">
               <Button variant="secondary" onClick={() => setEditingUser(null)} className="flex-1">
                 Отмена
@@ -345,6 +386,7 @@ export default function Users() {
                 Сохранить
               </Button>
             </div>
+          </div>
           </div>
         )}
       </Modal>

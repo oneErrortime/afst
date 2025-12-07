@@ -36,16 +36,6 @@ export function Settings() {
   const [latency, setLatency] = useState<number | null>(null);
   const [form, setForm] = useState({ name: '', url: '', description: '' });
 
-  useEffect(() => {
-    const checkConnection = async () => {
-      setChecking(true);
-      const result = await checkApiConnection();
-      setLatency(result.latency || null);
-      setChecking(false);
-    };
-    checkConnection();
-  }, [activeEndpointId]);
-
   const handleCheckConnection = async () => {
     setChecking(true);
     const result = await checkApiConnection();
@@ -58,6 +48,11 @@ export function Settings() {
       toast.error(`Ошибка: ${result.error}`);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    handleCheckConnection();
+  }, [activeEndpointId]);
 
   const openCreateModal = () => {
     setEditingEndpoint(null);

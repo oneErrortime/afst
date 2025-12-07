@@ -63,7 +63,9 @@ export function AutoTable({ data, columns, onEdit, onDelete, onView, loading }: 
             <tr key={row.id || idx} className="hover:bg-gray-50">
               {autoColumns.map(col => (
                 <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {col.render ? col.render(row[col.key], row) : String(row[col.key] || '-')}
+                  {typeof col.render === 'function' 
+                    ? col.render(row[col.key], row) 
+                    : String(row[col.key] || '-')}
                 </td>
               ))}
               {(onEdit || onDelete || onView) && (

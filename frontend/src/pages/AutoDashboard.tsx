@@ -19,8 +19,9 @@ const iconMap: Record<string, any> = {
 };
 
 export function AutoDashboard() {
-  const resources = useMemo(() => parseSwaggerSpec(), []);
   const [selectedResource, setSelectedResource] = useState<APIResource | null>(null);
+
+  const resources = useMemo(() => parseSwaggerSpec(), []);
 
   const allEndpoints = resources.flatMap(r => 
     r.endpoints.map(e => ({ ...e, resource: r.name }))
@@ -28,6 +29,19 @@ export function AutoDashboard() {
 
   return (
     <div className="space-y-6">
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <Key className="h-6 w-6 text-amber-600" />
+          <div>
+            <h3 className="font-semibold text-amber-900">Инструменты разработчика</h3>
+            <p className="text-amber-700 text-sm">
+              Эта панель автоматически генерируется из Swagger спецификации для отладки API. 
+              Используйте основную панель администрирования для управления библиотекой.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div>
         <h1 className="text-3xl font-bold text-gray-900">API Explorer</h1>
         <p className="text-gray-600 mt-2">
