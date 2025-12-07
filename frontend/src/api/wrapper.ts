@@ -31,6 +31,7 @@ import type {
   models_CreateBookmarkDTO,
   models_UpdateUserDTO,
   handlers_CreateAdminRequest,
+  models_UserPublicProfileDTO,
 } from '@/shared/api';
 
 export type {
