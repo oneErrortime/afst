@@ -1,10 +1,34 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { BookOpen, LogOut, Menu, X, Settings, Wifi, WifiOff, Loader2, Crown, Shield, LayoutDashboard, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { BookOpen, LogOut, Menu, X, Settings, WifiOff, Loader2, Crown, User } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui';
 import { checkApiConnection } from '@/api/client';
+
+interface NavLinkProps {
+  to: string;
+  children: React.ReactNode;
+  isActive: boolean;
+}
+
+function NavLink({ to, children, isActive }: NavLinkProps) {
+  return (
+    <Link
+      to={to}
+      className={`relative px-3 py-2 rounded-lg font-medium transition-colors ${
+        isActive
+          ? 'text-primary-600 bg-primary-50'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+      }`}
+    >
+      {children}
+      {isActive && (
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary-600" />
+      )}
+    </Link>
+  );
+}
 
 export function Navbar() {
   const { isAuthenticated, logout, user } = useAuthStore();
@@ -19,12 +43,12 @@ export function Navbar() {
     checkApiConnection();
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/login');
-  };
+  }, [logout, navigate]);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = useCallback((path: string) => location.pathname === path, [location.pathname]);
 
   const getStatusIndicator = () => {
     switch (connectionStatus) {
@@ -58,22 +82,6 @@ export function Navbar() {
     }
   };
 
-  const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <Link
-      to={to}
-      className={`relative px-3 py-2 rounded-lg font-medium transition-colors ${
-        isActive(to)
-          ? 'text-primary-600 bg-primary-50'
-          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-      }`}
-    >
-      {children}
-      {isActive(to) && (
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary-600" />
-      )}
-    </Link>
-  );
-
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -89,19 +97,19 @@ export function Navbar() {
             </Link>
 
             <div className="hidden md:flex items-center gap-1">
-              <NavLink to="/books">Книги</NavLink>
+              <NavLink to="/books" isActive={isActive('/books')}>Книги</NavLink>
               {isAuthenticated && (
                 <>
-                  <NavLink to="/library">Библиотека</NavLink>
-                  <NavLink to="/collections">Коллекции</NavLink>
+                  <NavLink to="/library" isActive={isActive('/library')}>Библиотека</NavLink>
+                  <NavLink to="/collections" isActive={isActive('/collections')}>Коллекции</NavLink>
                   {isLibrarian && (
                     <>
-                      <NavLink to="/readers">Читатели</NavLink>
-                      <NavLink to="/admin/dashboard">Панель</NavLink>
+                      <NavLink to="/readers" isActive={isActive('/readers')}>Читатели</NavLink>
+                      <NavLink to="/admin/dashboard" isActive={isActive('/admin/dashboard')}>Панель</NavLink>
                     </>
                   )}
                   {isAdmin && (
-                    <NavLink to="/auto">API</NavLink>
+                    <NavLink to="/auto" isActive={isActive('/auto')}>API</NavLink>
                   )}
                 </>
               )}

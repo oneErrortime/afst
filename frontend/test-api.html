@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend API Test</title>
+    <script>
+        const API_URL = 'https://afst-4.onrender.com/api/v1';
+        
+        async function testEndpoints() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing API endpoints...</p>';
+            
+            const endpoints = [
+                { name: 'Books', url: '/books' },
+                { name: 'Collections', url: '/collections', auth: true },
+                { name: 'Reviews (Book 1)', url: '/reviews/book/1' },
+                { name: 'Users', url: '/users', auth: true },
+                { name: 'Categories', url: '/categories' },
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const headers = {};
+                    if (endpoint.auth) {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+                    }
+                    
+                    const response = await fetch(API_URL + endpoint.url, { headers });
+                    const data = await response.json();
+                    
+                    results.innerHTML += `
+                        <div style="padding: 10px; margin: 5px; border: 1px solid ${response.ok ? 'green' : 'red'}; border-radius: 5px;">
+                            <strong>${endpoint.name}</strong>: ${response.status} ${response.statusText}<br>
+                            <pre style="font-size: 12px; overflow: auto; max-height: 100px;">${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } catch (error) {
+                    results.innerHTML += `
+                        <div style="padding: 10px; margin: 5px; border: 1px solid red; border-radius: 5px;">
+                            <strong>${endpoint.name}</strong>: ERROR<br>
+                            <pre>${error.message}</pre>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                const response = await fetch(API_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    alert('Login successful! Token saved.');
+                    testEndpoints();
+                } else {
+                    alert('Login failed: ' + JSON.stringify(data));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+    <h1>Frontend API Test - afst-4.onrender.com</h1>
+    
+    <div style="margin: 20px 0; padding: 20px; background: #f0f0f0; border-radius: 5px;">
+        <h2>Login</h2>
+        <input id="email" type="email" placeholder="Email" style="padding: 8px; margin: 5px; width: 200px;"><br>
+        <input id="password" type="password" placeholder="Password" style="padding: 8px; margin: 5px; width: 200px;"><br>
+        <button onclick="testLogin()" style="padding: 10px 20px; margin: 5px; cursor: pointer;">Login</button>
+    </div>
+    
+    <button onclick="testEndpoints()" style="padding: 10px 20px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px;">
+        Test All Endpoints
+    </button>
+    
+    <div id="results" style="margin-top: 20px;"></div>
+</body>
+</html>

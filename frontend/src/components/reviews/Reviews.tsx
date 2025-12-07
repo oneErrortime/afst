@@ -1,28 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { reviewsApi } from '@/api';
 import { Button, Input } from '@/components/ui';
 import { Star } from 'lucide-react';
 
+interface Review {
+  id: string;
+  book_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
 export function Reviews({ bookId }: { bookId: string }) {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
 
-  useEffect(() => {
-    loadReviews();
-  }, [bookId]);
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     try {
       const data = await reviewsApi.getByBook(bookId);
       setReviews(data || []);
-    } catch (err) {
-      console.error('Failed to load reviews:', err);
+    } catch {
+      setReviews([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [bookId]);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +39,8 @@ export function Reviews({ bookId }: { bookId: string }) {
       setComment('');
       setRating(5);
       loadReviews();
-    } catch (err) {
-      console.error('Failed to create review:', err);
+    } catch {
+      alert('Failed to create review');
     }
   };
 

@@ -93,7 +93,7 @@ export const getSetupStatus = async (): Promise<{ setup_needed: boolean }> => {
   return response.data;
 };
 
-export const createAdmin = async (data: any): Promise<any> => {
+export const createAdmin = async (data: { email: string; password: string; name?: string }): Promise<{ message: string }> => {
   const response = await api.post('/setup/create-admin', data);
   return response.data;
 };
