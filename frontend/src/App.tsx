@@ -9,6 +9,24 @@ import { initializeApiSystem } from '@/api';
 import { Loader2 } from 'lucide-react';
 import { eventBus } from '@/lib/eventBus';
 
+function AuthHandler() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { logout } = useAuthStore();
+
+  useEffect(() => {
+    const unsubscribe = eventBus.on('api:unauthorized', () => {
+      logout();
+      if (location.pathname !== '/login' && location.pathname !== '/register' && location.pathname !== '/setup') {
+        navigate('/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [logout, navigate, location.pathname]);
+
+  return null;
+}
+
 function SetupRedirect({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -25,7 +43,7 @@ function SetupRedirect({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error("Failed to check setup status", error);
-        setLoading(false); // Proceed even if check fails
+        setLoading(false);
       }
     };
     checkSetup();
@@ -44,15 +62,11 @@ function SetupRedirect({ children }: { children: React.ReactNode }) {
 
 
 export default function App() {
-  const { isAuthenticated, user, fetchUser, logout } = useAuthStore();
+  const { isAuthenticated, user, fetchUser } = useAuthStore();
 
   useEffect(() => {
     initializeApiSystem();
-    const unsubscribe = eventBus.on('api:unauthorized', () => {
-      logout();
-    });
-    return () => unsubscribe();
-  }, [logout]);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && !user) {
@@ -63,6 +77,7 @@ export default function App() {
   return (
     <ErrorBoundary showDetails>
       <BrowserRouter basename="/afst">
+        <AuthHandler />
         <SetupRedirect>
           <Routes>
           <Route path="/login" element={<Login />} />

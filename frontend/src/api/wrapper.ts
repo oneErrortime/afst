@@ -9,6 +9,7 @@ import {
   OpenAPI
 } from '@/shared/api';
 import axios, { AxiosInstance } from 'axios';
+import { eventBus } from '@/lib/eventBus';
 import type {
   CreateReaderDTO,
   UpdateReaderDTO,
@@ -100,7 +101,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/afst/login';
+      eventBus.emit('api:unauthorized', undefined);
     }
     throw error;
   }
@@ -110,7 +111,7 @@ const handleApiError = (error: any): never => {
   console.error('API Error:', error);
   if (error?.status === 401) {
     localStorage.removeItem('token');
-    window.location.href = '/afst/login';
+    eventBus.emit('api:unauthorized', undefined);
   }
   throw error;
 };
@@ -153,7 +154,7 @@ export const authApi = {
   logout: () => {
     localStorage.removeItem('token');
     OpenAPI.TOKEN = undefined;
-    window.location.href = '/afst/login';
+    eventBus.emit('api:unauthorized', undefined);
   },
 };
 

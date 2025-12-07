@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import ePub, { Rendition, Book as EpubBook } from 'epubjs';
 import type { NavItem } from 'epubjs';
-import { booksApi, bookmarksApi, filesApi, type Bookmark, type BookFile } from '@/api/wrapper';
+import { booksApi, bookmarksApi, filesApi, getAuthToken, type Bookmark, type BookFile } from '@/api/wrapper';
 import { Button, toast, Loading, EmptyState, Modal } from '@/components/ui';
 import { 
   Bookmark as BookmarkIcon, 
@@ -127,14 +127,30 @@ export function Reader() {
 
   useEffect(() => {
     if (fileType !== 'pdf' || !fileUrl) return;
-    const loadingTask = pdfjsLib.getDocument(fileUrl);
-    loadingTask.promise.then(loadedPdf => {
-      setPdf(loadedPdf);
-      setTotalPages(loadedPdf.numPages);
-    }).catch(err => {
-      setError('Ошибка при загрузке PDF.');
-      console.error(err);
-    });
+    
+    const loadPdf = async () => {
+      try {
+        const token = getAuthToken();
+        const response = await fetch(fileUrl, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const loadedPdf = await loadingTask.promise;
+        setPdf(loadedPdf);
+        setTotalPages(loadedPdf.numPages);
+      } catch (err) {
+        setError('Ошибка при загрузке PDF. Возможно, требуется авторизация.');
+        console.error(err);
+      }
+    };
+    
+    loadPdf();
   }, [fileType, fileUrl]);
 
   useEffect(() => {
@@ -160,43 +176,64 @@ export function Reader() {
   useEffect(() => {
     if (fileType !== 'epub' || !fileUrl || !epubViewerRef.current) return;
     
-    const book = ePub(fileUrl);
-    bookRef.current = book;
-    
-    const rendition = book.renderTo(epubViewerRef.current, {
-      width: '100%',
-      height: '100%',
-      flow: 'paginated',
-      spread: 'none'
-    });
-    
-    renditionRef.current = rendition;
-    rendition.display();
+    const loadEpub = async () => {
+      try {
+        const token = getAuthToken();
+        const response = await fetch(fileUrl, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const book = ePub(arrayBuffer);
+        bookRef.current = book;
+        
+        const rendition = book.renderTo(epubViewerRef.current!, {
+          width: '100%',
+          height: '100%',
+          flow: 'paginated',
+          spread: 'none'
+        });
+        
+        renditionRef.current = rendition;
+        rendition.display();
 
-    book.loaded.navigation.then((nav) => {
-      const toc = nav.toc.map((item: NavItem) => ({
-        label: item.label,
-        href: item.href,
-        subitems: item.subitems?.map((sub: NavItem) => ({
-          label: sub.label,
-          href: sub.href
-        }))
-      }));
-      setEpubToc(toc);
-    });
+        book.loaded.navigation.then((nav) => {
+          const toc = nav.toc.map((item: NavItem) => ({
+            label: item.label,
+            href: item.href,
+            subitems: item.subitems?.map((sub: NavItem) => ({
+              label: sub.label,
+              href: sub.href
+            }))
+          }));
+          setEpubToc(toc);
+        });
 
-    rendition.on('relocated', (location: any) => {
-      if (location?.start?.cfi) {
-        setEpubLocation(location.start.cfi);
+        rendition.on('relocated', (location: any) => {
+          if (location?.start?.cfi) {
+            setEpubLocation(location.start.cfi);
+          }
+        });
+
+        applyEpubTheme(rendition, theme, fontSize);
+      } catch (err) {
+        setError('Ошибка при загрузке EPUB. Возможно, требуется авторизация.');
+        console.error(err);
       }
-    });
-
-    applyEpubTheme(rendition, theme, fontSize);
-
-    return () => {
-      book.destroy();
     };
-  }, [fileType, fileUrl]);
+    
+    loadEpub();
+    
+    return () => {
+      if (bookRef.current) {
+        bookRef.current.destroy();
+      }
+    };
+  }, [fileType, fileUrl, theme, fontSize]);
 
   const applyEpubTheme = useCallback((rendition: Rendition, currentTheme: Theme, currentFontSize: number) => {
     const themeConfig = themes[currentTheme];
