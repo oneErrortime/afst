@@ -57,7 +57,7 @@ jobs:
         cd frontend
         npm run build
       env:
-        VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://afst-1.onrender.com/api/v1' }}
+        VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://afst-4.onrender.com/api/v1' }}
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

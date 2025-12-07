@@ -29,7 +29,7 @@ const DEFAULT_ENDPOINTS: ApiEndpoint[] = [
   {
     id: 'render-production',
     name: 'Render.com (Production)',
-    url: 'https://afst-1.onrender.com/api/v1',
+    url: 'https://afst-4.onrender.com/api/v1',
     description: 'Production бэкенд на Render.com',
     isDefault: true,
   },

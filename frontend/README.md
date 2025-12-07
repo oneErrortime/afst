@@ -26,7 +26,7 @@ npm run dev                    # Запуск dev сервера (Vite)
 
 # API Client Generation
 npm run api:generate          # Генерация из http://localhost:8080/api/v1/swagger/doc.json
-npm run api:generate:prod     # Генерация из https://afst-1.onrender.com/api/v1/swagger/doc.json
+npm run api:generate:prod     # Генерация из https://afst-4.onrender.com/api/v1/swagger/doc.json
 npm run api:generate:local    # Генерация из ../docs/swagger.json (рекомендуется)
 npm run generate-api-client   # Алиас для api:generate:local
 
@@ -162,7 +162,7 @@ function CreateBook() {
 VITE_API_URL=http://localhost:8080/api/v1
 
 # или для production
-VITE_API_URL=https://afst-1.onrender.com/api/v1
+VITE_API_URL=https://afst-4.onrender.com/api/v1
 ```
 
 ### API Configuration
