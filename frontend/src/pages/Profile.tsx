@@ -20,7 +20,7 @@ export function Profile() {
     try {
       setLoading(true);
       const profileData = await socialApi.getUserProfile(id);
-      setProfile(profileData);
+      setProfile(profileData as any);
     } catch {
       setProfile(null);
     } finally {
@@ -121,8 +121,8 @@ export function Profile() {
                     <b>{review.rating}</b>
                   </div>
                 </div>
-                {review.comment && (
-                  <p className="text-sm text-gray-600 mt-2">{review.comment}</p>
+                {review.body && (
+                  <p className="text-sm text-gray-600 mt-2">{review.body}</p>
                 )}
               </div>
             ))}

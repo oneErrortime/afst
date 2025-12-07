@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { BookOpen, LogOut, Menu, X, Settings, WifiOff, Loader2, Crown, User } from 'lucide-react';
+import { BookOpen, LogOut, Menu, X, Settings, WifiOff, Loader2, Crown, User, Shield } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui';
 import { checkApiConnection } from '@/api/client';

@@ -29,7 +29,7 @@ export function Borrow() {
         booksApi.getAll({ limit: 100 }),
         readersApi.getAll({ limit: 100 }),
       ]);
-      setBooks(booksRes || []);
+      setBooks((booksRes || []) as Book[]);
       setReaders(readersRes || []);
     } catch (error) {
       toast.error('Ошибка загрузки данных');
