@@ -118,13 +118,12 @@ export default function Subscriptions() {
     }
   };
 
-  if (loading) return <Loading;
+  if (loading) return <Loading />;
 
   const days = currentSubscription ? daysRemaining(currentSubscription.end_date) : 0;
   const isExpiringSoon = days <= 7 && days > 0;
 
   return (
-    
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Подписки</h1>
@@ -318,6 +317,5 @@ export default function Subscriptions() {
           </div>
         </div>
       </div>
-    
   );
 }
