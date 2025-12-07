@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { parseSwaggerSpec, APIResource } from '@/lib/swagger-parser';
 import { AutoForm } from '@/components/auto/AutoForm';
 import { AutoTable } from '@/components/auto/AutoTable';
-import { Button, Modal, EmptyState, Loading, Tabs, Tab } from '@/components/ui';
+import { Button, Modal, EmptyState, Loading } from '@/components/ui';
 import { Plus, Archive, Share2, Database, List, AlertCircle } from 'lucide-react'; // Added icons
 import { GraphView } from '@/components/auto/GraphView'; // We'll create this
 

@@ -25,6 +25,7 @@ import type {
 } from './types';
 import type {
   models_User,
+  models_UserPublicProfileDTO,
   models_CreateBookDTO,
   models_UpdateBookDTO,
   models_CreateCollectionDTO,
@@ -66,7 +67,7 @@ export type {
   models_AuthResponseDTO as AuthResponseDTO,
 } from '@/shared/api';
 
-export type UserPublicProfileDTO = models_User;
+export type UserPublicProfileDTO = models_UserPublicProfileDTO;
 
 const getBaseUrl = (): string => {
   if (import.meta.env.VITE_API_URL) {

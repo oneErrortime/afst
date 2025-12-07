@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { booksApi, accessApi, collectionsApi, bookmarksApi, filesApi } from '@/api';
 import { Book, Collection, BookAccess } from '@/types';
-import { Loading, Button, Modal, Toast } from '@/components/ui';
+import { Loading, Button, Modal, toast } from '@/components/ui';
 import { Reviews } from '@/components/reviews/Reviews';
 import { RecommendedBooks } from '@/components/books/RecommendedBooks';
 import { useAuthStore } from '@/store/authStore';
@@ -52,7 +52,7 @@ export function BookDetail() {
 
       if (libraryData) {
         // Check if book is currently borrowed
-        const activeLoan = libraryData.active_books?.find(a => a.book_id === id);
+        const activeLoan = libraryData.active_books?.find((a: any) => a.book_id === id);
         setAccess(activeLoan || null);
 
         // Check bookmarks - requires separate call or iterating all bookmarks?
@@ -116,24 +116,7 @@ export function BookDetail() {
         // Let's try direct fetch and blob.
         
         try {
-            const response = await filesApi.getById(fileId);
-            // filesApi.getById might return the blob or metadata? 
-            // In generated client it usually returns response body.
-            // But we need to check how the client is generated. 
-            // If it returns JSON, we are stuck. 
-            // But ServeFile probably returns bytes.
-            
-            // Actually, simplified approach for now:
-            const token = localStorage.getItem('token') || '';
-            const url = `/api/v1/files/${fileId}?token=${token}`; 
-            // If backend supports query param token, great. If not, we need a fetch.
-            
-            // Let's use the api wrapper which handles auth.
-            // But we need to act as "download".
-            
-            // Temporary fix: assume fetch is automatic or use window.open if cookies are used (unlikely for JWT).
-            // BETTER: Use fetch with headers, get blob, create objectURL.
-            
+            // Check if file API has direct download or we need to use blob
             const blob = await filesApi.getFile(fileId);
             const downloadUrl = window.URL.createObjectURL(blob as Blob);
             const a = document.createElement('a');
@@ -143,7 +126,6 @@ export function BookDetail() {
             a.click();
             window.URL.revokeObjectURL(downloadUrl);
             document.body.removeChild(a);
-            
         } catch (e) {
              console.error(e);
              toast.error('Ошибка скачивания');
@@ -161,7 +143,7 @@ export function BookDetail() {
         // This is tricky if we don't have it.
         // We might need to fetch bookmarks first.
         const bookmarks = await bookmarksApi.getByBook(id!);
-        if (bookmarks.length > 0) {
+        if (bookmarks.length > 0 && bookmarks[0].id) {
             await bookmarksApi.delete(bookmarks[0].id);
             setIsBookmarked(false);
             toast.success('Закладка удалена');
@@ -184,7 +166,7 @@ export function BookDetail() {
     if (!isAuthenticated) return navigate('/login');
     try {
         const cols = await collectionsApi.getMyCollections();
-        setCollections(cols);
+        setCollections(cols as Collection[]);
         setShowCollectionModal(true);
     } catch (error) {
         console.error(error);
@@ -193,7 +175,7 @@ export function BookDetail() {
 
   const addToCollection = async (collectionId: string) => {
     try {
-        await collectionsApi.addBook(collectionId, { book_id: id! });
+        await collectionsApi.addBook(collectionId, id!);
         toast.success('Книга добавлена в коллекцию');
         setShowCollectionModal(false);
     } catch (error) {
