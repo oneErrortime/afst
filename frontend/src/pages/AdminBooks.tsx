@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { booksApi, filesApi, categoriesApi } from '@/api';
 import type { Book, BookFile, Category, CreateBookRequest } from '@/types';
 import { Button, Input, Loading, Modal, DropZone, toast } from '@/components/ui';
-import { Layout } from '@/components/layout';
+
 import { Upload, Trash2, FileText, Plus, Search, Eye, Edit, X, Check, BookOpen, BarChart3 } from 'lucide-react';
 
 function formatFileSize(bytes: number) {
@@ -462,10 +462,10 @@ export default function AdminBooks() {
     premium: books.filter(b => b.is_premium).length,
   };
 
-  if (loading) return <Layout><Loading /></Layout>;
+  if (loading) return <Loading;
 
   return (
-    <Layout>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -836,6 +836,6 @@ export default function AdminBooks() {
           </div>
         )}
       </Modal>
-    </Layout>
+    
   );
 }

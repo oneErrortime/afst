@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { groupsApi, subscriptionsApi } from '@/api';
 import type { User, UserGroup } from '@/types';
 import { Button, Input, Modal, Loading, toast } from '@/components/ui';
-import { Layout } from '@/components/layout';
+
 import { useAuthStore } from '@/store/authStore';
 import { Search, Edit, UserPlus, Shield, BookOpen, Users as UsersIcon } from 'lucide-react';
 import apiClient from '@/api/client';
@@ -115,10 +115,10 @@ export default function Users() {
     readers: users.filter(u => u.role === 'reader').length,
   };
 
-  if (loading) return <Layout><Loading /></Layout>;
+  if (loading) return <Loading;
 
   return (
-    <Layout>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -430,6 +430,6 @@ export default function Users() {
           </div>
         </div>
       </Modal>
-    </Layout>
+    
   );
 }

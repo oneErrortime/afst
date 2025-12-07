@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { accessApi, booksApi, bookmarksApi } from '@/api';
 import type { UserLibrary, BookAccess, Book, Bookmark } from '@/types';
 import { Button, Loading } from '@/components/ui';
-import { Layout } from '@/components/layout';
 import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, Bookmark as BookmarkIcon, History } from 'lucide-react';
 
@@ -105,11 +104,10 @@ export default function Library() {
     navigate(`/books/${access.book_id}/read${access ? `?access=${access.id}` : ''}`);
   };
 
-  if (loading) return <Layout><Loading /></Layout>;
+  if (loading) return <Loading />;
 
   return (
-    <Layout>
-      <div className="space-y-8">
+    <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Моя библиотека</h1>
           <p className="text-gray-500">Управляйте вашим чтением</p>
@@ -230,6 +228,5 @@ export default function Library() {
             )}
         </div>
       </div>
-    </Layout>
   );
 }

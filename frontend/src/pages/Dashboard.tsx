@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/layout';
+
 import { Loading, toast } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { statsApi } from '@/api';
@@ -113,9 +113,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <Layout>
+      
         <Loading />
-      </Layout>
+      
     );
   }
 
@@ -186,7 +186,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <Layout>
+    
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Панель управления</h1>
@@ -340,6 +340,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 }
