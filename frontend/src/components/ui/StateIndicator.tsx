@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, Clock, Loader2, AlertTriangle, Info, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Loader2, AlertTriangle, Info } from 'lucide-react';
 
 export type StateStatus = 'idle' | 'pending' | 'loading' | 'success' | 'error' | 'warning' | 'info';
 

@@ -44,7 +44,6 @@ export function Reader() {
   const navigate = useNavigate();
   const [bookTitle, setBookTitle] = useState<string>('');
   const [files, setFiles] = useState<BookFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<BookFile | null>(null);
   const [fileType, setFileType] = useState<'pdf' | 'epub' | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
 
@@ -233,7 +232,7 @@ export function Reader() {
         bookRef.current.destroy();
       }
     };
-  }, [fileType, fileUrl, theme, fontSize]);
+  }, [fileType, fileUrl, theme, fontSize, applyEpubTheme]);
 
   const applyEpubTheme = useCallback((rendition: Rendition, currentTheme: Theme, currentFontSize: number) => {
     const themeConfig = themes[currentTheme];
@@ -259,21 +258,21 @@ export function Reader() {
     }
   }, [theme, fontSize, applyEpubTheme]);
 
-  const goToPrevPage = () => {
+  const goToPrevPage = useCallback(() => {
     if (fileType === 'pdf') {
       setPdfPage(prev => Math.max(1, prev - 1));
     } else if (renditionRef.current) {
       renditionRef.current.prev();
     }
-  };
+  }, [fileType]);
 
-  const goToNextPage = () => {
+  const goToNextPage = useCallback(() => {
     if (fileType === 'pdf') {
       setPdfPage(prev => Math.min(totalPages, prev + 1));
     } else if (renditionRef.current) {
       renditionRef.current.next();
     }
-  };
+  }, [fileType, totalPages]);
 
   const goToTocItem = (href: string) => {
     if (renditionRef.current) {
@@ -370,7 +369,7 @@ export function Reader() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen, fileType, pdf, totalPages]);
+  }, [isFullscreen, fileType, pdf, totalPages, goToNextPage, goToPrevPage]);
 
   const currentTheme = themes[theme];
 

@@ -4,12 +4,11 @@ import { eventBus, type EventBusEvents, type EventName } from '@/lib/eventBus';
 export function useEvent<E extends EventName>(
   event: E,
   callback: (data: EventBusEvents[E]) => void,
-  deps: React.DependencyList = []
 ) {
   useEffect(() => {
     const unsubscribe = eventBus.on(event, callback);
     return () => unsubscribe();
-  }, [event, ...deps]);
+  }, [event, callback]);
 }
 
 export function useEventEmitter() {

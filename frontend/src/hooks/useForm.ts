@@ -48,7 +48,7 @@ export function useForm<T extends Record<string, unknown>>(
       values[key] = config[key].initialValue;
     }
     return values;
-  }, []);
+  }, [config]);
 
   const [values, setValuesState] = useState<T>(initialValues);
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
