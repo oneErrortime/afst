@@ -87,6 +87,9 @@ type ExtendedRepository struct {
 	BookFile       BookFileRepository
 	ReadingSession ReadingSessionRepository
 	Social         SocialRepository
+	Collection     CollectionRepository
+	Review         ReviewRepository
+	Bookmark       BookmarkRepository
 	DB             interface{}
 }
 
