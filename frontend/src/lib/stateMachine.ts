@@ -101,7 +101,7 @@ function machineReducer<TContext>(
 export function useMachine<TContext>(
   config: MachineConfig<TContext>
 ): [MachineState<TContext>, MachineActions] {
-  const initialState = useMemo<MachineState<TContext>>(() => {
+  const init = (config: MachineConfig<TContext>): MachineState<TContext> => {
     let context = config.context;
     const initialStateConfig = config.states[config.initial];
     if (initialStateConfig?.entry) {
@@ -114,9 +114,9 @@ export function useMachine<TContext>(
       context,
       history: [],
     };
-  }, []);
+  };
 
-  const [state, dispatch] = useReducer(machineReducer<TContext>, initialState);
+  const [state, dispatch] = useReducer(machineReducer<TContext>, config, init);
 
   const send = useCallback(
     (event: EventType) => {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useMachine, formMachine } from '@/lib/stateMachine';
 
 export type ValidationRule<T> = {
@@ -42,18 +42,22 @@ export function useForm<T extends Record<string, unknown>>(
   config: FormConfig<T>,
   onSubmit: (values: T) => Promise<void>
 ): [FormState<T>, FormActions<T>] {
-  const initialValues = useMemo(() => {
+  const getInitialValues = useCallback(() => {
     const values = {} as T;
     for (const key in config) {
       values[key] = config[key].initialValue;
     }
     return values;
-  }, []);
+  }, [config]);
 
-  const [values, setValuesState] = useState<T>(initialValues);
+  const [values, setValuesState] = useState<T>(getInitialValues());
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
   const [state, actions] = useMachine(formMachine);
+
+  useEffect(() => {
+    setValuesState(getInitialValues());
+  }, [getInitialValues]);
 
   const validateField = useCallback(
     <K extends keyof T>(field: K): boolean => {
@@ -125,11 +129,11 @@ export function useForm<T extends Record<string, unknown>>(
   }, [validateField, actions]);
 
   const reset = useCallback(() => {
-    setValuesState(initialValues);
+    setValuesState(getInitialValues());
     setErrors({});
     setTouched({});
     actions.reset();
-  }, [initialValues, actions]);
+  }, [getInitialValues, actions]);
 
   const submit = useCallback(async () => {
     actions.send('SUBMIT');
@@ -152,11 +156,12 @@ export function useForm<T extends Record<string, unknown>>(
   }, [validate, values, onSubmit, actions]);
 
   const isDirty = useMemo(() => {
+    const initialValues = getInitialValues();
     for (const key in values) {
       if (values[key] !== initialValues[key]) return true;
     }
     return false;
-  }, [values, initialValues]);
+  }, [values, getInitialValues]);
 
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
 

@@ -108,10 +108,9 @@ export default function Categories() {
     }
   };
 
-  if (loading) return <Loading;
+  if (loading) return <Loading />;
 
   return (
-    
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Категории книг</h1>
@@ -252,6 +251,5 @@ export default function Categories() {
           </form>
         </Modal>
       </div>
-    
   );
 }
