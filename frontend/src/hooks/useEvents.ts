@@ -3,13 +3,12 @@ import { eventBus, type EventBusEvents, type EventName } from '@/lib/eventBus';
 
 export function useEvent<E extends EventName>(
   event: E,
-  callback: (data: EventBusEvents[E]) => void,
-  deps: React.DependencyList = []
+  callback: (data: EventBusEvents[E]) => void
 ) {
   useEffect(() => {
     const unsubscribe = eventBus.on(event, callback);
     return () => unsubscribe();
-  }, [event, ...deps]);
+  }, [event, callback]);
 }
 
 export function useEventEmitter() {
@@ -53,9 +52,11 @@ export function useBookEvents(handlers: {
 }
 
 export function useConnectionStatus(onStatusChange: (status: 'connected' | 'disconnected' | 'reconnecting') => void) {
-  useEvent('connection:status', (data) => {
+  const handleStatusChange = useCallback((data: { status: 'connected' | 'disconnected' | 'reconnecting' }) => {
     onStatusChange(data.status);
   }, [onStatusChange]);
+
+  useEvent('connection:status', handleStatusChange);
 }
 
 export function useNotifications() {
