@@ -108,7 +108,7 @@ export default function Categories() {
     }
   };
 
-  if (loading) return <Loading;
+  if (loading) return <Loading />;
 
   return (
     

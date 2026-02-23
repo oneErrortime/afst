@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { groupsApi, subscriptionsApi } from '@/api';
+import { groupsApi, subscriptionsApi, usersApi } from '@/api';
 import type { User, UserGroup } from '@/types';
 import { Button, Input, Modal, Loading, toast } from '@/components/ui';
 
 import { useAuthStore } from '@/store/authStore';
 import { Search, Edit, UserPlus, Shield, BookOpen, Users as UsersIcon } from 'lucide-react';
-import apiClient from '@/api/client';
 
 const ROLES = [
   { value: 'reader', label: 'Читатель', color: 'bg-gray-100 text-gray-700' },
@@ -44,11 +43,11 @@ export default function Users() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersRes, groupsData] = await Promise.all([
-        apiClient.get('/users'),
+      const [usersData, groupsData] = await Promise.all([
+        usersApi.getAll({ limit: 1000 }),
         groupsApi.getAll(),
       ]);
-      setUsers(usersRes.data.data || []);
+      setUsers(usersData as User[]);
       setGroups(groupsData);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -63,9 +62,9 @@ export default function Users() {
 
     try {
       setSaving(true);
-      await apiClient.put(`/users/${editingUser.id}`, {
+      await usersApi.update(editingUser.id, {
         name: editingUser.name,
-        role: editingUser.role,
+        role: editingUser.role as any,
         group_id: editingUser.group_id,
         is_active: editingUser.is_active,
       });
@@ -88,7 +87,7 @@ export default function Users() {
 
     try {
       setSaving(true);
-      await apiClient.post('/users/admin', adminForm);
+      await usersApi.createAdmin(adminForm);
       await loadData();
       setShowCreateAdmin(false);
       setAdminForm({ email: '', password: '', name: '' });

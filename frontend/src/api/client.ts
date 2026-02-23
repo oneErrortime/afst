@@ -13,7 +13,7 @@ const getBaseUrl = (): string => {
   if (envUrl) return envUrl;
   
   if (import.meta.env.DEV) {
-    return '/api/v1';
+    return 'http://localhost:8080/api/v1';
   }
   
   return 'https://afst-4.onrender.com/api/v1';

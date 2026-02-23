@@ -8,7 +8,8 @@ import {
   UsersService,
   OpenAPI
 } from '@/shared/api';
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
+import { handleApiError } from './adapter';
 import type {
   CreateReaderDTO,
   UpdateReaderDTO,
@@ -83,37 +84,17 @@ if (token) {
   OpenAPI.TOKEN = token;
 }
 
-const axiosInstance: AxiosInstance = axios.create({
+const api = axios.create({
   baseURL: getBaseUrl(),
 });
 
-axiosInstance.interceptors.request.use((config) => {
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
-
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/afst/login';
-    }
-    throw error;
-  }
-);
-
-const handleApiError = (error: any): never => {
-  console.error('API Error:', error);
-  if (error?.status === 401) {
-    localStorage.removeItem('token');
-    window.location.href = '/afst/login';
-  }
-  throw error;
-};
 
 export const authApi = {
   login: async (email: string, password: string) => {
@@ -212,7 +193,7 @@ export const booksApi = {
   
   getFiles: async (bookId: string) => {
     try {
-      const response = await axiosInstance.get(`/books/${bookId}/files`);
+      const response = await api.get(`/books/${bookId}/files`);
       return response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -223,7 +204,7 @@ export const booksApi = {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await axiosInstance.post(`/books/${bookId}/files`, formData, {
+      const response = await api.post(`/books/${bookId}/files`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
@@ -234,7 +215,7 @@ export const booksApi = {
   
   getStats: async (bookId: string) => {
     try {
-      const response = await axiosInstance.get(`/books/${bookId}/stats`);
+      const response = await api.get(`/books/${bookId}/stats`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -337,7 +318,7 @@ export const reviewsApi = {
 export const bookmarksApi = {
   getAll: async () => {
     try {
-        const response = await axiosInstance.get('/bookmarks');
+        const response = await api.get('/bookmarks');
         return response.data || [];
     } catch (error) {
         return handleApiError(error);
@@ -425,7 +406,7 @@ export const usersApi = {
 export const statsApi = {
   getDashboardStats: async () => {
     try {
-      const response = await axiosInstance.get('/stats/dashboard');
+      const response = await api.get('/stats/dashboard');
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -436,7 +417,7 @@ export const statsApi = {
 export const readersApi = {
   getAll: async (params?: { limit?: number; offset?: number }) => {
     try {
-      const response = await axiosInstance.get('/readers', { params });
+      const response = await api.get('/readers', { params });
       return Array.isArray(response.data) ? response.data : response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -445,7 +426,7 @@ export const readersApi = {
   
   getById: async (id: string) => {
     try {
-      const response = await axiosInstance.get(`/readers/${id}`);
+      const response = await api.get(`/readers/${id}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -454,7 +435,7 @@ export const readersApi = {
   
   create: async (data: CreateReaderDTO) => {
     try {
-      const response = await axiosInstance.post('/readers', data);
+      const response = await api.post('/readers', data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -463,7 +444,7 @@ export const readersApi = {
   
   update: async (id: string, data: UpdateReaderDTO) => {
     try {
-      const response = await axiosInstance.put(`/readers/${id}`, data);
+      const response = await api.put(`/readers/${id}`, data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -472,7 +453,7 @@ export const readersApi = {
   
   delete: async (id: string) => {
     try {
-      await axiosInstance.delete(`/readers/${id}`);
+      await api.delete(`/readers/${id}`);
     } catch (error) {
       return handleApiError(error);
     }
@@ -482,7 +463,7 @@ export const readersApi = {
 export const borrowApi = {
   borrow: async (data: BorrowRequestDTO) => {
     try {
-      const response = await axiosInstance.post('/borrow', data);
+      const response = await api.post('/borrow', data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -491,7 +472,7 @@ export const borrowApi = {
   
   return: async (data: ReturnRequestDTO) => {
     try {
-      const response = await axiosInstance.post('/borrow/return', data);
+      const response = await api.post('/borrow/return', data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -500,7 +481,7 @@ export const borrowApi = {
   
   getByReader: async (readerId: string) => {
     try {
-      const response = await axiosInstance.get(`/borrow/reader/${readerId}`);
+      const response = await api.get(`/borrow/reader/${readerId}`);
       return Array.isArray(response.data) ? response.data : response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -511,7 +492,7 @@ export const borrowApi = {
 export const categoriesApi = {
   getAll: async () => {
     try {
-      const response = await axiosInstance.get('/categories');
+      const response = await api.get('/categories');
       return response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -520,7 +501,7 @@ export const categoriesApi = {
   
   getById: async (id: string) => {
     try {
-      const response = await axiosInstance.get(`/categories/${id}`);
+      const response = await api.get(`/categories/${id}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -529,7 +510,7 @@ export const categoriesApi = {
   
   getBySlug: async (slug: string) => {
     try {
-      const response = await axiosInstance.get(`/categories/slug/${slug}`);
+      const response = await api.get(`/categories/slug/${slug}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -538,7 +519,7 @@ export const categoriesApi = {
   
   getChildren: async (parentId: string) => {
     try {
-      const response = await axiosInstance.get(`/categories/${parentId}/children`);
+      const response = await api.get(`/categories/${parentId}/children`);
       return response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -547,7 +528,7 @@ export const categoriesApi = {
   
   create: async (data: CreateCategoryDTO) => {
     try {
-      const response = await axiosInstance.post('/categories', data);
+      const response = await api.post('/categories', data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -556,7 +537,7 @@ export const categoriesApi = {
   
   update: async (id: string, data: any) => {
     try {
-      const response = await axiosInstance.put(`/categories/${id}`, data);
+      const response = await api.put(`/categories/${id}`, data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -565,7 +546,7 @@ export const categoriesApi = {
   
   delete: async (id: string) => {
     try {
-      await axiosInstance.delete(`/categories/${id}`);
+      await api.delete(`/categories/${id}`);
     } catch (error) {
       return handleApiError(error);
     }
@@ -575,7 +556,7 @@ export const categoriesApi = {
 export const groupsApi = {
   getAll: async () => {
     try {
-      const response = await axiosInstance.get('/groups');
+      const response = await api.get('/groups');
       return response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -584,7 +565,7 @@ export const groupsApi = {
   
   getById: async (id: string) => {
     try {
-      const response = await axiosInstance.get(`/groups/${id}`);
+      const response = await api.get(`/groups/${id}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -593,7 +574,7 @@ export const groupsApi = {
   
   create: async (data: CreateGroupDTO) => {
     try {
-      const response = await axiosInstance.post('/groups', data);
+      const response = await api.post('/groups', data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -602,7 +583,7 @@ export const groupsApi = {
   
   update: async (id: string, data: UpdateGroupDTO) => {
     try {
-      const response = await axiosInstance.put(`/groups/${id}`, data);
+      const response = await api.put(`/groups/${id}`, data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -611,7 +592,7 @@ export const groupsApi = {
   
   delete: async (id: string) => {
     try {
-      await axiosInstance.delete(`/groups/${id}`);
+      await api.delete(`/groups/${id}`);
     } catch (error) {
       return handleApiError(error);
     }
@@ -619,7 +600,7 @@ export const groupsApi = {
   
   getUsers: async (groupId: string) => {
     try {
-      const response = await axiosInstance.get(`/groups/${groupId}/users`);
+      const response = await api.get(`/groups/${groupId}/users`);
       return response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -628,7 +609,7 @@ export const groupsApi = {
   
   assignUser: async (groupId: string, userId: string) => {
     try {
-      await axiosInstance.post(`/groups/${groupId}/users`, { user_id: userId });
+      await api.post(`/groups/${groupId}/users`, { user_id: userId });
     } catch (error) {
       return handleApiError(error);
     }
@@ -638,7 +619,7 @@ export const groupsApi = {
 export const subscriptionsApi = {
   getPlans: async () => {
     try {
-      const response = await axiosInstance.get('/subscription-plans');
+      const response = await api.get('/subscription-plans');
       return response.data.data || [];
     } catch (error) {
       return handleApiError(error);
@@ -647,7 +628,7 @@ export const subscriptionsApi = {
   
   getMy: async () => {
     try {
-      const response = await axiosInstance.get('/subscriptions/my');
+      const response = await api.get('/subscriptions/my');
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -656,7 +637,7 @@ export const subscriptionsApi = {
   
   subscribe: async (plan: string) => {
     try {
-      const response = await axiosInstance.post('/subscriptions/subscribe', { plan });
+      const response = await api.post('/subscriptions/subscribe', { plan });
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -665,7 +646,7 @@ export const subscriptionsApi = {
   
   getById: async (id: string) => {
     try {
-      const response = await axiosInstance.get(`/subscriptions/${id}`);
+      const response = await api.get(`/subscriptions/${id}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -674,7 +655,7 @@ export const subscriptionsApi = {
   
   cancel: async (id: string) => {
     try {
-      await axiosInstance.post(`/subscriptions/${id}/cancel`);
+      await api.post(`/subscriptions/${id}/cancel`);
     } catch (error) {
       return handleApiError(error);
     }
@@ -682,7 +663,7 @@ export const subscriptionsApi = {
   
   renew: async (id: string) => {
     try {
-      await axiosInstance.post(`/subscriptions/${id}/renew`);
+      await api.post(`/subscriptions/${id}/renew`);
     } catch (error) {
       return handleApiError(error);
     }
@@ -690,7 +671,7 @@ export const subscriptionsApi = {
 
   createAdmin: async (userId: string, plan: string) => {
     try {
-        const response = await axiosInstance.post('/subscriptions', { user_id: userId, plan });
+        const response = await api.post('/subscriptions', { user_id: userId, plan });
         return response.data;
     } catch (error) {
         return handleApiError(error);
@@ -701,7 +682,7 @@ export const subscriptionsApi = {
 export const accessApi = {
   getLibrary: async () => {
     try {
-      const response = await axiosInstance.get('/access/library');
+      const response = await api.get('/access/library');
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -710,7 +691,7 @@ export const accessApi = {
   
   checkAccess: async (bookId: string) => {
     try {
-      const response = await axiosInstance.get(`/access/check/${bookId}`);
+      const response = await api.get(`/access/check/${bookId}`);
       return response.data.has_access || false;
     } catch (error) {
       return handleApiError(error);
@@ -719,7 +700,7 @@ export const accessApi = {
   
   borrowBook: async (bookId: string) => {
     try {
-      const response = await axiosInstance.post(`/access/borrow/${bookId}`);
+      const response = await api.post(`/access/borrow/${bookId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -728,7 +709,7 @@ export const accessApi = {
   
   grantAccess: async (data: GrantAccessDTO) => {
     try {
-      const response = await axiosInstance.post('/access', data);
+      const response = await api.post('/access', data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -737,7 +718,7 @@ export const accessApi = {
   
   getById: async (id: string) => {
     try {
-      const response = await axiosInstance.get(`/access/${id}`);
+      const response = await api.get(`/access/${id}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -746,7 +727,7 @@ export const accessApi = {
   
   revokeAccess: async (id: string) => {
     try {
-      await axiosInstance.post(`/access/${id}/revoke`);
+      await api.post(`/access/${id}/revoke`);
     } catch (error) {
       return handleApiError(error);
     }
@@ -754,7 +735,7 @@ export const accessApi = {
   
   updateProgress: async (id: string, data: UpdateProgressDTO) => {
     try {
-      await axiosInstance.put(`/access/${id}/progress`, data);
+      await api.put(`/access/${id}/progress`, data);
     } catch (error) {
       return handleApiError(error);
     }
@@ -764,7 +745,7 @@ export const accessApi = {
 export const filesApi = {
   getFile: async (fileId: string) => {
     try {
-      const response = await axiosInstance.get(`/files/${fileId}`, { responseType: 'blob' });
+      const response = await api.get(`/files/${fileId}`, { responseType: 'blob' });
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -777,7 +758,7 @@ export const filesApi = {
   
   delete: async (fileId: string) => {
     try {
-      await axiosInstance.delete(`/files/${fileId}`);
+      await api.delete(`/files/${fileId}`);
     } catch (error) {
       return handleApiError(error);
     }
@@ -787,7 +768,7 @@ export const filesApi = {
 export const sessionsApi = {
   start: async (data: StartSessionDTO) => {
     try {
-      const response = await axiosInstance.post('/reading-sessions', data);
+      const response = await api.post('/reading-sessions', data);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -796,7 +777,7 @@ export const sessionsApi = {
   
   end: async (sessionId: string, endPage: number) => {
     try {
-      await axiosInstance.post(`/reading-sessions/${sessionId}/end`, { end_page: endPage });
+      await api.post(`/reading-sessions/${sessionId}/end`, { end_page: endPage });
     } catch (error) {
       return handleApiError(error);
     }
@@ -804,7 +785,7 @@ export const sessionsApi = {
   
   getMy: async () => {
     try {
-      const response = await axiosInstance.get('/reading-sessions/my');
+      const response = await api.get('/reading-sessions/my');
       return response.data.data || [];
     } catch (error) {
       return handleApiError(error);

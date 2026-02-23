@@ -114,7 +114,7 @@ export function useMachine<TContext>(
       context,
       history: [],
     };
-  }, []);
+  }, [config.context, config.initial, config.states]);
 
   const [state, dispatch] = useReducer(machineReducer<TContext>, initialState);
 
