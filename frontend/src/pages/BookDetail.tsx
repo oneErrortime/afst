@@ -29,7 +29,8 @@ export function BookDetail() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkId, setBookmarkId] = useState<string | null>(null);
+  const isBookmarked = !!bookmarkId;
 
   useEffect(() => {
     if (id) {
@@ -70,7 +71,11 @@ export function BookDetail() {
     if (!isAuthenticated || !id) return;
     try {
       const bookmarks = await bookmarksApi.getByBook(id);
-      setIsBookmarked(bookmarks.length > 0);
+      if (bookmarks && bookmarks.length > 0) {
+        setBookmarkId(bookmarks[0].id || null);
+      } else {
+        setBookmarkId(null);
+      }
     } catch {
       // Ignore error
     }
@@ -135,23 +140,17 @@ export function BookDetail() {
   const toggleBookmark = async () => {
     if (!isAuthenticated) return navigate('/login');
     try {
-      if (isBookmarked) {
-        // We need bookmark ID to delete. 
-        // This is tricky if we don't have it.
-        // We might need to fetch bookmarks first.
-        const bookmarks = await bookmarksApi.getByBook(id!);
-        if (bookmarks.length > 0 && bookmarks[0].id) {
-            await bookmarksApi.delete(bookmarks[0].id);
-            setIsBookmarked(false);
-            toast.success('Закладка удалена');
-        }
+      if (isBookmarked && bookmarkId) {
+        await bookmarksApi.delete(bookmarkId);
+        setBookmarkId(null);
+        toast.success('Закладка удалена');
       } else {
-        await bookmarksApi.create({
+        const newBookmark = await bookmarksApi.create({
             book_id: id!,
             label: 'Избранное',
             location: '0'
         });
-        setIsBookmarked(true);
+        setBookmarkId(newBookmark.id || null);
         toast.success('Добавлено в закладки');
       }
     } catch {

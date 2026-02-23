@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import ePub, { Rendition, Book as EpubBook } from 'epubjs';
 import type { NavItem } from 'epubjs';
-import { booksApi, bookmarksApi, filesApi, type Bookmark, type BookFile } from '@/api/wrapper';
+import { booksApi, bookmarksApi, filesApi, accessApi, sessionsApi, type Bookmark, type BookFile } from '@/api/wrapper';
 import { Button, toast, Loading, EmptyState, Modal } from '@/components/ui';
 import { 
   Bookmark as BookmarkIcon, 
@@ -42,9 +42,10 @@ const themes = {
 export function Reader() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const accessId = searchParams.get('access');
   const [bookTitle, setBookTitle] = useState<string>('');
   const [files, setFiles] = useState<BookFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<BookFile | null>(null);
   const [fileType, setFileType] = useState<'pdf' | 'epub' | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
 
@@ -70,6 +71,7 @@ export function Reader() {
   const [theme, setTheme] = useState<Theme>('light');
   const [fontSize, setFontSize] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const { isAuthenticated } = useAuthStore();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,7 +112,6 @@ export function Reader() {
   }, [bookId, isAuthenticated]);
 
   const selectFile = (file: BookFile) => {
-    setSelectedFile(file);
     setShowFileSelector(false);
     
     if (file.mime_type === 'application/pdf') {
@@ -127,7 +128,12 @@ export function Reader() {
 
   useEffect(() => {
     if (fileType !== 'pdf' || !fileUrl) return;
-    const loadingTask = pdfjsLib.getDocument(fileUrl);
+    const loadingTask = pdfjsLib.getDocument({
+      url: fileUrl,
+      httpHeaders: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
     loadingTask.promise.then(loadedPdf => {
       setPdf(loadedPdf);
       setTotalPages(loadedPdf.numPages);
@@ -157,10 +163,32 @@ export function Reader() {
     renderPage();
   }, [pdf, pdfPage, pdfScale, fileType]);
 
+  const applyEpubTheme = useCallback((rendition: Rendition, currentTheme: Theme, currentFontSize: number) => {
+    const themeConfig = themes[currentTheme];
+    rendition.themes.default({
+      body: {
+        'background-color': themeConfig.viewerBg + ' !important',
+        'color': themeConfig.viewerText + ' !important',
+        'font-size': `${currentFontSize}% !important`,
+        'line-height': '1.6 !important',
+        'padding': '20px !important'
+      },
+      'p, div, span': {
+        'color': themeConfig.viewerText + ' !important',
+        'font-size': 'inherit !important'
+      }
+    });
+    rendition.themes.select('default');
+  }, []);
+
   useEffect(() => {
     if (fileType !== 'epub' || !fileUrl || !epubViewerRef.current) return;
     
-    const book = ePub(fileUrl);
+    const book = ePub(fileUrl, {
+      requestHeaders: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
     bookRef.current = book;
     
     const rendition = book.renderTo(epubViewerRef.current, {
@@ -196,25 +224,7 @@ export function Reader() {
     return () => {
       book.destroy();
     };
-  }, [fileType, fileUrl]);
-
-  const applyEpubTheme = useCallback((rendition: Rendition, currentTheme: Theme, currentFontSize: number) => {
-    const themeConfig = themes[currentTheme];
-    rendition.themes.default({
-      body: {
-        'background-color': themeConfig.viewerBg + ' !important',
-        'color': themeConfig.viewerText + ' !important',
-        'font-size': `${currentFontSize}% !important`,
-        'line-height': '1.6 !important',
-        'padding': '20px !important'
-      },
-      'p, div, span': {
-        'color': themeConfig.viewerText + ' !important',
-        'font-size': 'inherit !important'
-      }
-    });
-    rendition.themes.select('default');
-  }, []);
+  }, [fileType, fileUrl, applyEpubTheme, theme, fontSize]);
 
   useEffect(() => {
     if (renditionRef.current) {
@@ -222,21 +232,21 @@ export function Reader() {
     }
   }, [theme, fontSize, applyEpubTheme]);
 
-  const goToPrevPage = () => {
+  const goToPrevPage = useCallback(() => {
     if (fileType === 'pdf') {
       setPdfPage(prev => Math.max(1, prev - 1));
     } else if (renditionRef.current) {
       renditionRef.current.prev();
     }
-  };
+  }, [fileType]);
 
-  const goToNextPage = () => {
+  const goToNextPage = useCallback(() => {
     if (fileType === 'pdf') {
       setPdfPage(prev => Math.min(totalPages, prev + 1));
     } else if (renditionRef.current) {
       renditionRef.current.next();
     }
-  };
+  }, [fileType, totalPages]);
 
   const goToTocItem = (href: string) => {
     if (renditionRef.current) {
@@ -326,6 +336,55 @@ export function Reader() {
   };
 
   useEffect(() => {
+    if (bookId && isAuthenticated && !sessionId) {
+      sessionsApi.start({ book_id: bookId, start_page: fileType === 'pdf' ? pdfPage : 0 })
+        .then(session => setSessionId(session.id || session.data?.id))
+        .catch(console.error);
+    }
+  }, [bookId, isAuthenticated, sessionId, fileType, pdfPage]);
+
+  useEffect(() => {
+    if (!accessId || !isAuthenticated) return;
+
+    const updateProgress = async () => {
+      try {
+        let progress = 0;
+        let current_page = 0;
+
+        if (fileType === 'pdf') {
+          current_page = pdfPage;
+          progress = totalPages > 0 ? (pdfPage / totalPages) * 100 : 0;
+        } else if (fileType === 'epub' && bookRef.current) {
+          const locations = bookRef.current.locations;
+          if (locations && epubLocation) {
+            progress = locations.percentageFromCfi(epubLocation) * 100;
+          }
+        }
+
+        if (progress > 0 || current_page > 0) {
+          await accessApi.updateProgress(accessId, {
+            current_page,
+            progress_percent: Math.min(100, Math.round(progress))
+          });
+        }
+      } catch (e) {
+        console.error('Failed to update progress', e);
+      }
+    };
+
+    const timer = setTimeout(updateProgress, 5000);
+    return () => clearTimeout(timer);
+  }, [pdfPage, epubLocation, accessId, fileType, totalPages, isAuthenticated]);
+
+  useEffect(() => {
+    return () => {
+      if (sessionId) {
+        sessionsApi.end(sessionId, fileType === 'pdf' ? pdfPage : 0).catch(console.error);
+      }
+    };
+  }, [sessionId, fileType, pdfPage]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') goToPrevPage();
       if (e.key === 'ArrowRight') goToNextPage();
@@ -333,7 +392,7 @@ export function Reader() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen, fileType, pdf, totalPages]);
+  }, [isFullscreen, goToPrevPage, goToNextPage]);
 
   const currentTheme = themes[theme];
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Button, Input, Modal, EmptyState, toast, ConfirmDialog, SkeletonBooksGrid, ErrorState } from '@/components/ui';
-import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash, RefreshCw } from 'lucide-react';
+import { Book as BookIcon, Plus, Edit2, Trash2, Search, BookOpen, Calendar, Hash } from 'lucide-react';
 import { booksApi, type Book, type CreateBookDTO, type UpdateBookDTO } from '@/api/wrapper';
 import { AxiosError } from 'axios';
 
@@ -37,7 +37,7 @@ export function Books() {
       setLoading(true);
       const data = await booksApi.getAll({ limit: 100 });
       setBooks(data as Book[]);
-    } catch (err) {
+    } catch {
       setError('Не удалось загрузить книги. Проверьте соединение.');
       toast.error('Ошибка загрузки книг');
     } finally {

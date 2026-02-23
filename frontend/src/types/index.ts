@@ -1,112 +1,80 @@
+import type {
+  models_User,
+  models_UserGroup,
+  models_Category,
+  models_Book,
+  models_BookFile,
+  models_Subscription,
+  models_Collection,
+  models_Review,
+  models_Bookmark,
+} from '@/shared/api';
+
 export type UserRole = 'admin' | 'librarian' | 'reader';
 export type UserGroupType = 'student' | 'free' | 'subscriber';
 export type BookStatus = 'draft' | 'published' | 'archived';
 export type FileType = 'pdf' | 'epub' | 'mobi';
 export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'student';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'pending';
+
 export type AccessType = 'loan' | 'purchase' | 'subscription' | 'trial';
 export type AccessStatus = 'active' | 'expired' | 'revoked' | 'returned';
 
-export interface User {
+export type User = Omit<models_User, 'id' | 'email' | 'name' | 'role'> & {
   id: string;
   email: string;
   name: string;
   role: UserRole;
-  group_id?: string;
-  group?: UserGroup;
-  avatar_url?: string;
-  email_verified: boolean;
-  is_active: boolean;
-  last_login_at?: string;
-  subscription?: Subscription;
-  created_at: string;
-  updated_at?: string;
-}
+};
 
-export interface UserGroup {
+export type UserGroup = Omit<models_UserGroup, 'id' | 'name' | 'type' | 'max_books' | 'loan_days' | 'can_download' | 'allowed_categories'> & {
   id: string;
   name: string;
   type: UserGroupType;
-  description?: string;
-  color?: string;
   max_books: number;
   loan_days: number;
   can_download: boolean;
-  is_active: boolean;
   allowed_categories?: Category[];
-  created_at: string;
-  updated_at: string;
-}
+};
 
-export interface Category {
+export type Category = Omit<models_Category, 'id' | 'name' | 'slug' | 'sort_order'> & {
   id: string;
   name: string;
   slug: string;
-  description?: string;
-  color?: string;
-  icon?: string;
-  parent_id?: string;
-  parent?: Category;
-  children?: Category[];
   sort_order: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+};
 
-export interface Book {
+export type Book = Omit<models_Book, 'id' | 'title' | 'author' | 'copies_count' | 'rating' | 'created_at' | 'status' | 'files' | 'categories'> & {
   id: string;
   title: string;
   author: string;
-  publication_year?: number;
-  isbn?: string;
   copies_count: number;
-  description?: string;
-  cover_url?: string;
-  language?: string;
-  page_count?: number;
-  publisher?: string;
-  status: BookStatus;
-  is_premium: boolean;
-  view_count: number;
-  download_count: number;
   rating: number;
-  categories?: Category[];
-  files?: BookFile[];
   created_at: string;
-  updated_at: string;
-}
+  status: BookStatus;
+  files?: BookFile[];
+  categories?: Category[];
+};
 
-export interface BookFile {
+export type BookFile = Omit<models_BookFile, 'id' | 'book_id' | 'file_name' | 'file_size' | 'page_count' | 'file_type'> & {
   id: string;
   book_id: string;
   file_name: string;
-  original_name: string;
-  file_path: string;
-  file_type: FileType;
   file_size: number;
-  mime_type: string;
-  hash: string;
-  is_processed: boolean;
   page_count: number;
-  created_at: string;
-}
+  file_type: FileType;
+};
 
-export interface Subscription {
+export type Subscription = Omit<models_Subscription, 'id' | 'user_id' | 'plan' | 'status' | 'end_date' | 'max_books' | 'max_downloads' | 'can_access_premium'> & {
   id: string;
   user_id: string;
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
-  start_date: string;
   end_date: string;
   max_books: number;
   max_downloads: number;
   can_access_premium: boolean;
-  auto_renew: boolean;
-  price: number;
-  currency: string;
-  created_at: string;
-}
+};
 
 export interface SubscriptionPlanConfig {
   plan: SubscriptionPlan;
@@ -349,15 +317,12 @@ export interface PaginationParams {
   offset?: number;
 }
 
-export interface Collection {
+export type Collection = Omit<models_Collection, 'id' | 'user_id' | 'name' | 'books'> & {
   id: string;
   user_id: string;
   name: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
   books?: Book[];
-}
+};
 
 export interface CreateCollectionRequest {
   name: string;
@@ -373,17 +338,13 @@ export interface AddBookToCollectionRequest {
   book_id: string;
 }
 
-export interface Review {
+export type Review = Omit<models_Review, 'id' | 'user_id' | 'book_id' | 'rating' | 'user'> & {
   id: string;
   user_id: string;
   book_id: string;
   rating: number;
-  title: string;
-  body: string;
-  created_at: string;
-  updated_at: string;
   user?: User;
-}
+};
 
 export interface CreateReviewRequest {
   book_id: string;
@@ -392,14 +353,11 @@ export interface CreateReviewRequest {
   body?: string;
 }
 
-export interface Bookmark {
+export type Bookmark = models_Bookmark & {
   id: string;
   user_id: string;
   book_id: string;
-  location: string;
-  label: string;
-  created_at: string;
-}
+};
 
 export interface CreateBookmarkRequest {
   book_id: string;

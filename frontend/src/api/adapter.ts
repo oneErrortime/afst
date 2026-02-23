@@ -1,4 +1,6 @@
 import { OpenAPI } from '@/shared/api';
+import axios from 'axios';
+import { toast } from '@/components/ui/Toast';
 
 export interface ApiConfig {
   baseUrl: string;
@@ -70,9 +72,24 @@ export function getApiConfig(): ApiConfig {
   };
 }
 
+let interceptorsSetup = false;
+
 export function setupAuthInterceptor() {
-  const originalFetch = window.fetch;
+  if (interceptorsSetup) return;
   
+  // Setup global axios interceptors (used by generated services)
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      try {
+        handleApiError(error);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    }
+  );
+
+  const originalFetch = window.fetch;
   window.fetch = async (...args: Parameters<typeof fetch>) => {
     const [url, config] = args;
     const token = getApiToken();
@@ -82,18 +99,17 @@ export function setupAuthInterceptor() {
       if (!headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);
       }
-      
       (config as RequestInit).headers = headers;
     }
     
     try {
       const response = await originalFetch(url, config);
-      
       if (response.status === 401) {
         clearApiToken();
-        window.location.href = '/afst/login';
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/afst/login';
+        }
       }
-      
       return response;
     } catch (error) {
       console.error('[API] Fetch error:', error);
@@ -101,7 +117,8 @@ export function setupAuthInterceptor() {
     }
   };
   
-  console.log('[API] Auth interceptor setup complete');
+  interceptorsSetup = true;
+  console.log('[API] Auth interceptors setup complete');
 }
 
 export function listenToStorageChanges() {
@@ -122,22 +139,33 @@ export function listenToStorageChanges() {
 }
 
 export function handleApiError(error: any): never {
-  console.error('[API] Error:', error);
+  const status = error?.status || error?.response?.status;
+  const body = error?.body || error?.response?.data;
+  const message = body?.message || body?.error || error?.message;
+
+  console.error('[API] Error:', { status, message, error });
   
-  if (error?.status === 401) {
+  if (status === 401) {
     clearApiToken();
-    window.location.href = '/afst/login';
+    if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      window.location.href = '/afst/login';
+    }
   }
   
-  if (error?.status === 403) {
+  if (status === 403) {
     console.error('[API] Forbidden - insufficient permissions');
   }
   
-  if (error?.status === 404) {
+  if (status === 404) {
     console.error('[API] Resource not found');
   }
   
-  if (error?.status >= 500) {
+  if (status === 503) {
+    console.error('[API] Service Unavailable - Maintenance Mode?');
+    toast.warning('Система временно недоступна (техническое обслуживание)');
+  }
+
+  if (status >= 500) {
     console.error('[API] Server error');
   }
   
