@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
-import { Button } from '@/components/ui';
+import { Button, Loading } from '@/components/ui';
 import { 
   BookOpen, 
   Users, 
@@ -24,15 +24,28 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { checkApiConnection } from '@/api/client';
-import { booksApi, type Book } from '@/api/wrapper';
+import { booksApi, reviewsApi, type Book, type Review } from '@/api/wrapper';
+
+interface RecentActivity {
+  type: 'review' | 'new_book';
+  book?: Book;
+  review?: Review;
+  timestamp: Date;
+}
 
 export function Home() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
   const [recentBooks, setRecentBooks] = useState<Book[]>([]);
   const [popularBooks, setPopularBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const activeEndpoint = getActiveEndpoint();
+
+  useEffect(() => {
+    checkApiConnection();
+    loadHomeData();
+  }, []);
 
   const loadHomeData = async () => {
     try {
@@ -41,13 +54,10 @@ export function Home() {
       setPopularBooks((books || []).slice(0, 4).sort(() => Math.random() - 0.5));
     } catch (error) {
       console.error('Failed to load home data:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    checkApiConnection();
-    loadHomeData();
-  }, []);
 
   return (
     <div className="space-y-16">

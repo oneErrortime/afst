@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '@/types';
-import { authApi } from '@/api';
+import apiClient from '@/api/client';
 
 interface AuthState {
   token: string | null;
@@ -39,13 +39,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchUser: async () => {
-        const token = localStorage.getItem('token');
+        const { token } = get();
         if (!token) return;
 
         try {
           set({ isLoading: true });
-          const user = await authApi.getMe();
-          set({ user: user as User, isAuthenticated: true, token });
+          const response = await apiClient.get('/auth/me');
+          set({ user: response.data.user || response.data, isAuthenticated: true });
         } catch (error) {
           console.error('Failed to fetch user:', error);
           get().logout();
@@ -55,19 +55,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       login: async (email: string, password: string) => {
-        const response = await authApi.login(email, password);
-        const { token, user } = response;
-        if (token) {
-          set({ token, user: user as User, isAuthenticated: true });
-        }
+        const response = await apiClient.post('/auth/login', { email, password });
+        const { token, user } = response.data;
+        localStorage.setItem('token', token);
+        set({ token, user, isAuthenticated: true });
       },
 
       register: async (email: string, password: string, name: string) => {
-        const response = await authApi.register(email, password, name);
-        const { token, user } = response;
-        if (token) {
-          set({ token, user: user as User, isAuthenticated: true });
-        }
+        const response = await apiClient.post('/auth/register', { email, password, name });
+        const { token, user } = response.data;
+        localStorage.setItem('token', token);
+        set({ token, user, isAuthenticated: true });
       },
     }),
     {

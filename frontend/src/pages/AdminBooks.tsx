@@ -377,7 +377,7 @@ export default function AdminBooks() {
     try {
       setLoading(true);
       const [booksData, categoriesData] = await Promise.all([
-        booksApi.getAll({ limit: 1000 }),
+        booksApi.getAll(),
         categoriesApi.getAll(),
       ]);
       setBooks(booksData as Book[]);
@@ -398,10 +398,7 @@ export default function AdminBooks() {
 
     try {
       setCreating(true);
-      await booksApi.create({
-        ...newBook,
-        category_ids: newBook.category_ids || [],
-      });
+      await booksApi.create(newBook);
       await loadData();
       setShowCreateModal(false);
       setNewBook({ title: '', author: '', copies_count: 1 });
@@ -428,7 +425,6 @@ export default function AdminBooks() {
         cover_url: editingBook.cover_url,
         is_premium: editingBook.is_premium,
         status: editingBook.status as any,
-        category_ids: editingBook.categories?.map(c => c.id) || [],
       });
       await loadData();
       setEditingBook(null);
@@ -724,29 +720,6 @@ export default function AdminBooks() {
             onChange={(e) => setNewBook({ ...newBook, cover_url: e.target.value })}
             placeholder="https://example.com/cover.jpg"
           />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Категории</label>
-            <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 border border-gray-200 rounded-lg">
-              {categories.map(cat => (
-                <label key={cat.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={newBook.category_ids?.includes(cat.id) || false}
-                    onChange={(e) => {
-                      const currentIds = newBook.category_ids || [];
-                      if (e.target.checked) {
-                        setNewBook({ ...newBook, category_ids: [...currentIds, cat.id] });
-                      } else {
-                        setNewBook({ ...newBook, category_ids: currentIds.filter(id => id !== cat.id) });
-                      }
-                    }}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                  />
-                  {cat.name}
-                </label>
-              ))}
-            </div>
-          </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -833,29 +806,6 @@ export default function AdminBooks() {
               value={editingBook.cover_url || ''}
               onChange={(e) => setEditingBook({ ...editingBook, cover_url: e.target.value })}
             />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Категории</label>
-              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-lg">
-                {categories.map(cat => (
-                  <label key={cat.id} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={editingBook.categories?.some(c => c.id === cat.id) || false}
-                      onChange={(e) => {
-                        const currentCats = editingBook.categories || [];
-                        if (e.target.checked) {
-                          setEditingBook({ ...editingBook, categories: [...currentCats, cat] });
-                        } else {
-                          setEditingBook({ ...editingBook, categories: currentCats.filter(c => c.id !== cat.id) });
-                        }
-                      }}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    {cat.name}
-                  </label>
-                ))}
-              </div>
-            </div>
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
