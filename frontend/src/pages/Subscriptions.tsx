@@ -118,7 +118,7 @@ export default function Subscriptions() {
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading) return <Loading;
 
   const days = currentSubscription ? daysRemaining(currentSubscription.end_date) : 0;
   const isExpiringSoon = days <= 7 && days > 0;

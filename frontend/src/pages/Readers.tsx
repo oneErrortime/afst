@@ -16,7 +16,6 @@ export function Readers() {
   const [deleteReader, setDeleteReader] = useState<Reader | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [confirmReturnBook, setConfirmReturnBook] = useState<{ bookId: string; readerId: string } | null>(null);
   const [selectedReader, setSelectedReader] = useState<Reader | null>(null);
   const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
   const [loadingBooks, setLoadingBooks] = useState(false);
@@ -86,14 +85,14 @@ export function Readers() {
       }
   };
 
-  const handleReturnBook = async () => {
-      if (!confirmReturnBook) return;
+  const handleReturnBook = async (bookId: string) => {
+      if (!selectedReader) return;
+      if (!confirm('Вернуть книгу?')) return;
       setActionLoading(true);
       try {
-          await borrowApi.return({ book_id: confirmReturnBook.bookId, reader_id: confirmReturnBook.readerId });
+          await borrowApi.return({ book_id: bookId, reader_id: selectedReader.id });
           toast.success('Книга возвращена');
-          if (selectedReader) fetchBorrowedBooks(selectedReader.id);
-          setConfirmReturnBook(null);
+          fetchBorrowedBooks(selectedReader.id);
       } catch (e: any) {
           toast.error(e.response?.data?.message || 'Ошибка возврата');
       } finally {
@@ -352,7 +351,7 @@ export function Readers() {
                           </p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => setConfirmReturnBook({ bookId: borrow.book_id, readerId: selectedReader.id })} disabled={actionLoading} title="Вернуть">
+                      <Button variant="ghost" size="sm" onClick={() => handleReturnBook(borrow.book_id)} disabled={actionLoading} title="Вернуть">
                         <RotateCcw className="h-4 w-4 text-blue-600" />
                       </Button>
                     </div>
@@ -363,18 +362,6 @@ export function Readers() {
           </div>
         )}
       </Modal>
-
-      <ConfirmDialog
-        isOpen={!!confirmReturnBook}
-        onClose={() => setConfirmReturnBook(null)}
-        onConfirm={handleReturnBook}
-        title="Вернуть книгу?"
-        message="Вы уверены, что хотите отметить книгу как возвращенную?"
-        confirmText="Вернуть"
-        cancelText="Отмена"
-        type="info"
-        loading={actionLoading}
-      />
 
       <Modal isOpen={showBorrowModal} onClose={() => setShowBorrowModal(false)} title="Выдача книги">
          <div className="space-y-4">
