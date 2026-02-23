@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/oneErrortime/afst/internal/middleware"
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/oneErrortime/afst/internal/services"
 )
@@ -29,15 +30,9 @@ func NewReadingSessionHandler(
 }
 
 func (h *ReadingSessionHandler) StartSession(c *gin.Context) {
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{Error: "Не авторизован"})
-		return
-	}
-
-	userID, err := uuid.Parse(userIDStr.(string))
+	userID, err := middleware.GetUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseDTO{Error: "Неверный формат ID пользователя"})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{Error: "Не авторизован"})
 		return
 	}
 
@@ -84,15 +79,9 @@ func (h *ReadingSessionHandler) EndSession(c *gin.Context) {
 }
 
 func (h *ReadingSessionHandler) GetMySessions(c *gin.Context) {
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{Error: "Не авторизован"})
-		return
-	}
-
-	userID, err := uuid.Parse(userIDStr.(string))
+	userID, err := middleware.GetUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseDTO{Error: "Неверный формат ID пользователя"})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{Error: "Не авторизован"})
 		return
 	}
 

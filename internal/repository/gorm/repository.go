@@ -51,6 +51,10 @@ func WithTransaction(repo *repository.ExtendedRepository, fn repository.Transact
 				Book:         NewBookRepository(tx),
 				Reader:       NewReaderRepository(tx),
 				BorrowedBook: NewBorrowedBookRepository(tx),
+				FeatureFlag:  NewFeatureFlagRepository(tx),
+				Collection:   NewCollectionRepository(tx),
+				Review:       NewReviewRepository(tx),
+				Bookmark:     NewBookmarkRepository(tx),
 			},
 			UserGroup:      NewUserGroupRepository(tx),
 			Category:       NewCategoryRepository(tx),
@@ -59,6 +63,9 @@ func WithTransaction(repo *repository.ExtendedRepository, fn repository.Transact
 			BookFile:       NewBookFileRepository(tx),
 			ReadingSession: NewReadingSessionRepository(tx),
 			Social:         NewSocialRepository(tx),
+			Collection:     NewCollectionRepository(tx),
+			Review:         NewReviewRepository(tx),
+			Bookmark:       NewBookmarkRepository(tx),
 			DB:             tx,
 		}
 		return fn(txRepo)

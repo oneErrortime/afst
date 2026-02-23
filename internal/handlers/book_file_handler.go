@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/oneErrortime/afst/internal/middleware"
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/oneErrortime/afst/internal/services"
 	"github.com/oneErrortime/afst/internal/storage"
@@ -79,13 +80,11 @@ func (h *BookFileHandler) ServeFile(c *gin.Context) {
 		return
 	}
 
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
+	userID, err := middleware.GetUserFromContext(c)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{Error: "Не авторизован"})
 		return
 	}
-
-	userID, _ := uuid.Parse(userIDStr.(string))
 
 	bookFile, err := h.fileService.GetByID(fileID)
 	if err != nil {

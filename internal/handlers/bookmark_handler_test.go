@@ -41,6 +41,14 @@ func (m *MockBookmarkService) GetBookmarkByID(id uuid.UUID) (*models.Bookmark, e
 	return args.Get(0).(*models.Bookmark), args.Error(1)
 }
 
+func (m *MockBookmarkService) GetAllBookmarks(userID uuid.UUID) ([]models.Bookmark, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.Bookmark), args.Error(1)
+}
+
 func (m *MockBookmarkService) DeleteBookmark(id uuid.UUID) error {
 	args := m.Called(id)
 	return args.Error(0)
@@ -66,7 +74,7 @@ func TestBookmarkHandler_CreateBookmark(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		c.Set("userID", userID.String())
+		c.Set("user_id", userID)
 
 		body, _ := json.Marshal(dto)
 		c.Request, _ = http.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
@@ -91,7 +99,7 @@ func TestBookmarkHandler_GetBookmarksByBook(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		c.Set("userID", userID.String())
+		c.Set("user_id", userID)
 		c.Params = gin.Params{gin.Param{Key: "book_id", Value: bookID.String()}}
 		c.Request, _ = http.NewRequest(http.MethodGet, "/book/"+bookID.String(), nil)
 
@@ -118,7 +126,7 @@ func TestBookmarkHandler_DeleteBookmark(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		c.Set("userID", userID.String())
+		c.Set("user_id", userID)
 		c.Params = gin.Params{gin.Param{Key: "id", Value: bookmarkID.String()}}
 		c.Request, _ = http.NewRequest(http.MethodDelete, "/"+bookmarkID.String(), nil)
 

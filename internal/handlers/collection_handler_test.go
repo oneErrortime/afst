@@ -81,7 +81,7 @@ func TestCollectionHandler_CreateCollection(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		c.Set("userID", userID.String())
+		c.Set("user_id", userID)
 
 		body, _ := json.Marshal(dto)
 		c.Request, _ = http.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
@@ -116,7 +116,7 @@ func TestCollectionHandler_GetCollections(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		c.Set("userID", userID.String())
+		c.Set("user_id", userID)
 		c.Request, _ = http.NewRequest(http.MethodGet, "/", nil)
 
 		handler.GetCollections(c)
@@ -133,16 +133,18 @@ func TestCollectionHandler_UpdateCollection(t *testing.T) {
 	_, mockService, handler := setupTestRouter()
 
 	t.Run("success", func(t *testing.T) {
+		userID := uuid.New()
 		collectionID := uuid.New()
 		newName := "New Name"
 		dto := models.UpdateCollectionDTO{Name: &newName}
-		collection := &models.Collection{ID: collectionID, Name: "Old Name"}
+		collection := &models.Collection{ID: collectionID, Name: "Old Name", UserID: userID}
 
 		mockService.On("GetCollectionByID", collectionID).Return(collection, nil).Once()
 		mockService.On("UpdateCollection", mock.AnythingOfType("*models.Collection")).Return(nil).Once()
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
+		c.Set("user_id", userID)
 		c.Params = gin.Params{gin.Param{Key: "id", Value: collectionID.String()}}
 		body, _ := json.Marshal(dto)
 		c.Request, _ = http.NewRequest(http.MethodPut, "/"+collectionID.String(), bytes.NewReader(body))
@@ -159,12 +161,16 @@ func TestCollectionHandler_DeleteCollection(t *testing.T) {
 	_, mockService, handler := setupTestRouter()
 
 	t.Run("success", func(t *testing.T) {
+		userID := uuid.New()
 		collectionID := uuid.New()
+		collection := &models.Collection{ID: collectionID, UserID: userID}
 
+		mockService.On("GetCollectionByID", collectionID).Return(collection, nil).Once()
 		mockService.On("DeleteCollection", collectionID).Return(nil).Once()
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
+		c.Set("user_id", userID)
 		c.Params = gin.Params{gin.Param{Key: "id", Value: collectionID.String()}}
 		c.Request, _ = http.NewRequest(http.MethodDelete, "/"+collectionID.String(), nil)
 
@@ -179,14 +185,18 @@ func TestCollectionHandler_AddBookToCollection(t *testing.T) {
 	_, mockService, handler := setupTestRouter()
 
 	t.Run("success", func(t *testing.T) {
+		userID := uuid.New()
 		collectionID := uuid.New()
 		bookID := uuid.New()
 		dto := models.AddBookToCollectionDTO{BookID: bookID}
+		collection := &models.Collection{ID: collectionID, UserID: userID}
 
+		mockService.On("GetCollectionByID", collectionID).Return(collection, nil).Once()
 		mockService.On("AddBookToCollection", collectionID, bookID).Return(nil).Once()
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
+		c.Set("user_id", userID)
 		c.Params = gin.Params{gin.Param{Key: "id", Value: collectionID.String()}}
 		body, _ := json.Marshal(dto)
 		c.Request, _ = http.NewRequest(http.MethodPost, "/"+collectionID.String()+"/books", bytes.NewReader(body))
@@ -203,13 +213,17 @@ func TestCollectionHandler_RemoveBookFromCollection(t *testing.T) {
 	_, mockService, handler := setupTestRouter()
 
 	t.Run("success", func(t *testing.T) {
+		userID := uuid.New()
 		collectionID := uuid.New()
 		bookID := uuid.New()
+		collection := &models.Collection{ID: collectionID, UserID: userID}
 
+		mockService.On("GetCollectionByID", collectionID).Return(collection, nil).Once()
 		mockService.On("RemoveBookFromCollection", collectionID, bookID).Return(nil).Once()
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
+		c.Set("user_id", userID)
 		c.Params = gin.Params{
 			gin.Param{Key: "id", Value: collectionID.String()},
 			gin.Param{Key: "book_id", Value: bookID.String()},

@@ -53,6 +53,21 @@ func (m *MockBookRepository) GetByISBN(isbn string) (*models.Book, error) {
 	return args.Get(0).(*models.Book), args.Error(1)
 }
 
+func (m *MockBookRepository) Count() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockBookRepository) CountPublished() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockBookRepository) GetRecommendations(bookID uuid.UUID, limit int) ([]models.Book, error) {
+	args := m.Called(bookID, limit)
+	return args.Get(0).([]models.Book), args.Error(1)
+}
+
 // MockReaderRepository для тестирования
 type MockReaderRepository struct {
 	mock.Mock
@@ -92,6 +107,11 @@ func (m *MockReaderRepository) GetByEmail(email string) (*models.Reader, error) 
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*models.Reader), args.Error(1)
+}
+
+func (m *MockReaderRepository) Count() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
 }
 
 // MockBorrowedBookRepository для тестирования
