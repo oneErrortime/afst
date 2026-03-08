@@ -5,7 +5,6 @@ import { useApiConfigStore } from '@/store/apiConfigStore';
 
 import { Button, Input, toast } from '@/components/ui';
 import { BookOpen, Mail, Lock, Wifi, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
-import { AxiosError } from 'axios';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -41,8 +40,7 @@ export function Login() {
       toast.success('Вход выполнен успешно!');
       setTimeout(() => navigate('/books'), 800);
     } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      const message = axiosError.response?.data?.message || 'Ошибка входа';
+      const message = (error as any)?.response?.data?.message || 'Ошибка входа';
       toast.error(message);
       setLoading(false);
     }
@@ -111,31 +109,25 @@ export function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="relative group">
-              <Mail className="absolute left-4 top-[38px] h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-              <Input
-                label="Email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={errors.email}
-                className="pl-12"
-              />
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              placeholder="admin@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={errors.email}
+              icon={<Mail className="h-5 w-5" />}
+            />
 
-            <div className="relative group">
-              <Lock className="absolute left-4 top-[38px] h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-              <Input
-                label="Пароль"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                error={errors.password}
-                className="pl-12"
-              />
-            </div>
+            <Input
+              label="Пароль"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={errors.password}
+              icon={<Lock className="h-5 w-5" />}
+            />
 
             <Button 
               type="submit" 

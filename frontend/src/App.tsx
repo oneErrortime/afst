@@ -20,12 +20,11 @@ function SetupRedirect({ children }: { children: React.ReactNode }) {
         const { setup_needed } = await getSetupStatus();
         if (setup_needed && location.pathname !== '/setup') {
           navigate('/setup');
-        } else {
-          setLoading(false);
         }
       } catch (error) {
         console.error("Failed to check setup status", error);
-        setLoading(false); // Proceed even if check fails
+      } finally {
+        setLoading(false);
       }
     };
     checkSetup();
