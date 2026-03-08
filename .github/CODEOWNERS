@@ -1,0 +1,30 @@
+# CODEOWNERS
+# Each line: <pattern> <owner(s)>
+# Owners are automatically requested for review when someone opens a PR
+# that modifies matching files.
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default — covers everything not matched below
+*                               @oneErrortime
+
+# Go backend
+/cmd/                           @oneErrortime
+/internal/                      @oneErrortime
+/migrations/                    @oneErrortime
+go.mod                          @oneErrortime
+go.sum                          @oneErrortime
+
+# React frontend
+/frontend/src/                  @oneErrortime
+/frontend/package.json          @oneErrortime
+
+# CI/CD & infra
+/.github/                       @oneErrortime
+Dockerfile                      @oneErrortime
+docker-compose.yml              @oneErrortime
+render.yaml                     @oneErrortime
+
+# Documentation
+/docs/                          @oneErrortime
+README.md                       @oneErrortime
+CONTRIBUTING.md                 @oneErrortime

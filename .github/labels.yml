@@ -1,0 +1,103 @@
+# GitHub Labels — applied via GitHub CLI or manually in the UI
+# Run: gh label create <name> --color <hex> --description <desc>
+#
+# To bulk-apply: gh label list | xargs -I{} gh label delete {} --yes
+# then create from this file.
+
+labels:
+  # ── Type ─────────────────────────────────────────────────────
+  - name: "bug"
+    color: "d73a4a"
+    description: "Something is not working as expected"
+
+  - name: "enhancement"
+    color: "a2eeef"
+    description: "New feature or improvement"
+
+  - name: "chore"
+    color: "e4e669"
+    description: "Maintenance, dependency updates, refactoring"
+
+  - name: "documentation"
+    color: "0075ca"
+    description: "Improvements or additions to documentation"
+
+  - name: "security"
+    color: "ee0701"
+    description: "Security vulnerability or hardening"
+
+  # ── Area ─────────────────────────────────────────────────────
+  - name: "area: frontend"
+    color: "61dafb"
+    description: "React / TypeScript frontend"
+
+  - name: "area: backend"
+    color: "00add8"
+    description: "Go API / business logic"
+
+  - name: "area: ci-cd"
+    color: "6e5494"
+    description: "GitHub Actions / deployment pipeline"
+
+  - name: "area: database"
+    color: "f9a825"
+    description: "Migrations / SQL / GORM models"
+
+  - name: "area: auth"
+    color: "e91e63"
+    description: "Authentication & authorization"
+
+  # ── Priority ─────────────────────────────────────────────────
+  - name: "priority: critical"
+    color: "b60205"
+    description: "Must be fixed immediately — blocks release"
+
+  - name: "priority: high"
+    color: "e11d48"
+    description: "Important — target current sprint"
+
+  - name: "priority: medium"
+    color: "fb8500"
+    description: "Normal — schedule in next sprint"
+
+  - name: "priority: low"
+    color: "6aac47"
+    description: "Nice to have — backlog"
+
+  # ── Status ───────────────────────────────────────────────────
+  - name: "needs-triage"
+    color: "ededed"
+    description: "New issue — not yet reviewed by the team"
+
+  - name: "in progress"
+    color: "0e8a16"
+    description: "Actively being worked on"
+
+  - name: "blocked"
+    color: "b60205"
+    description: "Cannot proceed — waiting on something"
+
+  - name: "ready for review"
+    color: "7057ff"
+    description: "PR / task ready for code review"
+
+  # ── Meta ─────────────────────────────────────────────────────
+  - name: "tech-debt"
+    color: "ffd700"
+    description: "Accumulated technical debt that needs attention"
+
+  - name: "good first issue"
+    color: "7057ff"
+    description: "Good for newcomers"
+
+  - name: "help wanted"
+    color: "008672"
+    description: "Extra attention or help needed"
+
+  - name: "wontfix"
+    color: "ffffff"
+    description: "This will not be worked on"
+
+  - name: "duplicate"
+    color: "cfd3d7"
+    description: "This issue or PR already exists"

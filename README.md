@@ -1,860 +1,180 @@
-# Library API - RESTful API для управления библиотечным каталогом
+<div align="center">
 
-Система управления библиотекой с аутентификацией JWT, построенная на Go с использованием Gin, GORM и SQLite.
+# 📚 afst — Library Management System
 
-## 📋 Содержание
+**Full-stack library platform** — Go REST API + React frontend  
+with JWT auth, real-time SSE, PDF/EPUB reader, and subscription gating.
 
-- [Описание](#описание)
-- [Технологии](#технологии)
-- [Структура проекта](#структура-проекта)
-- [Быстрый старт](#быстрый-старт)
-- [Установка и запуск](#установка-и-запуск)
-- [API Документация](#api-документация)
-- [Аутентификация](#аутентификация)
-- [Структура базы данных](#структура-базы-данных)
-- [Бизнес-логика](#бизнес-логика)
-- [Миграции](#миграции)
-- [Тестирование](#тестирование)
-- [Docker](#docker)
-- [Деплой на Render.com](#деплой-на-rendercom)
-- [Творческая часть](#творческая-часть)
+[![Frontend CI](https://github.com/oneErrortime/afst/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/oneErrortime/afst/actions/workflows/frontend-ci.yml)
+[![Backend CI](https://github.com/oneErrortime/afst/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/oneErrortime/afst/actions/workflows/backend-ci.yml)
+[![Go Version](https://img.shields.io/badge/Go-1.24-00add8?logo=go)](https://golang.org)
+[![Node Version](https://img.shields.io/badge/Node-20-339933?logo=nodedotjs)](https://nodejs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 📖 Описание
+[**Live Demo →**](https://afst-4.onrender.com) · [**API Docs →**](https://afst-4.onrender.com/swagger/index.html) · [**Roadmap →**](docs/ROADMAP.md)
 
-RESTful API для управления библиотечным каталогом, включающий:
+</div>
 
-- **Аутентификацию пользователей (библиотекарей)** с JWT токенами
-- **Управление книгами** (CRUD операции)
-- **Управление читателями** (CRUD операции)
-- **Систему выдачи и возврата книг** с бизнес-правилами
-- **Защищенные эндпоинты** с JWT middleware
-- **Валидацию данных** и обработку ошибок
+---
 
-## 🛠 Технологии
+## ✨ Features
 
-| Компонент | Технология | Назначение |
-|-----------|------------|------------|
-| **Backend** | Go 1.23+ | Основной язык разработки |
-| **Web Framework** | Gin | HTTP сервер и роутинг |
-| **ORM** | GORM | Работа с базой данных |
-| **База данных** | SQLite (glebarez/sqlite, pure-Go) | Основное хранилище данных |
-| **Аутентификация** | JWT (golang-jwt/jwt/v4) | Безопасность API |
-| **Хеширование** | bcrypt | Хеширование паролей |
-| **Валидация** | validator/v10 | Валидация входных данных |
-| **Тестирование** | testify, httptest | Unit и интеграционные тесты |
-| **Контейнеризация** | Docker, Docker Compose | Развертывание |
-| **Управление зависимостями** | Go Modules | Управление пакетами |
+| Domain | Capabilities |
+|--------|-------------|
+| 📖 **Books** | CRUD, file upload (PDF/EPUB), cover images, categories |
+| 👤 **Auth** | JWT registration/login, bcrypt passwords, role-based access |
+| 🔄 **Borrowing** | Issue/return with business rules (≤3 books per reader, copy tracking) |
+| 📡 **Real-time** | Server-Sent Events — live notifications for book events |
+| 📄 **Reader** | In-browser PDF (`pdfjs`) + EPUB (`epubjs`), bookmarks, reading progress |
+| 💳 **Subscriptions** | Subscription plans, premium content gating |
+| 🌐 **Social** | Follow/unfollow, public profiles, collections, reviews & ratings |
+| ⚙️ **Admin** | Dashboard stats, user management, group management |
 
-## 📁 Структура проекта
+---
 
-```
-library-api/
-├── cmd/server/                 # Точка входа приложения
-│   └── main.go
-├── internal/                   # Внутренний код приложения
-│   ├── auth/                   # JWT аутентификация
-│   │   ├── jwt.go             # Сервис для работы с JWT
-│   │   └── hash.go            # Хеширование паролей
-│   ├── config/                 # Конфигурация
-│   │   └── config.go
-│   ├── handlers/               # HTTP обработчики
-│   │   ├── auth_handler.go    # Регистрация/вход
-│   │   ├── book_handler.go    # Управление книгами
-│   │   ├── reader_handler.go  # Управление читателями
-│   │   ├── borrow_handler.go  # Выдача/возврат книг
-│   │   ├── handlers.go        # Инициализация handlers
-│   │   └── router.go          # Настройка маршрутов
-│   ├── middleware/             # HTTP middleware
-│   │   └── auth.go            # JWT аутентификация
-│   ├── models/                 # Модели данных
-│   │   ├── user.go            # Модель пользователя
-│   │   ├── book.go            # Модель книги
-│   │   ├── reader.go          # Модель читателя
-│   │   ├── borrowed_book.go   # Модель выданной книги
-│   │   └── dto.go             # DTO для валидации
-│   ├── repository/             # Слой доступа к данным
-│   │   ├── interfaces.go      # Интерфейсы репозиториев
-│   │   ├── database.go        # Подключение к БД
-│   │   └── gorm/              # Реализация через GORM
-│   └── services/               # Бизнес-логика
-│       ├── interfaces.go      # Интерфейсы сервисов
-│       ├── auth_service.go    # Сервис аутентификации
-│       ├── book_service.go    # Сервис управления книгами
-│       ├── reader_service.go  # Сервис управления читателями
-│       ├── borrow_service.go  # Сервис выдачи книг
-│       └── services.go        # Инициализация сервисов
-├── migrations/                 # SQL миграции
-│   ├── 001_initial_tables.*   # Создание базовых таблиц
-│   └── 002_add_book_description.* # Добавление поля description
-├── tests/                      # Тесты
-│   ├── auth_test.go           # Unit тесты аутентификации
-│   ├── borrow_test.go         # Unit тесты бизнес-логики
-│   └── api_test.go            # Интеграционные тесты API
-├── docker-compose.yml          # Docker Compose конфигурация
-├── Dockerfile                  # Docker образ приложения
-├── Makefile                    # Автоматизация команд
-├── .env.example               # Пример переменных окружения
-├── .gitignore                 # Исключения для Git
-└── README.md                  # Этот файл
-```
+## 🏗️ Tech Stack
 
-## 🚀 Быстрый старт
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | Go 1.24 · Gin · GORM · SQLite (pure-Go) |
+| **Frontend** | React 18 · TypeScript · Vite · Tailwind CSS · Zustand |
+| **Auth** | JWT (golang-jwt/v4) · bcrypt |
+| **Real-time** | Server-Sent Events · NATS (optional) |
+| **CI/CD** | GitHub Actions · Render.com |
+| **Testing** | Go `testing` + `testify` · golangci-lint |
 
-### Требования
+---
 
-- **Go 1.23+**
-- **SQLite** (создается автоматически)
-- **Make** (опционально)
+## 🚀 Quick Start
 
-### Запуск с Docker Compose (рекомендуется)
+### Prerequisites
+- **Go** 1.24+
+- **Node.js** 20+
+- **Make** (optional)
 
-1. **Клонируйте проект:**
-   ```bash
-   git clone <url>
-   cd library-api
-   ```
-
-2. **Запустите проект:**
-   ```bash
-   make docker-run
-   # или
-   docker-compose up --build
-   ```
-
-3. **API будет доступен по адресу:** `http://localhost:8080`
-
-4. **Проверьте работу:**
-   ```bash
-   curl http://localhost:8080/health
-   ```
-
-## ⚙️ Установка и запуск
-
-### Локальная разработка
-
-1. **Установите зависимости:**
-   ```bash
-   go mod download
-   ```
-
-2. **Настройте переменные окружения:**
-   ```bash
-   cp .env.example .env
-   # Отредактируйте .env с вашими настройками
-   ```
-
-3. **(Опционально) Подготовьте путь для базы данных:**
-   ```bash
-   export DB_SQLITE_PATH=./library.db
-   ```
-
-4. **Запустите приложение:**
-   ```bash
-   make run
-   # или
-   go run ./cmd/server
-   ```
-
-### Переменные окружения
-
-```env
-# Сервер
-PORT=8080
-GIN_MODE=debug
-
-# База данных
-DB_SQLITE_PATH=library.db
-
-# JWT
-JWT_SECRET=your-super-secret-key
-JWT_EXPIRES_IN=24h
-
-# Логирование
-LOG_LEVEL=debug
-```
-
-> 💡 Приложение использует SQLite: достаточно указать путь к файлу (`DB_SQLITE_PATH`). Если требуется PostgreSQL, нужно будет возвращать предыдущие настройки и изменить код подключения.
-
-## 📚 API Документация
-
-### Базовый URL: `http://localhost:8080/api/v1`
-
-### 🔐 Аутентификация
-
-#### Регистрация библиотекаря
-```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "email": "librarian@example.com",
-  "password": "password123"
-}
-```
-
-**Ответ:**
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "message": "Регистрация прошла успешно"
-}
-```
-
-#### Вход в систему
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "librarian@example.com",
-  "password": "password123"
-}
-```
-
-**Ответ:**
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "message": "Вход выполнен успешно"
-}
-```
-
-### 📖 Управление книгами
-
-#### Получить список книг (публичный)
-```http
-GET /books?limit=20&offset=0
-```
-
-#### Получить книгу по ID (публичный)
-```http
-GET /books/{id}
-```
-
-#### Создать книгу (защищенный)
-```http
-POST /books
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "Война и мир",
-  "author": "Лев Толстой",
-  "publication_year": 1869,
-  "isbn": "978-5-389-07960-1",
-  "copies_count": 3,
-  "description": "Роман-эпопея Льва Толстого"
-}
-```
-
-#### Обновить книгу (защищенный)
-```http
-PUT /books/{id}
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "Новое название",
-  "copies_count": 5
-}
-```
-
-#### Удалить книгу (защищенный)
-```http
-DELETE /books/{id}
-Authorization: Bearer <token>
-```
-
-### 👥 Управление читателями (все защищенные)
-
-#### Получить список читателей
-```http
-GET /readers?limit=20&offset=0
-Authorization: Bearer <token>
-```
-
-#### Создать читателя
-```http
-POST /readers
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "Иван Иванов",
-  "email": "ivan@example.com"
-}
-```
-
-#### Обновить читателя
-```http
-PUT /readers/{id}
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "Иван Петрович Иванов"
-}
-```
-
-### 📋 Выдача и возврат книг (все защищенные)
-
-#### Выдать книгу
-```http
-POST /borrow
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "book_id": "123e4567-e89b-12d3-a456-426614174000",
-  "reader_id": "123e4567-e89b-12d3-a456-426614174001"
-}
-```
-
-#### Вернуть книгу
-```http
-POST /borrow/return
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "book_id": "123e4567-e89b-12d3-a456-426614174000",
-  "reader_id": "123e4567-e89b-12d3-a456-426614174001"
-}
-```
-
-#### Получить книги читателя
-```http
-GET /borrow/reader/{reader_id}
-Authorization: Bearer <token>
-```
-
-### 🏥 Здоровье API
-```http
-GET /health
-```
-
-## 🔐 Аутентификация
-
-### Реализация JWT
-
-Система использует **JWT (JSON Web Token)** для аутентификации с следующими особенностями:
-
-- **Библиотека:** `golang-jwt/jwt/v4` - наиболее популярная и безопасная библиотека для Go
-- **Алгоритм:** HMAC SHA256 (HS256)
-- **Время жизни:** 24 часа по умолчанию (настраивается)
-- **Хранение паролей:** bcrypt с cost 10
-
-### Принцип работы
-
-1. **Регистрация/Вход:** Пользователь отправляет email и пароль
-2. **Валидация:** Сервер проверяет пароль против bcrypt хеша
-3. **Генерация токена:** Создается JWT с ID и email пользователя
-4. **Использование:** Клиент отправляет токен в заголовке `Authorization: Bearer <token>`
-5. **Проверка:** Middleware валидирует токен и извлекает данные пользователя
-
-### Защищенные эндпоинты
-
-**Публичные (без авторизации):**
-- `POST /auth/register` - регистрация
-- `POST /auth/login` - вход  
-- `GET /books` - список книг
-- `GET /books/{id}` - информация о книге
-- `GET /health` - здоровье API
-
-**Защищенные (требуют JWT):**
-- Все операции с книгами (создание, обновление, удаление)
-- Все операции с читателями
-- Все операции выдачи/возврата книг
-
-### Обоснование выбора
-
-**Почему список книг публичный?**
-Чтение каталога книг - это естественная потребность посетителей библиотеки. Это позволяет:
-- Пользователям искать книги без регистрации
-- Интегрироваться с внешними системами каталогизации
-- Снизить нагрузку на систему аутентификации
-
-**Все операции управления защищены** потому что изменение данных должны выполнять только авторизованные библиотекари.
-
-## 🗄️ Структура базы данных
-
-### Таблицы
-
-#### `users` - Пользователи (библиотекари)
-```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,  -- bcrypt хеш
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    deleted_at TIMESTAMP WITH TIME ZONE  -- soft delete
-);
-```
-
-#### `books` - Книги
-```sql
-CREATE TABLE books (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(255) NOT NULL,
-    author VARCHAR(255) NOT NULL,
-    publication_year INTEGER CHECK (publication_year >= 0 AND publication_year <= 9999),
-    isbn VARCHAR(20) UNIQUE,
-    copies_count INTEGER NOT NULL DEFAULT 1 CHECK (copies_count >= 0),
-    description TEXT,  -- добавлено во второй миграции
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    deleted_at TIMESTAMP WITH TIME ZONE
-);
-```
-
-#### `readers` - Читатели
-```sql
-CREATE TABLE readers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    deleted_at TIMESTAMP WITH TIME ZONE
-);
-```
-
-#### `borrowed_books` - Выданные книги
-```sql
-CREATE TABLE borrowed_books (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    book_id UUID NOT NULL REFERENCES books(id),
-    reader_id UUID NOT NULL REFERENCES readers(id),
-    borrow_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    return_date TIMESTAMP WITH TIME ZONE,  -- NULL = не возвращена
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    deleted_at TIMESTAMP WITH TIME ZONE
-);
-```
-
-### Индексы
-
-```sql
--- Производительность поиска активных выдач
-CREATE INDEX idx_borrowed_books_active ON borrowed_books(reader_id, return_date) 
-WHERE return_date IS NULL AND deleted_at IS NULL;
-
--- Уникальность при soft delete
-CREATE UNIQUE INDEX idx_users_email ON users(email) WHERE deleted_at IS NULL;
-CREATE UNIQUE INDEX idx_books_isbn ON books(isbn) WHERE isbn IS NOT NULL AND deleted_at IS NULL;
-CREATE UNIQUE INDEX idx_readers_email ON readers(email) WHERE deleted_at IS NULL;
-```
-
-### Принятые решения
-
-1. **UUID вместо автоинкремента** - лучше для распределенных систем и безопасности
-2. **Soft Delete** - сохраняем исторические данные и возможность восстановления
-3. **Timestamps** - аудит всех операций
-4. **Частичные индексы** - эффективность при soft delete
-5. **Check constraints** - валидация на уровне базы данных
-
-## ⚖️ Бизнес-логика
-
-### Правила выдачи книг
-
-Система реализует следующие бизнес-правила:
-
-#### Правило 1: Наличие экземпляров
-```go
-// Код в borrow_service.go:46-50
-if book.CopiesCount <= 0 {
-    return nil, errors.New("нет доступных экземпляров книги")
-}
-```
-
-**Логика:** Книгу можно выдать только если `copies_count > 0`. При выдаче счетчик уменьшается на 1, при возврате увеличивается на 1.
-
-#### Правило 2: Лимит книг на читателя (максимум 3)
-```go
-// Код в borrow_service.go:52-58
-activeBorrowsCount, err := s.borrowedBookRepo.CountActiveByReader(dto.ReaderID)
-if err != nil {
-    return nil, err
-}
-if activeBorrowsCount >= 3 {
-    return nil, errors.New("читатель уже взял максимальное количество книг (3)")
-}
-```
-
-**Логика:** Подсчитываем активные выдачи (где `return_date IS NULL`) для читателя. Если >= 3, выдача запрещена.
-
-#### Правило 3: Запрет возврата невыданной книги
-```go
-// Код в borrow_service.go:104-110
-borrowedBook, err := s.borrowedBookRepo.GetActiveByBookAndReader(dto.BookID, dto.ReaderID)
-if err != nil {
-    if errors.Is(err, gorm.ErrRecordNotFound) {
-        return nil, errors.New("активная выдача этой книги этому читателю не найдена")
-    }
-    return nil, err
-}
-```
-
-**Логика:** Ищем активную выдачу (без `return_date`) для конкретной пары книга-читатель. Если не найдена, возврат невозможен.
-
-### Сложности и решения
-
-#### 1. Проблема: Гонки в многопоточной среде
-**Решение:** В production должны быть добавлены транзакции:
-```go
-// Пример решения (не реализован в текущей версии):
-tx := db.Begin()
-defer tx.Rollback()
-
-// Блокируем запись книги
-var book Book
-tx.Model(&Book{}).Where("id = ?", bookID).Set("gorm:query_option", "FOR UPDATE").First(&book)
-
-// Выполняем операции...
-tx.Commit()
-```
-
-#### 2. Проблема: Консистентность данных
-**Решение:** Используем foreign key constraints и проверки на уровне базы данных.
-
-#### 3. Проблема: Производительность при большом количестве данных
-**Решение:** Оптимизированные индексы и эффективные запросы:
-```sql
--- Быстрый подсчет активных выдач
-SELECT COUNT(*) FROM borrowed_books 
-WHERE reader_id = ? AND return_date IS NULL AND deleted_at IS NULL;
-```
-
-#### 4. Проблема: Двойная выдача одной книги
-**Решение:** Проверяем существующую активную выдачу:
-```go
-existingBorrow, err := s.borrowedBookRepo.GetActiveByBookAndReader(dto.BookID, dto.ReaderID)
-if existingBorrow != nil {
-    return nil, errors.New("читатель уже взял эту книгу")
-}
-```
-
-## 🔄 Миграции
-
-### Обзор миграций
-
-Проект использует две миграции согласно техническому заданию:
-
-#### 001_initial_tables.up.sql - Начальная миграция
-- Создает все основные таблицы (users, books, readers, borrowed_books)
-- Устанавливает индексы и constraints
-- Настраивает foreign key relationships
-
-#### 002_add_book_description.up.sql - Модифицирующая миграция  
-- Добавляет поле `description` к таблице books
-- Обновляет существующие записи значением по умолчанию
-
-### Управление миграциями
-
-> ℹ️ SQL-миграции в папке `migrations/` ориентированы на PostgreSQL и сохраняются для совместимости. При запуске со SQLite структуры создаются через `gorm.AutoMigrate` автоматически.
-
-**В production** рекомендуется использовать инструменты миграций:
+### Run locally
 
 ```bash
-# Установка golang-migrate
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+# Clone
+git clone https://github.com/oneErrortime/afst.git && cd afst
 
-# Применение миграций
-migrate -path ./migrations -database "postgres://user:password@localhost/db?sslmode=disable" up
+# Backend
+cp .env.example .env
+go run ./cmd/server
+# → http://localhost:8080
 
-# Откат миграций  
-migrate -path ./migrations -database "postgres://user:password@localhost/db?sslmode=disable" down 1
+# Frontend (new terminal)
+cd frontend && npm ci && npm run dev
+# → http://localhost:5173
 ```
-
-**В разработке** используется GORM AutoMigrate для простоты.
-
-### Создание новой миграции
-
-```bash
-# Создание файлов миграции
-migrate create -ext sql -dir migrations -seq add_new_field
-
-# Это создаст:
-# migrations/003_add_new_field.up.sql
-# migrations/003_add_new_field.down.sql
-```
-
-## 🧪 Тестирование
-
-### Типы тестов
-
-#### Unit тесты
-- **auth_test.go** - тестирует сервис аутентификации
-- **borrow_test.go** - тестирует бизнес-логику выдачи книг
-
-#### Интеграционные тесты  
-- **api_test.go** - тестирует HTTP эндпоинты с реальной базой данных
-
-### Запуск тестов
-
-```bash
-# Все тесты
-make test
-
-# Тесты с покрытием
-make test-coverage
-
-# Только unit тесты
-go test ./tests/ -run "Test.*Service"
-
-# Только интеграционные тесты
-go test ./tests/ -run "TestAPI"
-
-# Конкретный тест
-go test ./tests/ -run "TestBorrowService_BorrowBook_TooManyBooks"
-```
-
-### Покрытие тестами
-
-Тесты покрывают **критические бизнес-правила**:
-
-✅ **Протестированные сценарии:**
-- Регистрация с существующим email  
-- Вход с неверным паролем
-- Выдача книги при отсутствии экземпляров
-- Попытка взять 4-ю книгу (нарушение лимита)
-- Возврат невыданной книги
-- Защищенные эндпоинты без токена
-- Защищенные эндпоинты с валидным токеном
-
-### Моки и заглушки
-
-Используются mock-объекты для изоляции unit тестов:
-
-```go
-type MockUserRepository struct {
-    mock.Mock
-}
-
-func (m *MockUserRepository) GetByEmail(email string) (*models.User, error) {
-    args := m.Called(email)
-    return args.Get(0).(*models.User), args.Error(1)
-}
-```
-
-## 🐳 Docker
 
 ### Docker Compose
 
-Проект включает полную Docker Compose конфигурацию:
-
-```yaml
-# docker-compose.yml
-services:
-  postgres:    # База данных
-  api:         # Основное приложение
-```
-
-### Команды Docker
-
 ```bash
-# Запуск всех сервисов
-make docker-run
-# или
 docker-compose up --build
-
-# Запуск в фоне
-make docker-run-bg
-
-# Только база данных
-make db-up
-
-# Подключение к базе
-make db-connect
-
-# Остановка
-make docker-stop
-
-# Полная очистка
-make docker-clean
+# API → http://localhost:8080
 ```
 
-### Production готовность
+### Environment Variables
 
-Dockerfile использует **multi-stage build**:
-- Компиляция в `golang:1.23-alpine`
-- Финальный образ на `alpine:latest`
-- Непривилегированный пользователь
-- Минимальный размер образа
-
-## 🚀 Деплой на Render.com
-
-### Особенности
-
-Проект использует **pure-Go драйвер SQLite** (`github.com/glebarez/sqlite`), который работает без CGO. Это позволяет деплоить на платформы типа Render.com, которые компилируют Go с `CGO_ENABLED=0`.
-
-### Конфигурация
-
-1. **Создайте Web Service на Render.com:**
-   - Runtime: Go
-   - Build Command: `go build -o main ./cmd/server`
-   - Start Command: `./main`
-
-2. **Добавьте Disk для SQLite:**
-   - Mount Path: `/var/data`
-   - Size: 1 GB
-
-3. **Environment Variables:**
-   ```
-   PORT=8080
-   GIN_MODE=release
-   DB_SQLITE_PATH=/var/data/library.db
-   JWT_SECRET=<your-secret-key>
-   JWT_EXPIRES_IN=24h
-   ```
-
-### render.yaml
-
-В проекте уже есть файл `render.yaml` для автоматического деплоя:
-
-```yaml
-services:
-  - type: web
-    name: library-api
-    runtime: go
-    buildCommand: go build -o main ./cmd/server
-    startCommand: ./main
-    disk:
-      name: data
-      mountPath: /var/data
-      sizeGB: 1
+```env
+PORT=8080
+GIN_MODE=debug
+DB_SQLITE_PATH=library.db
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=24h
 ```
 
-### Важно
+---
 
-- SQLite база данных хранится на персистентном диске
-- Pure-Go драйвер не требует CGO
-- Все миграции выполняются автоматически при старте
+## 📡 API Reference
 
-## 💡 Творческая часть
+**Base URL:** `https://afst-4.onrender.com/api/v1`  
+**Interactive docs:** `/swagger/index.html`
 
-### Предлагаемая дополнительная фича: "Система рекомендаций книг"
+### Public Endpoints
 
-#### Описание
-Интеллектуальная система рекомендаций, которая предлагает книги читателям на основе их истории чтения и поведения других похожих пользователей.
-
-#### Функциональность
-
-1. **Рекомендации на основе истории:**
-   - Анализ жанров прочитанных книг
-   - Предпочитаемые авторы
-   - Частота чтения
-
-2. **Коллаборативная фильтрация:**
-   - "Пользователи, которые читали эту книгу, также читали..."
-   - Группировка читателей по интересам
-
-3. **Контентная фильтрация:**
-   - Анализ описаний книг (NLP)
-   - Теги и категории
-   - Связанные темы
-
-#### Техническая реализация
-
-**Новые модели:**
-```go
-type BookRecommendation struct {
-    ID       uuid.UUID `json:"id"`
-    ReaderID uuid.UUID `json:"reader_id"`
-    BookID   uuid.UUID `json:"book_id"`
-    Score    float64   `json:"score"`  // 0.0-1.0
-    Reason   string    `json:"reason"` // "Similar readers", "Same genre", etc
-}
-
-type BookCategory struct {
-    ID   uuid.UUID `json:"id"`
-    Name string    `json:"name"`
-}
-
-type BookRating struct {
-    ID       uuid.UUID `json:"id"`
-    BookID   uuid.UUID `json:"book_id"`
-    ReaderID uuid.UUID `json:"reader_id"`
-    Rating   int       `json:"rating"`  // 1-5
-}
+```
+GET    /health                      Service health check
+POST   /api/v1/auth/register        Register a new librarian
+POST   /api/v1/auth/login           Login, receive JWT
+GET    /api/v1/books                List books (paginated)
+GET    /api/v1/books/:id            Get book details
 ```
 
-**Новые эндпоинты:**
-```http
-GET /api/v1/recommendations/{reader_id}    # Получить рекомендации
-POST /api/v1/books/{book_id}/rating        # Оценить книгу
-GET /api/v1/books/trending                 # Популярные книги
-GET /api/v1/categories                     # Категории книг
+### Protected Endpoints (require `Authorization: Bearer <token>`)
+
+```
+POST   /api/v1/books                Create book
+PUT    /api/v1/books/:id            Update book
+DELETE /api/v1/books/:id            Delete book
+POST   /api/v1/books/:id/files      Upload PDF/EPUB file
+
+POST   /api/v1/borrow               Issue book to reader
+POST   /api/v1/borrow/return        Return book
+
+GET    /api/v1/readers              List readers
+POST   /api/v1/readers              Create reader
+
+GET    /api/v1/events/stream        SSE real-time stream
 ```
 
-**Алгоритм:**
-1. **Сбор данных:** История чтения, оценки, время чтения
-2. **Feature Engineering:** Векторизация предпочтений пользователя
-3. **Модель рекомендаций:** Гибридный подход (коллаборативная + контентная фильтрация)
-4. **Ранжирование:** Сортировка по релевантности и доступности
-5. **Обновление:** Переобучение модели по расписанию
+---
 
-**Технологии:**
-- **ML Backend:** Python с scikit-learn или TensorFlow
-- **Векторная база:** PostgreSQL с pgvector для семантического поиска
-- **Кэширование:** Redis для быстрых рекомендаций
-- **Очереди:** Асинхронная обработка через RabbitMQ
+## 🗂️ Project Structure
 
-**Интеграция:**
-```go
-// Новый сервис
-type RecommendationService interface {
-    GetRecommendations(readerID uuid.UUID, limit int) ([]BookRecommendation, error)
-    UpdateUserPreferences(readerID uuid.UUID) error
-    RateBook(readerID, bookID uuid.UUID, rating int) error
-}
-
-// Интеграция в borrow_service.go
-func (s *borrowService) ReturnBook(dto *models.ReturnBookDTO) (*models.BorrowedBook, error) {
-    // ... существующий код возврата книги
-    
-    // После успешного возврата - обновить рекомендации
-    go func() {
-        s.recommendationService.UpdateUserPreferences(dto.ReaderID)
-    }()
-    
-    return updatedBorrow, nil
-}
+```
+afst/
+├── cmd/server/          Go entrypoint
+├── internal/
+│   ├── auth/            JWT + bcrypt
+│   ├── handlers/        HTTP handlers (Gin)
+│   ├── middleware/       Auth + logging
+│   ├── models/          GORM models + DTOs
+│   └── events/          EventBus + NATS bridge
+├── migrations/          SQL migration files
+├── frontend/
+│   └── src/
+│       ├── api/         Axios client + typed wrappers
+│       ├── components/  UI atoms + layout
+│       ├── hooks/       useForm, useSSE, useEvents
+│       ├── lib/         State machine, EventBus
+│       ├── pages/       Route-level components
+│       └── store/       Zustand stores
+├── docs/
+│   ├── ARCHITECTURE.md  System design overview
+│   └── ROADMAP.md       Sprint plan + backlog
+├── CONTRIBUTING.md      How to contribute
+└── CHANGELOG.md         Version history
 ```
 
-#### Польза
-- **Для читателей:** Персонализированные рекомендации, открытие новых авторов
-- **Для библиотекарей:** Аналитика популярных книг, планирование закупок
-- **Для библиотеки:** Увеличение оборота книг, вовлеченность читателей
+---
 
-#### Метрики успеха
-- CTR рекомендаций (доля читателей, взявших рекомендованные книги)
-- Увеличение среднего количества книг на читателя
-- Время нахождения подходящей книги
-- Удовлетворенность читателей (через опросы)
+## 🗺️ Roadmap
+
+| Sprint | Goal | Status |
+|--------|------|--------|
+| **v0.1** | Foundation — CI green, repo structured | ✅ Done |
+| **v0.2** | Quality — test coverage ≥70%, error handling | 🔶 In Progress |
+| **v0.3** | UX — search, pagination, mobile reader | 📅 Planned |
+| **v1.0** | Production — Docker, monitoring, PostgreSQL option | 📅 Planned |
+
+→ Full details in [**docs/ROADMAP.md**](docs/ROADMAP.md)
 
 ---
 
 ## 🤝 Contributing
 
-1. Форкните репозиторий
-2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
-3. Закоммитьте изменения (`git commit -m 'Add some AmazingFeature'`)
-4. Запушьте branch (`git push origin feature/AmazingFeature`)
-5. Откройте Pull Request
+Please read [**CONTRIBUTING.md**](CONTRIBUTING.md) before opening a PR.
 
-## 📝 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 👨‍💻 Автор
-
-Создано как тестовое задание - демонстрация навыков разработки RESTful API на Go с современными практиками и инструментами.
+**Quick summary:**
+- Branch from `main` → `feat/<name>` or `fix/<name>`
+- Commit convention: `type(scope): description` ([Conventional Commits](https://www.conventionalcommits.org/))
+- All CI checks must pass before merge
+- Squash-merge only
 
 ---
 
-**API готов к использованию! 🚀**
+## 📄 License
 
-Для быстрого старта выполните: `make docker-run`
+[MIT](LICENSE) — © 2026 oneErrortime
