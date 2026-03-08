@@ -73,7 +73,7 @@ export const getBaseUrl = (): string => {
   if (import.meta.env.DEV) {
     return 'http://localhost:8080/api/v1';
   }
-  return 'https://afst-4.onrender.com/api/v1';
+  return 'https://afst-5.onrender.com/api/v1';
 };
 
 OpenAPI.BASE = getBaseUrl();
@@ -170,7 +170,9 @@ export const authApi = {
   logout: () => {
     localStorage.removeItem('token');
     OpenAPI.TOKEN = undefined;
-    window.location.href = '/afst/login';
+    import('@/lib/eventBus').then(({ eventBus }) => {
+      eventBus.emit('api:unauthorized', {});
+    });
   },
 };
 

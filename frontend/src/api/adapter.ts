@@ -14,7 +14,7 @@ const getBaseUrl = (): string => {
     return 'http://localhost:8080/api/v1';
   }
   
-  return 'https://afst-4.onrender.com/api/v1';
+  return 'https://afst-5.onrender.com/api/v1';
 };
 
 /**

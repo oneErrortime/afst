@@ -93,10 +93,15 @@ func (h *BookFileHandler) ServeFile(c *gin.Context) {
 		return
 	}
 
-	hasAccess, _ := h.accessService.CheckAccess(userID, bookFile.BookID)
-	if !hasAccess {
-		c.JSON(http.StatusForbidden, models.ErrorResponseDTO{Error: "Нет доступа к этой книге"})
-		return
+	// Admins and librarians always have access
+	roleVal, _ := c.Get("user_role")
+	role, _ := roleVal.(models.UserRole)
+	if role != models.RoleAdmin && role != models.RoleLibrarian {
+		hasAccess, _ := h.accessService.CheckAccess(userID, bookFile.BookID)
+		if !hasAccess {
+			c.JSON(http.StatusForbidden, models.ErrorResponseDTO{Error: "Нет доступа к этой книге"})
+			return
+		}
 	}
 
 	filePath, mimeType, err := h.fileService.ServeFile(fileID)

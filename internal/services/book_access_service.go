@@ -103,6 +103,12 @@ func (s *bookAccessService) GetActiveByUserAndBook(userID, bookID uuid.UUID) (*m
 }
 
 func (s *bookAccessService) CheckAccess(userID, bookID uuid.UUID) (bool, error) {
+	// Admins and librarians have full access to all books
+	user, err := s.userRepo.GetByID(userID)
+	if err == nil && (user.Role == models.RoleAdmin || user.Role == models.RoleLibrarian) {
+		return true, nil
+	}
+
 	access, err := s.accessRepo.GetActiveByUserAndBook(userID, bookID)
 	if err != nil {
 		return false, nil

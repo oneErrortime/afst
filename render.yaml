@@ -26,5 +26,5 @@ services:
       name: data
       mountPath: /var/data
       sizeGB: 5
-    healthCheckPath: /health
+    healthCheckPath: /api/v1/health
     autoDeploy: true
