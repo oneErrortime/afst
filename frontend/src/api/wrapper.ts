@@ -78,9 +78,27 @@ export const getBaseUrl = (): string => {
 
 OpenAPI.BASE = getBaseUrl();
 
-const token = localStorage.getItem('token');
-if (token) {
-  OpenAPI.TOKEN = token;
+/**
+ * Reads the JWT token from zustand's persisted auth store.
+ * zustand/persist serialises the full state as JSON under 'auth-storage',
+ * NOT as a bare 'token' key.  Reading from the wrong key was the root
+ * cause of every authenticated API call going out without an Authorization
+ * header, which triggered 401s and an infinite redirect loop.
+ */
+const getPersistedToken = (): string | null => {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    return (JSON.parse(raw) as { state?: { token?: string | null } })?.state?.token ?? null;
+  } catch {
+    return null;
+  }
+};
+
+// Initialise OpenAPI token on module load from the correct storage key
+const _initToken = getPersistedToken();
+if (_initToken) {
+  OpenAPI.TOKEN = _initToken;
 }
 
 const axiosInstance: AxiosInstance = axios.create({
@@ -88,7 +106,7 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = getPersistedToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -99,8 +117,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/afst/login';
+      // Use eventBus so React Router handles navigation (no full-page reload,
+      // no history stack corruption). The listener is registered in App.tsx.
+      import('@/lib/eventBus').then(({ eventBus }) => {
+        eventBus.emit('api:unauthorized', {});
+      });
     }
     throw error;
   }
@@ -108,10 +129,6 @@ axiosInstance.interceptors.response.use(
 
 const handleApiError = (error: any): never => {
   console.error('API Error:', error);
-  if (error?.status === 401) {
-    localStorage.removeItem('token');
-    window.location.href = '/afst/login';
-  }
   throw error;
 };
 

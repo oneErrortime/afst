@@ -17,9 +17,23 @@ const getBaseUrl = (): string => {
   return 'https://afst-4.onrender.com/api/v1';
 };
 
+/**
+ * Single source of truth for token reads — always mirrors what zustand persist writes.
+ * zustand/persist stores state as JSON under 'auth-storage', NOT as a bare 'token' key.
+ */
+function readPersistedToken(): string | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    return (JSON.parse(raw) as { state?: { token?: string | null } })?.state?.token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function initializeAPI(config?: Partial<ApiConfig>) {
   const baseUrl = config?.baseUrl || getBaseUrl();
-  const token = config?.token || localStorage.getItem('token');
+  const token = config?.token || readPersistedToken();
   
   OpenAPI.BASE = baseUrl;
   
@@ -32,22 +46,19 @@ export function initializeAPI(config?: Partial<ApiConfig>) {
 
 export function setApiToken(token: string | null) {
   if (token) {
-    localStorage.setItem('token', token);
     OpenAPI.TOKEN = token;
     console.log('[API] Token set');
   } else {
-    localStorage.removeItem('token');
     OpenAPI.TOKEN = undefined;
     console.log('[API] Token removed');
   }
 }
 
 export function getApiToken(): string | null {
-  return localStorage.getItem('token');
+  return readPersistedToken();
 }
 
 export function clearApiToken() {
-  localStorage.removeItem('token');
   OpenAPI.TOKEN = undefined;
   console.log('[API] Token cleared');
 }
@@ -106,14 +117,22 @@ export function setupAuthInterceptor() {
 
 export function listenToStorageChanges() {
   window.addEventListener('storage', (event) => {
-    if (event.key === 'token') {
-      const newToken = event.newValue;
-      if (newToken) {
-        OpenAPI.TOKEN = newToken;
-        console.log('[API] Token updated from storage');
-      } else {
+    // Watch 'auth-storage' — the key zustand/persist uses for auth state
+    if (event.key === 'auth-storage') {
+      try {
+        const parsed = event.newValue
+          ? (JSON.parse(event.newValue) as { state?: { token?: string | null } })
+          : null;
+        const newToken = parsed?.state?.token ?? null;
+        if (newToken) {
+          OpenAPI.TOKEN = newToken;
+          console.log('[API] Token updated from storage');
+        } else {
+          OpenAPI.TOKEN = undefined;
+          console.log('[API] Token removed from storage');
+        }
+      } catch {
         OpenAPI.TOKEN = undefined;
-        console.log('[API] Token removed from storage');
       }
     }
   });
@@ -124,9 +143,12 @@ export function listenToStorageChanges() {
 export function handleApiError(error: any): never {
   console.error('[API] Error:', error);
   
-  if (error?.status === 401) {
+  if (error?.status === 401 || error?.response?.status === 401) {
     clearApiToken();
-    window.location.href = '/afst/login';
+    // Use eventBus instead of hard redirect to preserve React Router history
+    import('@/lib/eventBus').then(({ eventBus }) => {
+      eventBus.emit('api:unauthorized', {});
+    });
   }
   
   if (error?.status === 403) {
