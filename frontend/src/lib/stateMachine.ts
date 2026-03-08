@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer, useRef } from 'react';
+import { useCallback, useMemo, useReducer, useState } from 'react';
 
 export type StateValue = string;
 export type EventType = string;
@@ -101,8 +101,7 @@ function machineReducer<TContext>(
 export function useMachine<TContext>(
   config: MachineConfig<TContext>
 ): [MachineState<TContext>, MachineActions] {
-  const initialStateRef = useRef<MachineState<TContext>>(null!);
-  if (!initialStateRef.current) {
+  const [initialState] = useState<MachineState<TContext>>(() => {
     let context = config.context;
     const initialStateConfig = config.states[config.initial];
     if (initialStateConfig?.entry) {
@@ -110,13 +109,12 @@ export function useMachine<TContext>(
         context = entryAction(context);
       }
     }
-    initialStateRef.current = {
+    return {
       value: config.initial,
       context,
       history: [],
     };
-  }
-  const initialState = initialStateRef.current;
+  });
 
   const [state, dispatch] = useReducer(machineReducer<TContext>, initialState);
 

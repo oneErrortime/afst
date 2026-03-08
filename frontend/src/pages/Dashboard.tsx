@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Loading, toast } from '@/components/ui';
-import { useAuthStore } from '@/store/authStore';
 import { statsApi } from '@/api';
 import { 
   BookOpen, 

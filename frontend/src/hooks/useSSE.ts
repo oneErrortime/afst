@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { getBaseUrl } from '@/api/wrapper';
 
@@ -29,8 +29,11 @@ export function useSSE({ handlers, enabled = true }: UseSSEOptions) {
   const retryRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const delayRef = useRef(1000);
   const handlersRef = useRef(handlers);
-  handlersRef.current = handlers;
   const connectRef = useRef<() => void>(() => {});
+
+  useLayoutEffect(() => {
+    handlersRef.current = handlers;
+  });
 
   const connect = useCallback(() => {
     if (!token || !isAuthenticated) return;
@@ -59,7 +62,9 @@ export function useSSE({ handlers, enabled = true }: UseSSEOptions) {
     }
   }, [token, isAuthenticated]);
 
-  connectRef.current = connect;
+  useLayoutEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   useEffect(() => {
     if (!enabled || !isAuthenticated) return;
