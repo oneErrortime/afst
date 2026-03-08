@@ -27,8 +27,8 @@ func (s *subscriptionService) Create(userID uuid.UUID, plan models.SubscriptionP
 		return nil, errors.New("пользователь не найден")
 	}
 
-	existing, _ := s.subscriptionRepo.GetActiveByUserID(userID)
-	if existing != nil {
+	existing, err := s.subscriptionRepo.GetActiveByUserID(userID)
+	if err == nil && existing != nil && existing.ID != uuid.Nil {
 		return nil, errors.New("у пользователя уже есть активная подписка")
 	}
 
