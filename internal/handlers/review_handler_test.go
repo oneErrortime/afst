@@ -13,6 +13,7 @@ import (
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // MockReviewService is a mock for the ReviewService
@@ -102,7 +103,7 @@ func TestReviewHandler_GetReviewsByBook(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, rr.Code)
 		var result []models.Review
-		json.Unmarshal(rr.Body.Bytes(), &result)
+		require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &result))
 		assert.Equal(t, reviews, result)
 		mockService.AssertExpectations(t)
 	})

@@ -72,7 +72,9 @@ func strPtr(s string) *string {
 
 func SeedDefaultData(db *gorm.DB) error {
 	var groupCount int64
-	db.Model(&models.UserGroup{}).Count(&groupCount)
+	if err := db.Model(&models.UserGroup{}).Count(&groupCount).Error; err != nil {
+		return fmt.Errorf("ошибка подсчёта групп: %w", err)
+	}
 	if groupCount == 0 {
 		groups := []models.UserGroup{
 			{Name: "Свободные читатели", Type: models.GroupTypeFree, Description: strPtr("Обычные пользователи библиотеки"), Color: strPtr("#3B82F6"), MaxBooks: 3, LoanDays: 14, CanDownload: false, IsActive: true},
@@ -80,12 +82,16 @@ func SeedDefaultData(db *gorm.DB) error {
 			{Name: "Подписчики", Type: models.GroupTypeSubscriber, Description: strPtr("Премиум подписчики"), Color: strPtr("#8B5CF6"), MaxBooks: 10, LoanDays: 60, CanDownload: true, IsActive: true},
 		}
 		for _, g := range groups {
-			db.Create(&g)
+			if err := db.Create(&g).Error; err != nil {
+				return fmt.Errorf("ошибка создания группы: %w", err)
+			}
 		}
 	}
 
 	var catCount int64
-	db.Model(&models.Category{}).Count(&catCount)
+	if err := db.Model(&models.Category{}).Count(&catCount).Error; err != nil {
+		return fmt.Errorf("ошибка подсчёта категорий: %w", err)
+	}
 	if catCount == 0 {
 		categories := []models.Category{
 			{Name: "Художественная литература", Slug: "fiction", Description: strPtr("Романы, повести, рассказы"), Color: strPtr("#EF4444"), Icon: strPtr("📚"), SortOrder: 1, IsActive: true},
@@ -95,7 +101,9 @@ func SeedDefaultData(db *gorm.DB) error {
 			{Name: "Бизнес", Slug: "business", Description: strPtr("Бизнес литература"), Color: strPtr("#F59E0B"), Icon: strPtr("💼"), SortOrder: 5, IsActive: true},
 		}
 		for _, c := range categories {
-			db.Create(&c)
+			if err := db.Create(&c).Error; err != nil {
+				return fmt.Errorf("ошибка создания категории: %w", err)
+			}
 		}
 	}
 
@@ -106,7 +114,10 @@ func SeedDefaultData(db *gorm.DB) error {
 
 func seedFeatureFlags(db *gorm.DB) {
 	var count int64
-	db.Model(&models.FeatureFlag{}).Count(&count)
+	if err := db.Model(&models.FeatureFlag{}).Count(&count).Error; err != nil {
+		_ = err
+		return
+	}
 	if count > 0 {
 		return
 	}
@@ -126,6 +137,9 @@ func seedFeatureFlags(db *gorm.DB) {
 	}
 
 	for _, flag := range flags {
-		db.Create(&flag)
+		if err := db.Create(&flag).Error; err != nil {
+			// Флаги не критичны, логируем и продолжаем
+			_ = err
+		}
 	}
 }

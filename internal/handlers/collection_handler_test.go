@@ -14,6 +14,7 @@ import (
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // MockCollectionService is a mock for the CollectionService
@@ -123,7 +124,7 @@ func TestCollectionHandler_GetCollections(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, rr.Code)
 		var result []models.Collection
-		json.Unmarshal(rr.Body.Bytes(), &result)
+		require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &result))
 		assert.Equal(t, collections, result)
 		mockService.AssertExpectations(t)
 	})
@@ -241,7 +242,7 @@ func TestCollectionHandler_GetCollectionByID(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, rr.Code)
 		var result models.Collection
-		json.Unmarshal(rr.Body.Bytes(), &result)
+		require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &result))
 		assert.Equal(t, *collection, result)
 		mockService.AssertExpectations(t)
 	})

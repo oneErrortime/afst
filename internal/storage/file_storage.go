@@ -80,7 +80,7 @@ func (s *LocalStorage) Upload(file multipart.File, header *multipart.FileHeader)
 
 	size, err := io.Copy(dst, file)
 	if err != nil {
-		os.Remove(fullPath)
+		_ = os.Remove(fullPath)
 		return nil, fmt.Errorf("failed to save file: %w", err)
 	}
 
