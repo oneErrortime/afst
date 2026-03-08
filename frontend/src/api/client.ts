@@ -19,6 +19,23 @@ const getBaseUrl = (): string => {
   return 'https://afst-4.onrender.com/api/v1';
 };
 
+/**
+ * Reads the JWT token from zustand's persisted storage.
+ * zustand/persist saves state as JSON under the key defined in the store
+ * ('auth-storage'), NOT as a bare localStorage['token'] entry.
+ * Reading from the correct key prevents the auth intercept from sending
+ * requests without a token after page refresh, which caused a redirect loop.
+ */
+const getPersistedToken = (): string | null => {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    return (JSON.parse(raw) as { state?: { token?: string | null } })?.state?.token ?? null;
+  } catch {
+    return null;
+  }
+};
+
 export const createApiClient = () => {
   const client = axios.create({
     headers: {
@@ -30,8 +47,10 @@ export const createApiClient = () => {
   client.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       config.baseURL = getBaseUrl();
-      
-      const token = localStorage.getItem('token');
+
+      // Zustand persist stores auth under key 'auth-storage' as JSON,
+      // NOT as a bare localStorage['token'] entry.
+      const token = getPersistedToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }

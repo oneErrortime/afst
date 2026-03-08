@@ -11,7 +11,6 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.4.0
 	github.com/joho/godotenv v1.4.0
-	github.com/nats-io/nats.go v1.38.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.45.0
 	gorm.io/gorm v1.30.0
