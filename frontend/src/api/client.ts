@@ -44,10 +44,10 @@ export const createApiClient = () => {
     (response) => response,
     (error: AxiosError) => {
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-          window.location.href = '/afst/login';
-        }
+        // Use eventBus so the React router handles navigation (no full reload)
+        import('@/lib/eventBus').then(({ eventBus }) => {
+          eventBus.emit('api:unauthorized', {});
+        });
       }
       return Promise.reject(error);
     }

@@ -1,95 +1,155 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories, Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, BookDetail, Profile, AutoDashboard, AutoResource } from '@/pages';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, Outlet } from 'react-router-dom';
+import {
+  Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories,
+  Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections,
+  BookDetail, Profile, AutoDashboard, AutoResource,
+} from '@/pages';
 import { Layout } from '@/components/layout';
-import { ToastContainer, ErrorBoundary } from '@/components/ui';
+import { ToastContainer, ErrorBoundary, Loading } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
-import { getSetupStatus } from '@/api/client';
 import { initializeApiSystem } from '@/api';
-import { Loader2 } from 'lucide-react';
 import { eventBus } from '@/lib/eventBus';
 
-function SetupRedirect({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+// ─── Route Guards ──────────────────────────────────────────────────────────────
+
+/** Redirect to login if not authenticated */
+function PrivateRoute() {
+  const { isAuthenticated, isInitialized } = useAuthStore();
   const location = useLocation();
 
-  useEffect(() => {
-    const checkSetup = async () => {
-      try {
-        const { setup_needed } = await getSetupStatus();
-        if (setup_needed && location.pathname !== '/setup') {
-          navigate('/setup');
-        }
-      } catch (error) {
-        console.error("Failed to check setup status", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkSetup();
-  }, [navigate, location.pathname]);
+  if (!isInitialized) return <Loading />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return <Outlet />;
+}
 
-  if (loading) {
+/** Redirect non-staff users away */
+function StaffRoute() {
+  const { isAuthenticated, isInitialized, user } = useAuthStore();
+  const location = useLocation();
+
+  if (!isInitialized) return <Loading />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  const isStaff = user?.role === 'admin' || user?.role === 'librarian';
+  if (!isStaff) {
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+}
+
+/** Redirect non-admins away */
+function AdminRoute() {
+  const { isAuthenticated, isInitialized, user } = useAuthStore();
+  const location = useLocation();
+
+  if (!isInitialized) return <Loading />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+}
+
+/** Redirect authenticated users away from login/register */
+function GuestRoute() {
+  const { isAuthenticated, isInitialized } = useAuthStore();
+
+  if (!isInitialized) return <Loading />;
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+}
+
+// ─── Inner App (needs Router context) ─────────────────────────────────────────
+
+function AppInner() {
+  const { initialize, logout, isAuthenticated, isInitialized } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    initializeApiSystem();
+    initialize();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const unsub = eventBus.on('api:unauthorized', () => {
+      logout();
+      navigate('/login', { replace: true });
+    });
+    return unsub;
+  }, [logout, navigate]);
+
+  if (!isInitialized) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Loading />
       </div>
     );
   }
 
-  return <>{children}</>;
-}
-
-
-export default function App() {
-  const { isAuthenticated, user, fetchUser, logout } = useAuthStore();
-
-  useEffect(() => {
-    initializeApiSystem();
-    const unsubscribe = eventBus.on('api:unauthorized', () => {
-      logout();
-    });
-    return () => unsubscribe();
-  }, [logout]);
-
-  useEffect(() => {
-    if (isAuthenticated && !user) {
-      fetchUser();
-    }
-  }, [isAuthenticated, user, fetchUser]);
-
   return (
-    <ErrorBoundary showDetails>
-      <BrowserRouter basename="/afst">
-        <SetupRedirect>
-          <Routes>
+    <>
+      <Routes>
+        <Route path="/setup" element={<Setup />} />
+
+        <Route element={<GuestRoute />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/setup" element={<Setup />} />
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/books" element={<Books />} />
-            <Route path="/books/:id" element={<BookDetail />} />
-            <Route path="/readers" element={<Readers />} />
-            <Route path="/borrow" element={<Borrow />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/groups" element={<Groups />} />
-            <Route path="/categories" element={<Categories />} />
+        </Route>
+
+        <Route element={<Layout />}>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/books" element={<Books />} />
+          <Route path="/books/:id" element={<BookDetail />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
+
+          {/* Authenticated */}
+          <Route element={<PrivateRoute />}>
             <Route path="/library" element={<Library />} />
             <Route path="/collections" element={<Collections />} />
+            <Route path="/groups" element={<Groups />} />
             <Route path="/books/:bookId/read" element={<Reader />} />
-            <Route path="/subscriptions" element={<Subscriptions />} />
+            <Route path="/profile/:id" element={<Profile />} />
+          </Route>
+
+          {/* Librarians + Admins */}
+          <Route element={<StaffRoute />}>
+            <Route path="/readers" element={<Readers />} />
+            <Route path="/borrow" element={<Borrow />} />
             <Route path="/admin/books" element={<AdminBooks />} />
             <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
-            <Route path="/profile/:id" element={<Profile />} />
+          </Route>
+
+          {/* Admins only */}
+          <Route element={<AdminRoute />}>
             <Route path="/auto" element={<AutoDashboard />} />
             <Route path="/auto/:resource" element={<AutoResource />} />
           </Route>
-        </Routes>
-          <ToastContainer />
-        </SetupRedirect>
+        </Route>
+
+        <Route path="*" element={<Navigate to={isAuthenticated ? '/' : '/login'} replace />} />
+      </Routes>
+      <ToastContainer />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary showDetails>
+      <BrowserRouter basename="/afst">
+        <AppInner />
       </BrowserRouter>
     </ErrorBoundary>
   );

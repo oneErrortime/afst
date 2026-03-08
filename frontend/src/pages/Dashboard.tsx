@@ -90,13 +90,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'librarian') {
-      navigate('/');
-      return;
-    }
     loadStats();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, []);
 
   const loadStats = async () => {
     try {

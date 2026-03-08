@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useApiConfigStore } from '@/store/apiConfigStore';
 
@@ -16,6 +16,7 @@ export function Login() {
   const { login: storeLogin } = useAuthStore();
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const activeEndpoint = getActiveEndpoint();
 
@@ -35,10 +36,13 @@ export function Login() {
 
     setLoading(true);
     try {
-      await storeLogin(email, password);
+      const { user } = await storeLogin(email, password);
       setShowSuccess(true);
       toast.success('Вход выполнен успешно!');
-      setTimeout(() => navigate('/books'), 800);
+      const from = (location.state as any)?.from?.pathname;
+      const defaultPath =
+        user?.role === 'admin' || user?.role === 'librarian' ? '/admin/dashboard' : '/books';
+      setTimeout(() => navigate(from || defaultPath, { replace: true }), 800);
     } catch (error) {
       const message = (error as any)?.response?.data?.message || 'Ошибка входа';
       toast.error(message);

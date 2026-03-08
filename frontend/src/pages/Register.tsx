@@ -43,10 +43,12 @@ export function Register() {
 
     setLoading(true);
     try {
-      await storeRegister(email, password, name);
+      const { user } = await storeRegister(email, password, name);
       setShowSuccess(true);
       toast.success('Регистрация прошла успешно!');
-      setTimeout(() => navigate('/books'), 800);
+      const defaultPath =
+        user?.role === 'admin' || user?.role === 'librarian' ? '/admin/dashboard' : '/books';
+      setTimeout(() => navigate(defaultPath, { replace: true }), 800);
     } catch {
       toast.error('Ошибка регистрации. Попробуйте снова.');
       setLoading(false);
