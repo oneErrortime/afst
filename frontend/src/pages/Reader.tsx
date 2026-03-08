@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
+// pdfjs-dist v4 ships only .mjs workers — Vite ?url import bundles it correctly
+import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import ePub, { Rendition, Book as EpubBook } from 'epubjs';
 import type { NavItem } from 'epubjs';
 import { booksApi, bookmarksApi, filesApi, accessApi } from '@/api/wrapper';
@@ -27,7 +29,7 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useReadingProgress } from '@/hooks/useReadingProgress';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 interface TocItem { label: string; href: string; subitems?: TocItem[]; }
 type Theme = 'light' | 'dark' | 'sepia';
@@ -236,24 +238,45 @@ export function Reader() {
   };
 
   // ──────────────────────────────────────────────────────────────
-  //  PDF loading
+  //  PDF loading — fetch bytes via axiosInstance (handles auth),
+  //  then hand off to pdfjsLib so no cross-origin header issues
   // ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (fileType !== 'pdf' || !fileUrl) return;
 
-    const token = useAuthStore.getState().token;
-    const task = pdfjsLib.getDocument({
-      url: fileUrl,
-      httpHeaders: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+    let destroyed = false;
+    let currentDoc: pdfjsLib.PDFDocumentProxy | null = null;
 
-    task.promise.then(doc => {
-      setPdf(doc);
-      setTotalPages(doc.numPages);
-      setPdfPage(1);
-    }).catch(() => setError('Ошибка загрузки PDF. Возможно, нет доступа.'));
+    const load = async () => {
+      try {
+        // Fetch raw bytes via our axios client (Authorization header injected automatically)
+        const resp = await fetch(fileUrl, {
+          headers: useAuthStore.getState().token
+            ? { Authorization: `Bearer ${useAuthStore.getState().token}` }
+            : {},
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const buffer = await resp.arrayBuffer();
+        if (destroyed) return;
 
-    return () => { task.destroy(); };
+        const task = pdfjsLib.getDocument({ data: buffer });
+        const doc = await task.promise;
+        if (destroyed) { doc.destroy(); return; }
+
+        currentDoc = doc;
+        setPdf(doc);
+        setTotalPages(doc.numPages);
+        setPdfPage(1);
+      } catch (e) {
+        if (!destroyed) setError('Ошибка загрузки PDF. Проверьте доступ к книге.');
+      }
+    };
+
+    load();
+    return () => {
+      destroyed = true;
+      currentDoc?.destroy();
+    };
   }, [fileType, fileUrl]);
 
   // Update prefetch list whenever page changes
