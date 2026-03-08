@@ -63,6 +63,11 @@ func (m *MockUserRepository) Count() (int64, error) {
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockUserRepository) CountByRole(role models.UserRole) (int64, error) {
+	args := m.Called(role)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockUserRepository) GetByGroupID(groupID uuid.UUID) ([]models.User, error) {
 	args := m.Called(groupID)
 	if args.Get(0) == nil {

@@ -45,6 +45,16 @@ func (m *MockBookRepository) Delete(id uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *MockBookRepository) Count() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockBookRepository) CountPublished() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockBookRepository) GetByISBN(isbn string) (*models.Book, error) {
 	args := m.Called(isbn)
 	if args.Get(0) == nil {
