@@ -28,11 +28,11 @@ import { checkApiConnection } from '@/api/client';
 import { booksApi, type Book } from '@/api/wrapper';
 
 export function Home() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const { connectionStatus, getActiveEndpoint } = useApiConfigStore();
   const [recentBooks, setRecentBooks] = useState<Book[]>([]);
   const [popularBooks, setPopularBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   const activeEndpoint = getActiveEndpoint();
 

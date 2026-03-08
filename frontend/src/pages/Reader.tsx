@@ -102,7 +102,7 @@ export function Reader() {
   // ── Book / file state ──
   const [bookTitle, setBookTitle] = useState('');
   const [files, setFiles] = useState<BookFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<BookFile | null>(null);
+  const [, setSelectedFile] = useState<BookFile | null>(null);
   const [fileType, setFileType] = useState<'pdf' | 'epub' | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
 
@@ -141,7 +141,7 @@ export function Reader() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ── Session tracking ──
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [, setSessionId] = useState<string | null>(null);
   const { saveProgress, startSession, endSession } = useReadingProgress({
     accessId,
     bookId: bookId ?? null,

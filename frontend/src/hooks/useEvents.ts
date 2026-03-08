@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { eventBus, type EventBusEvents, type EventName } from '@/lib/eventBus';
 
 export function useEvent<E extends EventName>(
@@ -6,9 +6,13 @@ export function useEvent<E extends EventName>(
   callback: (data: EventBusEvents[E]) => void,
   deps: React.DependencyList = []
 ) {
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
+
   useEffect(() => {
-    const unsubscribe = eventBus.on(event, callback);
+    const unsubscribe = eventBus.on(event, (data) => callbackRef.current(data));
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event, ...deps]);
 }
 

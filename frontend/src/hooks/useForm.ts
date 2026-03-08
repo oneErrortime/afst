@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useMachine, formMachine } from '@/lib/stateMachine';
 
 export type ValidationRule<T> = {
@@ -42,13 +42,15 @@ export function useForm<T extends Record<string, unknown>>(
   config: FormConfig<T>,
   onSubmit: (values: T) => Promise<void>
 ): [FormState<T>, FormActions<T>] {
-  const initialValues = useMemo(() => {
+  const initialValuesRef = useRef<T>(null!);
+  if (!initialValuesRef.current) {
     const values = {} as T;
     for (const key in config) {
       values[key] = config[key].initialValue;
     }
-    return values;
-  }, []);
+    initialValuesRef.current = values;
+  }
+  const initialValues = initialValuesRef.current;
 
   const [values, setValuesState] = useState<T>(initialValues);
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});

@@ -9,7 +9,6 @@ type SSEEventType =
   | 'subscription.new' | 'subscription.expired'
   | 'reading.progress';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SSEHandler<T = any> = (data: T) => void;
 type HandlerMap = Partial<Record<SSEEventType, SSEHandler>>;
 
@@ -31,6 +30,7 @@ export function useSSE({ handlers, enabled = true }: UseSSEOptions) {
   const delayRef = useRef(1000);
   const handlersRef = useRef(handlers);
   handlersRef.current = handlers;
+  const connectRef = useRef<() => void>(() => {});
 
   const connect = useCallback(() => {
     if (!token || !isAuthenticated) return;
@@ -47,7 +47,7 @@ export function useSSE({ handlers, enabled = true }: UseSSEOptions) {
       esRef.current = null;
       const delay = Math.min(delayRef.current, 30_000);
       delayRef.current = delay * 2;
-      retryRef.current = setTimeout(connect, delay);
+      retryRef.current = setTimeout(() => connectRef.current(), delay);
     };
 
     for (const type of ALL_EVENTS) {
@@ -58,6 +58,8 @@ export function useSSE({ handlers, enabled = true }: UseSSEOptions) {
       });
     }
   }, [token, isAuthenticated]);
+
+  connectRef.current = connect;
 
   useEffect(() => {
     if (!enabled || !isAuthenticated) return;

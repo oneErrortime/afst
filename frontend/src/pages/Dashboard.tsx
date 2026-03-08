@@ -85,7 +85,6 @@ function ActivityItem({ icon: Icon, title, description, time, color }: ActivityI
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
