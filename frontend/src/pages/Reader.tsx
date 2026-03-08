@@ -267,7 +267,7 @@ export function Reader() {
         setPdf(doc);
         setTotalPages(doc.numPages);
         setPdfPage(1);
-      } catch (e) {
+      } catch {
         if (!destroyed) setError('Ошибка загрузки PDF. Проверьте доступ к книге.');
       }
     };
