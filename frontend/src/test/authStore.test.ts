@@ -83,7 +83,7 @@ describe('useAuthStore — login()', () => {
 
 describe('useAuthStore — logout()', () => {
   it('clears all auth state', async () => {
-    useAuthStore.setState({ token: 'jwt-valid-token', isAuthenticated: true, user: { id: '1', email: 'x', name: 'X', role: 'reader' } });
+    useAuthStore.setState({ token: 'jwt-valid-token', isAuthenticated: true, user: { id: '1', email: 'x', name: 'X', role: 'reader', email_verified: true, is_active: true, created_at: '2026-01-01T00:00:00Z' } });
     useAuthStore.getState().logout();
 
     const { token, isAuthenticated, user } = useAuthStore.getState();
