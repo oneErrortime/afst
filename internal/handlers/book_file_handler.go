@@ -46,7 +46,7 @@ func (h *BookFileHandler) Upload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, models.ErrorResponseDTO{Error: "Файл не найден", Message: err.Error()})
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	bookFile, err := h.fileService.Upload(bookID, file, header)
 	if err != nil {
@@ -114,7 +114,7 @@ func (h *BookFileHandler) ServeFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponseDTO{Error: "Ошибка чтения файла", Message: err.Error()})
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	c.Header("Content-Type", mimeType)
 	c.Header("Content-Disposition", "inline; filename="+filepath.Base(filePath))

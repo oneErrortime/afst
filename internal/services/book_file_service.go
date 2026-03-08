@@ -73,13 +73,14 @@ func (s *bookFileService) Upload(bookID uuid.UUID, file multipart.File, header *
 	}
 
 	fileType := models.FileTypePDF
-	if result.MimeType == "application/epub+zip" {
+	switch result.MimeType {
+	case "application/epub+zip":
 		fileType = models.FileTypeEPUB
 
 		// Попробуем извлечь метаданные из EPUB
 		f, err := os.Open(result.FilePath)
 		if err == nil {
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			finfo, _ := f.Stat()
 			zipReader, err := zip.NewReader(f, finfo.Size())
 			if err == nil {
@@ -103,7 +104,7 @@ func (s *bookFileService) Upload(bookID uuid.UUID, file multipart.File, header *
 			}
 		}
 
-	} else if result.MimeType == "application/x-mobipocket-ebook" {
+	case "application/x-mobipocket-ebook":
 		fileType = models.FileTypeMOBI
 	}
 

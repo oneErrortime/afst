@@ -94,7 +94,7 @@ func writeSSETo(w io.Writer, eventType string, payload interface{}) {
 	if err != nil {
 		return
 	}
-	fmt.Fprintf(w, "event: %s\ndata: %s\n\n", eventType, data)
+	_, _ = fmt.Fprintf(w, "event: %s\ndata: %s\n\n", eventType, data)
 }
 
 func writeSSE(c *gin.Context, eventType string, payload interface{}) {

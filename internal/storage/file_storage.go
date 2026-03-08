@@ -76,7 +76,7 @@ func (s *LocalStorage) Upload(file multipart.File, header *multipart.FileHeader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file: %w", err)
 	}
-	defer dst.Close()
+	defer func() { _ = dst.Close() }()
 
 	size, err := io.Copy(dst, file)
 	if err != nil {

@@ -109,7 +109,7 @@ func countPDFPages(filePath string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	scanner := bufio.NewScanner(f)
 	scanner.Buffer(make([]byte, 1<<20), 1<<20) // 1 MB line buffer
@@ -165,7 +165,7 @@ func countEPUBChapters(filePath string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	var opfData []byte
 	for _, f := range r.File {
@@ -175,7 +175,7 @@ func countEPUBChapters(filePath string) (int, error) {
 				return 0, err
 			}
 			opfData, err = io.ReadAll(rc)
-			rc.Close()
+			_ = rc.Close()
 			if err != nil {
 				return 0, err
 			}
