@@ -36,8 +36,12 @@ func NewDatabase(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("не удалось получить sql.DB: %w", err)
 	}
-	sqlDB.Exec("PRAGMA foreign_keys = ON")
-	sqlDB.Exec("PRAGMA busy_timeout = 5000")
+	if _, err := sqlDB.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, fmt.Errorf("не удалось включить foreign keys: %w", err)
+	}
+	if _, err := sqlDB.Exec("PRAGMA busy_timeout = 5000"); err != nil {
+		return nil, fmt.Errorf("не удалось установить busy_timeout: %w", err)
+	}
 
 	return db, nil
 }

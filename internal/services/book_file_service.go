@@ -66,7 +66,9 @@ func (s *bookFileService) Upload(bookID uuid.UUID, file multipart.File, header *
 
 	existing, _ := s.fileRepo.GetByHash(result.Hash)
 	if existing != nil && existing.BookID == bookID {
-		s.fileStorage.Delete(result.FilePath) // Удаляем дубликат
+		if deleteErr := s.fileStorage.Delete(result.FilePath); deleteErr != nil {
+			_ = deleteErr // файл может отсутствовать, игнорируем
+		}
 		return nil, errors.New("файл с таким содержимым уже загружен для этой книги")
 	}
 
@@ -94,7 +96,9 @@ func (s *bookFileService) Upload(bookID uuid.UUID, file multipart.File, header *
 						desc := (*epubBook.Opf.Metadata.Description)[0].Text
 						book.Description = &desc
 					}
-					s.bookRepo.Update(book)
+					if updateErr := s.bookRepo.Update(book); updateErr != nil {
+						_ = updateErr // метаданные не критичны, продолжаем
+					}
 				}
 			}
 		}
@@ -116,7 +120,9 @@ func (s *bookFileService) Upload(bookID uuid.UUID, file multipart.File, header *
 	}
 
 	if err := s.fileRepo.Create(bookFile); err != nil {
-		s.fileStorage.Delete(result.FilePath)
+		if delErr := s.fileStorage.Delete(result.FilePath); delErr != nil {
+			_ = delErr
+		}
 		return nil, err
 	}
 
@@ -159,9 +165,8 @@ func (s *bookFileService) Delete(id uuid.UUID) error {
 		return err
 	}
 
-	if err := s.fileStorage.Delete(file.FilePath); err != nil {
-		// Не возвращаем ошибку, т.к. файл может быть уже удален
-	}
+	// Не возвращаем ошибку удаления файла, т.к. файл может быть уже удален
+	_ = s.fileStorage.Delete(file.FilePath)
 
 	return s.fileRepo.Delete(id)
 }

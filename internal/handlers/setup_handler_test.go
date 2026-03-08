@@ -12,6 +12,7 @@ import (
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type MockAuthService struct {
@@ -60,7 +61,7 @@ func TestSetupHandler_GetStatus_NoAdmin(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var response map[string]bool
-	json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
 	assert.True(t, response["setup_needed"])
 }
 
@@ -77,7 +78,7 @@ func TestSetupHandler_GetStatus_AdminExists(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var response map[string]bool
-	json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
 	assert.False(t, response["setup_needed"])
 }
 

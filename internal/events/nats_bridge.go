@@ -29,19 +29,6 @@ func (b *NATSBridgeImpl) Subscribe(_ string, _ func([]byte)) error { return nil 
 // Close is a no-op in the stub.
 func (b *NATSBridgeImpl) Close() {}
 
-// publishLocal injects an event into the local bus without bridging back to NATS.
-func (b *Bus) publishLocal(event Event) {
-	b.mu.RLock()
-	subs := b.subscribers[event.Type]
-	snapshot := make([]Subscriber, len(subs))
-	copy(snapshot, subs)
-	b.mu.RUnlock()
-
-	for _, ch := range snapshot {
-		select {
-		case ch <- event:
-		default:
-			// drop if slow consumer
-		}
-	}
-}
+// publishLocal would inject an event into the local bus without bridging back to NATS.
+// Reserved for future use when real NATS support is added.
+// nolint:unused

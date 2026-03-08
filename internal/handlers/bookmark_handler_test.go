@@ -13,6 +13,7 @@ import (
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // MockBookmarkService is a mock for the BookmarkService
@@ -107,7 +108,7 @@ func TestBookmarkHandler_GetBookmarksByBook(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, rr.Code)
 		var result []models.Bookmark
-		json.Unmarshal(rr.Body.Bytes(), &result)
+		require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &result))
 		assert.Equal(t, bookmarks, result)
 		mockService.AssertExpectations(t)
 	})

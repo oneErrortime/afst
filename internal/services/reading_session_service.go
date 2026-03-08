@@ -39,7 +39,9 @@ func (s *readingSessionService) StartSession(userID, bookID, accessID uuid.UUID,
 		now := time.Now()
 		existing.EndedAt = &now
 		existing.Duration = int(now.Sub(existing.StartedAt).Seconds())
-		s.sessionRepo.Update(existing)
+		if updateErr := s.sessionRepo.Update(existing); updateErr != nil {
+			_ = updateErr // не критично, продолжаем создание новой сессии
+		}
 	}
 
 	session := &models.ReadingSession{
