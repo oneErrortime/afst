@@ -79,13 +79,11 @@ func (h *BookFileHandler) ServeFile(c *gin.Context) {
 		return
 	}
 
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
+	userID, err := middleware.GetUserFromContext(c)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{Error: "Не авторизован"})
 		return
 	}
-
-	userID, _ := uuid.Parse(userIDStr.(string))
 
 	bookFile, err := h.fileService.GetByID(fileID)
 	if err != nil {
