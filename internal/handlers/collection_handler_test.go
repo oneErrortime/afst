@@ -82,7 +82,7 @@ func TestCollectionHandler_CreateCollection(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		c.Set("userID", userID.String())
+		c.Set("user_id", userID)
 
 		body, _ := json.Marshal(dto)
 		c.Request, _ = http.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
@@ -117,7 +117,7 @@ func TestCollectionHandler_GetCollections(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		c.Set("userID", userID.String())
+		c.Set("user_id", userID)
 		c.Request, _ = http.NewRequest(http.MethodGet, "/", nil)
 
 		handler.GetCollections(c)
