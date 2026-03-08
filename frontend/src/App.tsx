@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   Home, Login, Register, Books, Readers, Borrow, Settings, Groups, Categories,
-  Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections,
+  Library, Reader, Subscriptions, AdminBooks, Users, Dashboard, Setup, Collections, APIKeys,
   BookDetail, Profile, AutoDashboard, AutoResource,
 } from '@/pages';
 import { Layout } from '@/components/layout';
@@ -117,6 +117,7 @@ function AppInner() {
           <Route element={<PrivateRoute />}>
             <Route path="/library" element={<Library />} />
             <Route path="/collections" element={<Collections />} />
+            <Route path="/api-keys" element={<APIKeys />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/books/:bookId/read" element={<Reader />} />
             <Route path="/profile/:id" element={<Profile />} />

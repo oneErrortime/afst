@@ -153,4 +153,8 @@ type Services struct {
 	Review         ReviewService
 	Bookmark       BookmarkService
 	Social         SocialService
+	APIKey         APIKeyService
 }
+
+// APIKeyService — интерфейс управления ключами внешнего API.
+// (реализован в api_key_service.go)

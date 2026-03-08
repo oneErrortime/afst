@@ -57,6 +57,8 @@ func Migrate(db *gorm.DB) error {
 		&models.Reader{},
 		&models.BorrowedBook{},
 		&models.FeatureFlag{},
+		&models.APIKey{},
+		&models.APIUsageLog{},
 	)
 }
 

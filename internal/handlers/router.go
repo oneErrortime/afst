@@ -16,7 +16,7 @@ func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, X-API-Key, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 
 		if c.Request.Method == "OPTIONS" {
@@ -223,6 +223,47 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 	}
 
 	api.GET("/stats/dashboard", authMiddleware, requireLibrarian, handlers.GetDashboardStats)
+
+	// ── Управление API-ключами (требует JWT пользователя) ─────────────────────
+	apiKeys := api.Group("/api-keys").Use(authMiddleware)
+	{
+		apiKeys.POST("", handlers.APIKey.CreateKey)
+		apiKeys.GET("", handlers.APIKey.ListKeys)
+		apiKeys.DELETE("/:id", handlers.APIKey.RevokeKey)
+		apiKeys.GET("/:id/stats", handlers.APIKey.GetKeyStats)
+	}
+
+	// Пополнение токенов — только admin
+	apiKeysAdmin := api.Group("/api-keys").Use(authMiddleware, requireAdmin)
+	{
+		apiKeysAdmin.POST("/:id/topup", handlers.APIKey.TopUpTokens)
+	}
+
+	// ── Внешнее API /ext/v1 — аутентификация по API-ключу ──────────────────────
+	apiKeyMiddleware := middleware.APIKeyMiddleware(handlers.Services.APIKey)
+	ext := router.Group("/ext/v1").Use(apiKeyMiddleware)
+	{
+		// Books — публичные данные
+		ext.GET("/books", handlers.ExtListBooks)
+		ext.GET("/books/:id", handlers.ExtGetBook)
+
+		// Access / Borrow
+		ext.GET("/access/library", handlers.ExtGetLibrary)
+		ext.GET("/access/check/:book_id", handlers.ExtCheckAccess)
+		ext.POST("/access/borrow/:book_id", handlers.ExtBorrowBook)
+
+		// Reviews
+		ext.GET("/reviews/book/:book_id", handlers.ExtGetReviews)
+		ext.POST("/reviews", handlers.ExtCreateReview)
+
+		// Bookmarks
+		ext.GET("/bookmarks", handlers.ExtGetBookmarks)
+		ext.POST("/bookmarks", handlers.ExtCreateBookmark)
+
+		// Collections
+		ext.GET("/collections", handlers.ExtGetCollections)
+		ext.POST("/collections", handlers.ExtCreateCollection)
+	}
 
 	api.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{

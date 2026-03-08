@@ -90,7 +90,24 @@ type ExtendedRepository struct {
 	Collection     CollectionRepository
 	Review         ReviewRepository
 	Bookmark       BookmarkRepository
+	APIKey         APIKeyRepository
 	DB             interface{}
 }
 
 type TransactionFunc func(txRepo *ExtendedRepository) error
+
+// APIKeyRepository — хранилище API-ключей и логов использования.
+type APIKeyRepository interface {
+	Create(key *models.APIKey) error
+	GetByID(id uuid.UUID) (*models.APIKey, error)
+	GetByHash(keyHash string) (*models.APIKey, error)
+	GetByUserID(userID uuid.UUID) ([]models.APIKey, error)
+	Update(key *models.APIKey) error
+	Delete(id uuid.UUID) error
+	DeductTokens(id uuid.UUID, cost int64) error
+	AddTokens(id uuid.UUID, amount int64) error
+
+	LogUsage(log *models.APIUsageLog) error
+	GetUsageLogs(apiKeyID uuid.UUID, limit int) ([]models.APIUsageLog, error)
+	GetUsageStats(apiKeyID uuid.UUID) (*models.APIUsageStatsDTO, error)
+}

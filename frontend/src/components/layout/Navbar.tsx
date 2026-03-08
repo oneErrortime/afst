@@ -102,6 +102,7 @@ export function Navbar() {
                 <>
                   <NavLink to="/library" isActive={isActive('/library')}>Библиотека</NavLink>
                   <NavLink to="/collections" isActive={isActive('/collections')}>Коллекции</NavLink>
+                  <NavLink to="/api-keys" isActive={isActive('/api-keys')}>API</NavLink>
                   <NavLink to="/groups" isActive={isActive('/groups')}>Группы</NavLink>
                   {isLibrarian && (
                     <>

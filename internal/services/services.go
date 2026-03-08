@@ -35,6 +35,7 @@ func NewExtendedServices(repos *repository.ExtendedRepository, jwtService *auth.
 		Collection:     NewCollectionService(repos.Collection),
 		Review:         NewReviewService(repos.Review),
 		Bookmark:       NewBookmarkService(repos.Bookmark),
+		APIKey:         NewAPIKeyService(repos.APIKey),
 	}
 }
 
@@ -65,6 +66,7 @@ func NewExtendedServicesWithWorkers(
 		Collection:     NewCollectionService(repos.Collection),
 		Review:         NewReviewService(repos.Review),
 		Bookmark:       NewBookmarkService(repos.Bookmark),
+		APIKey:         NewAPIKeyService(repos.APIKey),
 	}
 }
 

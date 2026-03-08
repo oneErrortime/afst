@@ -24,6 +24,7 @@ type Handlers struct {
 	Bookmark       *BookmarkHandler
 	Social         *SocialHandler
 	SSE            *SSEHandler
+	APIKey         *APIKeyHandler
 	Services       *services.Services
 }
 
@@ -56,6 +57,7 @@ func NewExtendedHandlers(services *services.Services, fileStorage storage.FileSt
 		Bookmark:       NewBookmarkHandler(services.Bookmark),
 		Social:         NewSocialHandler(services.Social),
 		SSE:            NewSSEHandler(bus),
+		APIKey:         NewAPIKeyHandler(services.APIKey, validator),
 		Services:       services,
 	}
 }
