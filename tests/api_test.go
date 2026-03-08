@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/oneErrortime/afst/internal/auth"
+	"github.com/oneErrortime/afst/internal/events"
 	"github.com/oneErrortime/afst/internal/handlers"
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/oneErrortime/afst/internal/repository/gorm"
@@ -60,7 +61,8 @@ func (suite *APITestSuite) SetupSuite() {
 
 	// Создаем обработчики
 	validator := validator.New()
-	handlersInstance := handlers.NewExtendedHandlers(services, fileStorage, validator)
+	bus := events.NewBus(0)
+	handlersInstance := handlers.NewExtendedHandlers(services, fileStorage, validator, bus)
 
 	// Настраиваем роутер
 	gin.SetMode(gin.TestMode)

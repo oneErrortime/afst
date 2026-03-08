@@ -136,6 +136,11 @@ func (m *MockUserGroupRepository) List(limit, offset int) ([]models.UserGroup, e
 	return args.Get(0).([]models.UserGroup), args.Error(1)
 }
 
+func (m *MockUserGroupRepository) Count() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func TestAuthService_Register_Success(t *testing.T) {
 	// Arrange
 	mockUserRepo := new(MockUserRepository)

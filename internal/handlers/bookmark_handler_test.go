@@ -41,6 +41,14 @@ func (m *MockBookmarkService) GetBookmarkByID(id uuid.UUID) (*models.Bookmark, e
 	return args.Get(0).(*models.Bookmark), args.Error(1)
 }
 
+func (m *MockBookmarkService) GetAllBookmarks(userID uuid.UUID) ([]models.Bookmark, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.Bookmark), args.Error(1)
+}
+
 func (m *MockBookmarkService) DeleteBookmark(id uuid.UUID) error {
 	args := m.Called(id)
 	return args.Error(0)
