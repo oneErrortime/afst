@@ -14,9 +14,22 @@ import (
 
 func AuthMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Primary: Authorization header
+		tokenStr := ""
 		authHeader := c.GetHeader("Authorization")
+		if authHeader != "" {
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) == 2 && strings.ToLower(parts[0]) == "bearer" {
+				tokenStr = parts[1]
+			}
+		}
 
-		if authHeader == "" {
+		// Fallback: ?token= query param (needed for EventSource / SSE)
+		if tokenStr == "" {
+			tokenStr = c.Query("token")
+		}
+
+		if tokenStr == "" {
 			c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{
 				Error:   "Отсутствует токен авторизации",
 				Message: "Необходимо предоставить токен в заголовке Authorization",
@@ -25,19 +38,7 @@ func AuthMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{
-				Error:   "Неверный формат токена",
-				Message: "Токен должен быть в формате: Bearer <token>",
-			})
-			c.Abort()
-			return
-		}
-
-		token := parts[1]
-
-		claims, err := jwtService.ValidateToken(token)
+		claims, err := jwtService.ValidateToken(tokenStr)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, models.ErrorResponseDTO{
 				Error:   "Невалидный токен",

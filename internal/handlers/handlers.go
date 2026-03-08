@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/oneErrortime/afst/internal/events"
 	"github.com/oneErrortime/afst/internal/services"
 	"github.com/oneErrortime/afst/internal/storage"
 )
@@ -22,6 +23,7 @@ type Handlers struct {
 	Review         *ReviewHandler
 	Bookmark       *BookmarkHandler
 	Social         *SocialHandler
+	SSE            *SSEHandler
 	Services       *services.Services
 }
 
@@ -36,7 +38,7 @@ func NewHandlers(services *services.Services, validator *validator.Validate) *Ha
 	}
 }
 
-func NewExtendedHandlers(services *services.Services, fileStorage storage.FileStorage, validator *validator.Validate) *Handlers {
+func NewExtendedHandlers(services *services.Services, fileStorage storage.FileStorage, validator *validator.Validate, bus *events.Bus) *Handlers {
 	return &Handlers{
 		Auth:           NewAuthHandler(services.Auth, validator),
 		Book:           NewBookHandler(services.Book, validator),
@@ -53,6 +55,7 @@ func NewExtendedHandlers(services *services.Services, fileStorage storage.FileSt
 		Review:         NewReviewHandler(services.Review),
 		Bookmark:       NewBookmarkHandler(services.Bookmark),
 		Social:         NewSocialHandler(services.Social),
+		SSE:            NewSSEHandler(bus),
 		Services:       services,
 	}
 }

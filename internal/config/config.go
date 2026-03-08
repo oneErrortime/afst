@@ -19,6 +19,9 @@ type Config struct {
 	// Настройки JWT
 	JWT JWTConfig
 
+	// NATS (опционально — если пусто, работаем без NATS)
+	NatsURL string
+
 	// Логирование
 	LogLevel string
 }
@@ -61,6 +64,7 @@ func Load() (*Config, error) {
 			ExpiresIn: jwtExpires,
 		},
 
+		NatsURL:  os.Getenv("NATS_URL"), // empty = disabled
 		LogLevel: getEnvOrDefault("LOG_LEVEL", "debug"),
 	}
 

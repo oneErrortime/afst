@@ -66,7 +66,7 @@ export type {
 
 export type UserPublicProfileDTO = models_UserPublicProfileDTO;
 
-const getBaseUrl = (): string => {
+export const getBaseUrl = (): string => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
@@ -219,12 +219,17 @@ export const booksApi = {
     }
   },
   
-  uploadFile: async (bookId: string, file: File) => {
+  uploadFile: async (bookId: string, file: File, onProgress?: (pct: number) => void) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
       const response = await axiosInstance.post(`/books/${bookId}/files`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          if (onProgress && e.total) {
+            onProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        },
       });
       return response.data;
     } catch (error) {

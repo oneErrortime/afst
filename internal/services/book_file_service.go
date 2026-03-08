@@ -8,15 +8,19 @@ import (
 
 	"github.com/google/uuid"
 	epubparser "github.com/mathieu-keller/epub-parser"
+	"github.com/oneErrortime/afst/internal/events"
 	"github.com/oneErrortime/afst/internal/models"
 	"github.com/oneErrortime/afst/internal/repository"
 	"github.com/oneErrortime/afst/internal/storage"
+	"github.com/oneErrortime/afst/internal/worker"
 )
 
 type bookFileService struct {
-	fileRepo    repository.BookFileRepository
-	bookRepo    repository.BookRepository
+	fileRepo  repository.BookFileRepository
+	bookRepo  repository.BookRepository
 	fileStorage storage.FileStorage
+	processor *worker.FileProcessor
+	bus       *events.Bus
 }
 
 func NewBookFileService(
@@ -28,6 +32,24 @@ func NewBookFileService(
 		fileRepo:    fileRepo,
 		bookRepo:    bookRepo,
 		fileStorage: fileStorage,
+		// processor and bus start as nil; wire via NewBookFileServiceWithWorker
+	}
+}
+
+// NewBookFileServiceWithWorker wires in the async processor and event bus
+func NewBookFileServiceWithWorker(
+	fileRepo repository.BookFileRepository,
+	bookRepo repository.BookRepository,
+	fileStorage storage.FileStorage,
+	processor *worker.FileProcessor,
+	bus *events.Bus,
+) BookFileService {
+	return &bookFileService{
+		fileRepo:    fileRepo,
+		bookRepo:    bookRepo,
+		fileStorage: fileStorage,
+		processor:   processor,
+		bus:         bus,
 	}
 }
 
@@ -81,7 +103,6 @@ func (s *bookFileService) Upload(bookID uuid.UUID, file multipart.File, header *
 		fileType = models.FileTypeMOBI
 	}
 
-
 	bookFile := &models.BookFile{
 		BookID:       bookID,
 		FileName:     result.FileName,
@@ -91,12 +112,34 @@ func (s *bookFileService) Upload(bookID uuid.UUID, file multipart.File, header *
 		FileSize:     result.FileSize,
 		MimeType:     result.MimeType,
 		Hash:         result.Hash,
-		IsProcessed:  true, // Считаем обработанным после извлечения метаданных
+		IsProcessed:  false, // will be updated by the worker
 	}
 
 	if err := s.fileRepo.Create(bookFile); err != nil {
 		s.fileStorage.Delete(result.FilePath)
 		return nil, err
+	}
+
+	// Publish upload event
+	if s.bus != nil {
+		s.bus.Publish(events.Event{
+			Type: events.EventBookUploaded,
+			Payload: events.BookUploadedPayload{
+				BookID:   bookID.String(),
+				FileID:   bookFile.ID.String(),
+				FilePath: result.FilePath,
+				FileType: string(fileType),
+			},
+		})
+	}
+
+	// Queue background processing (page counting, metadata)
+	if s.processor != nil {
+		s.processor.Enqueue(bookFile.ID, result.FilePath, string(fileType), bookID)
+	} else {
+		// Synchronous fallback if no worker pool is wired
+		bookFile.IsProcessed = true
+		_ = s.fileRepo.Update(bookFile)
 	}
 
 	return bookFile, nil
@@ -131,3 +174,5 @@ func (s *bookFileService) ServeFile(id uuid.UUID) (string, string, error) {
 
 	return file.FilePath, file.MimeType, nil
 }
+
+

@@ -1,40 +1,252 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { subscriptionsApi } from '@/api';
 import type { Subscription, SubscriptionPlanConfig, SubscriptionPlan } from '@/types';
-import { Button, Loading } from '@/components/ui';
-
+import { Button, Loading, toast } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
-import { Check, Crown, Star, Sparkles, BookOpen } from 'lucide-react';
+import { useSSE } from '@/hooks/useSSE';
+import {
+  Check, Crown, Star, Sparkles, BookOpen, Zap, Download,
+  Shield, RefreshCcw, AlertTriangle, Clock, ArrowRight, X,
+} from 'lucide-react';
 
+// ─── helpers ──────────────────────────────────────────────────
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    day: 'numeric', month: 'long', year: 'numeric',
   });
 }
 
 function daysRemaining(endDate: string) {
-  const end = new Date(endDate);
-  const now = new Date();
-  const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const diff = Math.ceil((new Date(endDate).getTime() - Date.now()) / 86_400_000);
   return diff;
 }
 
-const planIcons: Record<SubscriptionPlan, React.ReactNode> = {
-  free: <BookOpen className="h-8 w-8" />,
-  basic: <Star className="h-8 w-8" />,
-  premium: <Crown className="h-8 w-8" />,
-  student: <Sparkles className="h-8 w-8" />,
+// ─── Plan visual config ────────────────────────────────────────
+const planConfig: Record<SubscriptionPlan, {
+  label: string;
+  icon: React.ReactNode;
+  gradient: string;
+  badge?: string;
+}> = {
+  free:    { label: 'Бесплатный', icon: <BookOpen className="h-6 w-6" />, gradient: 'from-gray-400 to-gray-500' },
+  basic:   { label: 'Базовый',    icon: <Star className="h-6 w-6" />,     gradient: 'from-blue-500 to-blue-600' },
+  premium: { label: 'Премиум',    icon: <Crown className="h-6 w-6" />,    gradient: 'from-amber-500 to-orange-500', badge: 'Популярный' },
+  student: { label: 'Студент',    icon: <Sparkles className="h-6 w-6" />, gradient: 'from-emerald-500 to-teal-500' },
 };
 
-const planColors: Record<SubscriptionPlan, string> = {
-  free: 'from-gray-500 to-gray-600',
-  basic: 'from-blue-500 to-blue-600',
-  premium: 'from-amber-500 to-orange-500',
-  student: 'from-emerald-500 to-teal-500',
+const planFeatureIcons: Record<string, React.ReactNode> = {
+  books:     <BookOpen className="h-4 w-4 text-primary-500" />,
+  downloads: <Download className="h-4 w-4 text-green-500" />,
+  premium:   <Crown className="h-4 w-4 text-amber-500" />,
+  speed:     <Zap className="h-4 w-4 text-purple-500" />,
 };
 
+function featureIcon(text: string) {
+  const lower = text.toLowerCase();
+  if (lower.includes('книг') || lower.includes('читать')) return planFeatureIcons.books;
+  if (lower.includes('загруз') || lower.includes('скачив')) return planFeatureIcons.downloads;
+  if (lower.includes('премиум') || lower.includes('exclusive')) return planFeatureIcons.premium;
+  return planFeatureIcons.speed;
+}
+
+// ─── Status banner ─────────────────────────────────────────────
+function SubscriptionBanner({ sub, days, onCancel, onRenew, loading }: {
+  sub: Subscription;
+  days: number;
+  onCancel: () => void;
+  onRenew: () => void;
+  loading: boolean;
+}) {
+  const cfg = planConfig[sub.plan] ?? planConfig.free;
+  const isExpired = sub.status !== 'active' || days <= 0;
+  const expiringSoon = days <= 7 && days > 0;
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 text-white p-6 shadow-xl">
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${cfg.gradient}`} />
+
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className={`p-2 rounded-xl bg-gradient-to-br ${cfg.gradient}`}>
+              {cfg.icon}
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Текущая подписка</p>
+              <h2 className="text-xl font-bold">{cfg.label}</h2>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3 mt-4 text-sm">
+            <span className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5">
+              <BookOpen className="h-3.5 w-3.5" />
+              До {sub.max_books} книг
+            </span>
+            <span className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5">
+              <Download className="h-3.5 w-3.5" />
+              {sub.max_downloads} загрузок
+            </span>
+            {sub.can_access_premium && (
+              <span className="flex items-center gap-1.5 bg-amber-500/30 rounded-lg px-3 py-1.5 text-amber-300">
+                <Crown className="h-3.5 w-3.5" />
+                Премиум книги
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="text-right shrink-0">
+          {isExpired ? (
+            <span className="inline-flex items-center gap-1.5 text-sm bg-red-500/20 text-red-400 px-3 py-1.5 rounded-lg">
+              <X className="h-3.5 w-3.5" />Истекла
+            </span>
+          ) : expiringSoon ? (
+            <span className="inline-flex items-center gap-1.5 text-sm bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded-lg">
+              <AlertTriangle className="h-3.5 w-3.5" />{days} дн.
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-sm bg-green-500/20 text-green-400 px-3 py-1.5 rounded-lg">
+              <Shield className="h-3.5 w-3.5" />{days} дн.
+            </span>
+          )}
+          <p className="text-xs text-gray-500 mt-1">до {formatDate(sub.end_date)}</p>
+        </div>
+      </div>
+
+      {expiringSoon && (
+        <div className="mt-4 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-sm text-amber-300">
+          <Clock className="h-4 w-4 shrink-0" />
+          Подписка истекает через {days} {days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'} — не забудьте продлить.
+        </div>
+      )}
+
+      <div className="mt-5 flex gap-3 flex-wrap">
+        {(isExpired || expiringSoon) && (
+          <Button size="sm" loading={loading} onClick={onRenew}>
+            <RefreshCcw className="h-3.5 w-3.5 mr-1.5" />
+            Продлить
+          </Button>
+        )}
+        {!isExpired && (
+          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" loading={loading} onClick={onCancel}>
+            Отменить подписку
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Plan card ─────────────────────────────────────────────────
+function PlanCard({
+  plan,
+  isCurrent,
+  onSubscribe,
+  subscribing,
+  isAuthenticated,
+}: {
+  plan: SubscriptionPlanConfig;
+  isCurrent: boolean;
+  onSubscribe: (p: SubscriptionPlan) => void;
+  subscribing: SubscriptionPlan | null;
+  isAuthenticated: boolean;
+}) {
+  const cfg = planConfig[plan.plan] ?? planConfig.free;
+  const isPremium = plan.plan === 'premium';
+
+  return (
+    <div className={`relative flex flex-col rounded-2xl border-2 transition-all hover:shadow-lg ${
+      isPremium
+        ? 'border-amber-300 shadow-amber-100/50 shadow-lg scale-[1.02]'
+        : isCurrent
+        ? 'border-primary-300 bg-primary-50/30'
+        : 'border-gray-200 bg-white hover:border-gray-300'
+    }`}>
+      {cfg.badge && (
+        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${cfg.gradient} shadow-sm`}>
+          {cfg.badge}
+        </div>
+      )}
+
+      {isCurrent && (
+        <div className="absolute -top-3 right-4 px-3 py-1 rounded-full text-xs font-semibold text-white bg-primary-600 shadow-sm">
+          Текущий
+        </div>
+      )}
+
+      <div className={`p-6 rounded-t-2xl bg-gradient-to-br ${cfg.gradient} text-white`}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="p-2 bg-white/20 rounded-xl">{cfg.icon}</div>
+        </div>
+        <h3 className="text-xl font-bold">{cfg.label}</h3>
+        <div className="mt-2">
+          <span className="text-3xl font-bold">{plan.price_monthly.toLocaleString('ru')} ₽</span>
+          <span className="text-sm text-white/70"> / месяц</span>
+        </div>
+        {plan.price_yearly > 0 && (
+          <p className="text-xs text-white/70 mt-1">
+            или {Math.round(plan.price_yearly / 12).toLocaleString('ru')} ₽/мес при оплате за год
+          </p>
+        )}
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col">
+        <ul className="space-y-3 flex-1 mb-6">
+          {plan.features?.map((f, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
+              <span className="mt-0.5 shrink-0">{featureIcon(f)}</span>
+              {f}
+            </li>
+          )) ?? (
+            <>
+              <li className="flex items-center gap-2.5 text-sm text-gray-700">
+                <Check className="h-4 w-4 text-green-500 shrink-0" />
+                До {plan.max_books} книг одновременно
+              </li>
+              {plan.max_downloads > 0 && (
+                <li className="flex items-center gap-2.5 text-sm text-gray-700">
+                  <Check className="h-4 w-4 text-green-500 shrink-0" />
+                  {plan.max_downloads} загрузок в месяц
+                </li>
+              )}
+              {plan.can_access_premium && (
+                <li className="flex items-center gap-2.5 text-sm text-gray-700">
+                  <Crown className="h-4 w-4 text-amber-500 shrink-0" />
+                  Доступ к Premium книгам
+                </li>
+              )}
+            </>
+          )}
+        </ul>
+
+        {!isAuthenticated ? (
+          <Link to="/login">
+            <Button variant="secondary" className="w-full">
+              Войти для подписки
+            </Button>
+          </Link>
+        ) : isCurrent ? (
+          <Button variant="secondary" disabled className="w-full">
+            <Check className="h-4 w-4 mr-2" />Ваш план
+          </Button>
+        ) : (
+          <Button
+            className={`w-full ${isPremium ? '' : 'btn-secondary'}`}
+            variant={isPremium ? 'primary' : 'secondary'}
+            loading={subscribing === plan.plan}
+            onClick={() => onSubscribe(plan.plan)}
+          >
+            Выбрать план
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main page ─────────────────────────────────────────────────
 export default function Subscriptions() {
   const { isAuthenticated } = useAuthStore();
   const [plans, setPlans] = useState<SubscriptionPlanConfig[]>([]);
@@ -43,45 +255,57 @@ export default function Subscriptions() {
   const [subscribing, setSubscribing] = useState<SubscriptionPlan | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const plansData = await subscriptionsApi.getPlans();
-      setPlans(plansData);
+      setPlans(plansData || []);
 
       if (isAuthenticated) {
         try {
-          const subData = await subscriptionsApi.getMy();
-          setCurrentSubscription(subData);
+          const sub = await subscriptionsApi.getMy();
+          setCurrentSubscription(sub);
         } catch {
           setCurrentSubscription(null);
         }
       }
-    } catch (error) {
-      console.error('Failed to load subscription data:', error);
+    } catch (err) {
+      console.error('Failed to load plans:', err);
+      toast.error('Не удалось загрузить данные о подписках');
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  // Real-time subscription updates via SSE
+  useSSE({
+    enabled: isAuthenticated,
+    handlers: {
+      'subscription.new': () => {
+        toast.success('Подписка активирована!');
+        loadData();
+      },
+      'subscription.expired': () => {
+        toast.warning('Ваша подписка истекла');
+        loadData();
+      },
+    },
+  });
 
   const handleSubscribe = async (plan: SubscriptionPlan) => {
     if (!isAuthenticated) {
-      alert('Войдите в аккаунт для оформления подписки');
+      toast.info('Войдите для оформления подписки');
       return;
     }
-
     try {
       setSubscribing(plan);
       const newSub = await subscriptionsApi.subscribe(plan);
       setCurrentSubscription(newSub);
-    } catch (error) {
-      console.error('Failed to subscribe:', error);
-      alert('Не удалось оформить подписку');
+      toast.success(`Подписка «${planConfig[plan]?.label}» оформлена!`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Не удалось оформить подписку');
     } finally {
       setSubscribing(null);
     }
@@ -89,15 +313,13 @@ export default function Subscriptions() {
 
   const handleCancel = async () => {
     if (!currentSubscription) return;
-    if (!confirm('Вы уверены, что хотите отменить подписку?')) return;
-
     try {
       setActionLoading(true);
       await subscriptionsApi.cancel(currentSubscription.id);
+      toast.success('Подписка отменена');
       await loadData();
-    } catch (error) {
-      console.error('Failed to cancel subscription:', error);
-      alert('Не удалось отменить подписку');
+    } catch {
+      toast.error('Не удалось отменить подписку');
     } finally {
       setActionLoading(false);
     }
@@ -105,14 +327,13 @@ export default function Subscriptions() {
 
   const handleRenew = async () => {
     if (!currentSubscription) return;
-
     try {
       setActionLoading(true);
       await subscriptionsApi.renew(currentSubscription.id);
+      toast.success('Подписка продлена!');
       await loadData();
-    } catch (error) {
-      console.error('Failed to renew subscription:', error);
-      alert('Не удалось продлить подписку');
+    } catch {
+      toast.error('Не удалось продлить подписку');
     } finally {
       setActionLoading(false);
     }
@@ -121,203 +342,76 @@ export default function Subscriptions() {
   if (loading) return <Loading />;
 
   const days = currentSubscription ? daysRemaining(currentSubscription.end_date) : 0;
-  const isExpiringSoon = days <= 7 && days > 0;
 
   return (
-    
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Подписки</h1>
-          <p className="text-gray-500">Выберите план, который подходит вам</p>
+    <div className="max-w-6xl mx-auto space-y-10 py-4">
+
+      {/* Header */}
+      <div className="text-center">
+        <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4">
+          <Crown className="h-4 w-4" />
+          Подписки LibraryAPI
         </div>
-
-        {currentSubscription && (
-          <div className={`rounded-2xl p-6 bg-gradient-to-r ${planColors[currentSubscription.plan]} text-white`}>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 rounded-xl">
-                  {planIcons[currentSubscription.plan]}
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">
-                    Текущая подписка: {plans.find(p => p.plan === currentSubscription.plan)?.name || currentSubscription.plan}
-                  </h2>
-                  <p className="text-white/80">
-                    {currentSubscription.status === 'active' ? (
-                      <>Активна до {formatDate(currentSubscription.end_date)}</>
-                    ) : currentSubscription.status === 'cancelled' ? (
-                      <>Отменена</>
-                    ) : (
-                      <>Статус: {currentSubscription.status}</>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                {isExpiringSoon && currentSubscription.status === 'active' && (
-                  <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm mb-2">
-                    Осталось {days} дн.
-                  </span>
-                )}
-                <div className="flex gap-2">
-                  {currentSubscription.status === 'active' && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleCancel}
-                        loading={actionLoading}
-                        className="text-white border-white/30 hover:bg-white/10"
-                      >
-                        Отменить
-                      </Button>
-                      {isExpiringSoon && (
-                        <Button
-                          size="sm"
-                          onClick={handleRenew}
-                          loading={actionLoading}
-                          className="bg-white text-gray-900 hover:bg-white/90"
-                        >
-                          Продлить
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {currentSubscription.status === 'cancelled' && (
-                    <Button
-                      size="sm"
-                      onClick={handleRenew}
-                      loading={actionLoading}
-                      className="bg-white text-gray-900 hover:bg-white/90"
-                    >
-                      Возобновить
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-3 gap-4">
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="text-2xl font-bold">{currentSubscription.max_books}</div>
-                <div className="text-sm text-white/70">Книг одновременно</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="text-2xl font-bold">{currentSubscription.max_downloads}</div>
-                <div className="text-sm text-white/70">Скачиваний/мес</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="text-2xl font-bold">{currentSubscription.can_access_premium ? 'Да' : 'Нет'}</div>
-                <div className="text-sm text-white/70">Premium контент</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {plans.map((plan) => {
-            const isCurrent = currentSubscription?.plan === plan.plan && currentSubscription.status === 'active';
-
-            return (
-              <div
-                key={plan.plan}
-                className={`relative rounded-2xl border-2 bg-white overflow-hidden transition-all ${
-                  isCurrent
-                    ? 'border-primary-500 shadow-lg shadow-primary-100'
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                }`}
-              >
-                {plan.plan === 'premium' && (
-                  <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                    Популярный
-                  </div>
-                )}
-
-                <div className={`p-6 bg-gradient-to-br ${planColors[plan.plan]} text-white`}>
-                  <div className="flex items-center gap-3 mb-3">
-                    {planIcons[plan.plan]}
-                    <h3 className="text-xl font-bold">{plan.name}</h3>
-                  </div>
-                  <p className="text-white/80 text-sm">{plan.description}</p>
-                </div>
-
-                <div className="p-6">
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {plan.price_monthly === 0 ? 'Бесплатно' : `${plan.price_monthly}₽`}
-                    </span>
-                    {plan.price_monthly > 0 && <span className="text-gray-500">/мес</span>}
-                  </div>
-
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-600">До {plan.max_books} книг одновременно</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-600">{plan.max_downloads > 0 ? `${plan.max_downloads} скачиваний/мес` : 'Только онлайн чтение'}</span>
-                    </li>
-                    {plan.can_access_premium && (
-                      <li className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                        <span className="text-sm text-gray-600">Premium контент</span>
-                      </li>
-                    )}
-                    {plan.price_yearly > 0 && (
-                      <li className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                        <span className="text-sm text-gray-600">Годовая подписка: {plan.price_yearly}₽</span>
-                      </li>
-                    )}
-                  </ul>
-
-                  <Button
-                    className="w-full"
-                    variant={isCurrent ? 'secondary' : 'primary'}
-                    onClick={() => handleSubscribe(plan.plan)}
-                    loading={subscribing === plan.plan}
-                    disabled={isCurrent || !isAuthenticated}
-                  >
-                    {isCurrent ? 'Текущий план' : plan.price_monthly === 0 ? 'Выбрать' : 'Подписаться'}
-                  </Button>
-
-                  {!isAuthenticated && (
-                    <p className="text-xs text-gray-400 text-center mt-2">
-                      Войдите для оформления
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="bg-gray-50 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Часто задаваемые вопросы</h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium text-gray-900">Как работает подписка?</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                После оформления подписки вы получаете доступ к чтению книг онлайн. Количество книг, которые можно
-                читать одновременно, зависит от выбранного плана.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Могу ли я отменить подписку?</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Да, вы можете отменить подписку в любое время. Доступ сохранится до конца оплаченного периода.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Что такое Premium контент?</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Premium книги — это эксклюзивные издания, доступные только для подписчиков Premium и Student планов.
-              </p>
-            </div>
-          </div>
-        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+          Выберите свой план
+        </h1>
+        <p className="text-gray-500 max-w-xl mx-auto">
+          Получите доступ к тысячам книг, включая эксклюзивный Premium-контент.
+          Читайте онлайн, сохраняйте прогресс, скачивайте для оффлайна.
+        </p>
       </div>
-    
+
+      {/* Current subscription banner */}
+      {isAuthenticated && currentSubscription && (
+        <SubscriptionBanner
+          sub={currentSubscription}
+          days={days}
+          onCancel={handleCancel}
+          onRenew={handleRenew}
+          loading={actionLoading}
+        />
+      )}
+
+      {/* Not logged in notice */}
+      {!isAuthenticated && (
+        <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-700">
+          <Shield className="h-5 w-5 shrink-0" />
+          <span>
+            <Link to="/login" className="font-semibold underline">Войдите</Link>, чтобы оформить подписку и получить доступ к Premium книгам.
+          </span>
+        </div>
+      )}
+
+      {/* Plan grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {plans.map(plan => (
+          <PlanCard
+            key={plan.plan}
+            plan={plan}
+            isCurrent={currentSubscription?.plan === plan.plan && currentSubscription?.status === 'active'}
+            onSubscribe={handleSubscribe}
+            subscribing={subscribing}
+            isAuthenticated={isAuthenticated}
+          />
+        ))}
+      </div>
+
+      {/* Feature highlights */}
+      <div className="grid gap-4 sm:grid-cols-3 pt-4">
+        {[
+          { icon: <Shield className="h-6 w-6 text-primary-600" />, title: 'Отмена в любой момент', desc: 'Без обязательств — отмените или смените план когда угодно.' },
+          { icon: <BookOpen className="h-6 w-6 text-green-600" />, title: 'Чтение онлайн и оффлайн', desc: 'PDF и EPUB во встроенном ридере. Скачивайте с Premium.' },
+          { icon: <Crown className="h-6 w-6 text-amber-600" />, title: 'Эксклюзивный контент', desc: 'Premium книги, ранние релизы и специальные издания.' },
+        ].map((f, i) => (
+          <div key={i} className="flex gap-3 p-4 bg-gray-50 rounded-xl">
+            <div className="p-2 bg-white rounded-lg shadow-sm shrink-0">{f.icon}</div>
+            <div>
+              <h4 className="font-semibold text-gray-900 text-sm">{f.title}</h4>
+              <p className="text-xs text-gray-500 mt-0.5">{f.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

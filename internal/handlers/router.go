@@ -232,6 +232,12 @@ func SetupRoutes(handlers *Handlers, jwtService *auth.JWTService) *gin.Engine {
 		})
 	})
 
+	// Server-Sent Events — real-time event stream for frontend
+	eventStream := api.Group("/events").Use(authMiddleware)
+	{
+		eventStream.GET("/stream", handlers.SSE.Stream)
+	}
+
 	return router
 }
 
