@@ -83,35 +83,41 @@ export function getApiConfig(): ApiConfig {
 
 export function setupAuthInterceptor() {
   const originalFetch = window.fetch;
-  
+
   window.fetch = async (...args: Parameters<typeof fetch>) => {
-    const [url, config] = args;
+    const [url, options = {}] = args;
     const token = getApiToken();
-    
-    if (token && config) {
-      const headers = new Headers(config.headers as HeadersInit);
+
+    // Inject Authorization header when token exists
+    if (token) {
+      const headers = new Headers((options as RequestInit).headers as HeadersInit);
       if (!headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);
       }
-      
-      (config as RequestInit).headers = headers;
+      (options as RequestInit).headers = headers;
     }
-    
+
     try {
-      const response = await originalFetch(url, config);
-      
+      const response = await originalFetch(url, options as RequestInit);
+
       if (response.status === 401) {
         clearApiToken();
-        window.location.href = '/afst/login';
+        // Use eventBus so React Router handles navigation — no hard reload.
+        // Hard window.location.href causes a redirect loop:
+        //   1. Page reloads → zustand rehydrates with stale token
+        //   2. initialize() calls /auth/me → another 401 → another reload
+        import('@/lib/eventBus').then(({ eventBus }) => {
+          eventBus.emit('api:unauthorized', {});
+        });
       }
-      
+
       return response;
     } catch (error) {
       console.error('[API] Fetch error:', error);
       throw error;
     }
   };
-  
+
   console.log('[API] Auth interceptor setup complete');
 }
 

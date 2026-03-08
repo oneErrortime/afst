@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -64,13 +64,13 @@ func (h *SSEHandler) Stream(c *gin.Context) {
 	ticker := time.NewTicker(25 * time.Second)
 	defer ticker.Stop()
 
-	c.Stream(func(w http.ResponseWriter) bool {
+	c.Stream(func(w io.Writer) bool {
 		select {
 		case <-ctx.Done():
 			return false
 
 		case <-ticker.C:
-			writeSSE(c, "ping", map[string]string{"t": time.Now().Format(time.RFC3339)})
+			writeSSETo(w, "ping", map[string]string{"t": time.Now().Format(time.RFC3339)})
 			return true
 
 		case event, ok := <-sub:
@@ -83,16 +83,20 @@ func (h *SSEHandler) Stream(c *gin.Context) {
 				return true // skip but stay connected
 			}
 
-			writeSSE(c, string(event.Type), event.Payload)
+			writeSSETo(w, string(event.Type), event.Payload)
 			return true
 		}
 	})
 }
 
-func writeSSE(c *gin.Context, eventType string, payload interface{}) {
+func writeSSETo(w io.Writer, eventType string, payload interface{}) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return
 	}
-	fmt.Fprintf(c.Writer, "event: %s\ndata: %s\n\n", eventType, data)
+	fmt.Fprintf(w, "event: %s\ndata: %s\n\n", eventType, data)
+}
+
+func writeSSE(c *gin.Context, eventType string, payload interface{}) {
+	writeSSETo(c.Writer, eventType, payload)
 }
