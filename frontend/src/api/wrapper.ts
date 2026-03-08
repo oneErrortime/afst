@@ -95,11 +95,11 @@ const getPersistedToken = (): string | null => {
   }
 };
 
-// Initialise OpenAPI token on module load from the correct storage key
-const _initToken = getPersistedToken();
-if (_initToken) {
-  OpenAPI.TOKEN = _initToken;
-}
+// Set OpenAPI.TOKEN as a resolver function so it reads the current token
+// on every request. Without this, logging in via useAuthStore.login()
+// (which only writes to zustand/localStorage) would leave OpenAPI.TOKEN
+// as undefined — causing all BooksService / AuthService calls to 401.
+OpenAPI.TOKEN = async () => getPersistedToken() ?? '';
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: getBaseUrl(),

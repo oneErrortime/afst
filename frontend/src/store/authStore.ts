@@ -77,6 +77,8 @@ export const useAuthStore = create<AuthState>()(
         const response = await apiClient.post('/auth/login', { email, password });
         const { token, user } = response.data;
         set({ token, user, isAuthenticated: true, isInitialized: true });
+        // Sync OpenAPI client token so generated services (BooksService etc.) work immediately
+        import('@/api/wrapper').then(({ OpenAPI }) => { OpenAPI.TOKEN = () => token; });
         return { user };
       },
 
@@ -84,6 +86,7 @@ export const useAuthStore = create<AuthState>()(
         const response = await apiClient.post('/auth/register', { email, password, name });
         const { token, user } = response.data;
         set({ token, user, isAuthenticated: true, isInitialized: true });
+        import('@/api/wrapper').then(({ OpenAPI }) => { OpenAPI.TOKEN = () => token; });
         return { user };
       },
     }),
