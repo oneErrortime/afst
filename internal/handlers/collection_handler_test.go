@@ -162,6 +162,7 @@ func TestCollectionHandler_DeleteCollection(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		collectionID := uuid.New()
 
+		mockService.On("GetCollectionByID", collectionID).Return(&models.Collection{ID: collectionID}, nil).Once()
 		mockService.On("DeleteCollection", collectionID).Return(nil).Once()
 
 		rr := httptest.NewRecorder()
@@ -184,6 +185,7 @@ func TestCollectionHandler_AddBookToCollection(t *testing.T) {
 		bookID := uuid.New()
 		dto := models.AddBookToCollectionDTO{BookID: bookID}
 
+		mockService.On("GetCollectionByID", collectionID).Return(&models.Collection{ID: collectionID}, nil).Once()
 		mockService.On("AddBookToCollection", collectionID, bookID).Return(nil).Once()
 
 		rr := httptest.NewRecorder()
@@ -207,6 +209,7 @@ func TestCollectionHandler_RemoveBookFromCollection(t *testing.T) {
 		collectionID := uuid.New()
 		bookID := uuid.New()
 
+		mockService.On("GetCollectionByID", collectionID).Return(&models.Collection{ID: collectionID}, nil).Once()
 		mockService.On("RemoveBookFromCollection", collectionID, bookID).Return(nil).Once()
 
 		rr := httptest.NewRecorder()

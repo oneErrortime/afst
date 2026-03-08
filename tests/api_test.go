@@ -93,6 +93,12 @@ func (suite *APITestSuite) migrateSQLite(db *gormdb.DB) error {
 		&models.Reader{},
 		&models.BorrowedBook{},
 		&models.FeatureFlag{},
+		&models.Collection{},
+		&models.Review{},
+		&models.Bookmark{},
+		&models.Follow{},
+		&models.APIKey{},
+		&models.APIUsageLog{},
 	)
 }
 
