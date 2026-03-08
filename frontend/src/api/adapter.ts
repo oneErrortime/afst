@@ -24,8 +24,11 @@ const getBaseUrl = (): string => {
 function readPersistedToken(): string | null {
   try {
     const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    return (JSON.parse(raw) as { state?: { token?: string | null } })?.state?.token ?? null;
+    if (raw) {
+      const token = (JSON.parse(raw) as { state?: { token?: string | null } })?.state?.token;
+      if (token) return token;
+    }
+    return localStorage.getItem('token');
   } catch {
     return null;
   }

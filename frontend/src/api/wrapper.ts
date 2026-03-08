@@ -79,17 +79,20 @@ export const getBaseUrl = (): string => {
 OpenAPI.BASE = getBaseUrl();
 
 /**
- * Reads the JWT token from zustand's persisted auth store.
- * zustand/persist serialises the full state as JSON under 'auth-storage',
- * NOT as a bare 'token' key.  Reading from the wrong key was the root
- * cause of every authenticated API call going out without an Authorization
- * header, which triggered 401s and an infinite redirect loop.
+ * Reads the JWT token from any persisted storage location.
+ * - Primary: zustand persist stores state under 'auth-storage'
+ * - Fallback: legacy 'token' key (written by authApi.login)
  */
 const getPersistedToken = (): string | null => {
   try {
+    // Primary: zustand persist key
     const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    return (JSON.parse(raw) as { state?: { token?: string | null } })?.state?.token ?? null;
+    if (raw) {
+      const token = (JSON.parse(raw) as { state?: { token?: string | null } })?.state?.token;
+      if (token) return token;
+    }
+    // Fallback: bare token key
+    return localStorage.getItem('token');
   } catch {
     return null;
   }
@@ -180,7 +183,7 @@ export const booksApi = {
   getAll: async (params?: { limit?: number; offset?: number; search?: string }) => {
     try {
       const response = await BooksService.getBooks(params?.limit, params?.offset);
-      return response.Data || [];
+      return response.data || [];
     } catch (error) {
       return handleApiError(error);
     }
@@ -197,7 +200,7 @@ export const booksApi = {
   create: async (data: models_CreateBookDTO) => {
     try {
       const response = await BooksService.postBooks(data);
-      return response.Data;
+      return response.data;
     } catch (error) {
       return handleApiError(error);
     }
@@ -206,7 +209,7 @@ export const booksApi = {
   update: async (id: string, data: models_UpdateBookDTO) => {
     try {
       const response = await BooksService.putBooks(id, data);
-      return response.Data;
+      return response.data;
     } catch (error) {
       return handleApiError(error);
     }
@@ -223,7 +226,7 @@ export const booksApi = {
   getRecommendations: async (id: string, limit: number = 6) => {
     try {
       const response = await BooksService.getBooksRecommendations(id, limit);
-      return response.Data || [];
+      return response.data || [];
     } catch (error) {
       return handleApiError(error);
     }
@@ -423,7 +426,7 @@ export const usersApi = {
   getAll: async (params?: { limit?: number; offset?: number }) => {
     try {
       const response = await UsersService.getUsers(params?.limit, params?.offset);
-      return response.Data || [];
+      return response.data || [];
     } catch (error) {
       return handleApiError(error);
     }
